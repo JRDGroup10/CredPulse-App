@@ -4,7 +4,7 @@ import { signIn, signUp } from "../lib/store";
 import { supabaseConfigured } from "../lib/supabaseClient";
 import { Region } from "../lib/types";
 import { rolesForRegion } from "../lib/roles";
-
+import { LogoMark } from "../components/Logo";
 type Mode = "signup" | "login";
 
 export default function Auth({ initialMode = "signup" }: { initialMode?: Mode }) {
@@ -87,9 +87,7 @@ export default function Auth({ initialMode = "signup" }: { initialMode?: Mode })
     <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-slate-950 px-4">
       <div className="max-w-sm w-full animate-fade-in-up">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold mx-auto mb-3 shadow-glow">
-            CP
-          </div>
+          <LogoMark className="w-14 h-14 mx-auto mb-3 drop-shadow-md" />
           <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
             {mode === "signup" ? "Create your account" : "Welcome back"}
           </h1>

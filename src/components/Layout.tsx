@@ -4,7 +4,7 @@ import { useAppState } from "../lib/AppContext";
 import { signOut } from "../lib/store";
 import { PLANS } from "../lib/plans";
 import { useTheme } from "../lib/ThemeContext";
-
+import Logo from "./Logo";
 const NAV = [
   { to: "/", label: "Dashboard" },
   { to: "/add", label: "Add Certificate" },
@@ -47,11 +47,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex flex-col bg-surface dark:bg-slate-950 transition-colors">
       <header className="border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold text-sm shadow-glow transition-transform group-hover:scale-105">
-              CP
-            </span>
-            <span className="font-semibold text-slate-900 dark:text-slate-50">CredPulse</span>
+          <Link to="/" className="inline-flex transition-transform hover:scale-105">
+            <Logo markClassName="w-8 h-8" textClassName="text-base" />
           </Link>
           <nav className="flex items-center gap-1">
             {NAV.map((item) => (

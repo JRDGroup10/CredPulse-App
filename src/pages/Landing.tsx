@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { BillingCycle } from "../lib/types";
 import PricingCards from "../components/PricingCards";
 import MedicalIllustration from "../components/MedicalIllustration";
-
+import Logo from "../components/Logo";
 const FEATURES = [
   {
     title: "Upload once, we do the reading",
@@ -47,12 +47,7 @@ export default function Landing({
       {/* Nav */}
       <header className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold text-sm shadow-glow">
-              CP
-            </span>
-            <span className="font-semibold text-slate-900">CredPulse</span>
-          </div>
+          <Logo markClassName="w-8 h-8" textClassName="text-base" themeAware={false} />
           <div className="flex items-center gap-4">
             <button onClick={onLogin} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
               Log in
@@ -220,12 +215,7 @@ export default function Landing({
       <footer className="border-t border-slate-100">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-md bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold text-[10px]">
-                CP
-              </span>
-              <span className="font-semibold text-slate-900 text-sm">CredPulse</span>
-            </div>
+            <Logo markClassName="w-6 h-6" textClassName="text-sm" themeAware={false} />
             <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
               <Link to="/terms" className="hover:text-slate-900">Terms</Link>
               <Link to="/privacy" className="hover:text-slate-900">Privacy</Link>
