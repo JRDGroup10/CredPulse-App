@@ -1,22 +1,67 @@
 import { Region } from "./types";
 
+// Roles common to both regions, spanning admin/support staff through physicians —
+// matches the tiers in healthcare-role-certifications.md. Where terminology genuinely
+// differs by region (not just spelling), the region-specific title is appended below
+// instead of listed here (e.g. Physiotherapist/Physical Therapist, RPN/LPN, PCP-ACP/EMT-AEMT).
 const COMMON_ROLES = [
   "Registered Nurse",
-  "Registered Practical Nurse",
+  "Nurse Practitioner",
   "Physician",
+  "Family Physician",
+  "Emergency Physician",
+  "Anesthesiologist",
+  "Surgeon",
+  "Physician Assistant",
+  "Dentist",
+  "Dental Hygienist",
+  "Dental Assistant",
   "Paramedic",
+  "Emergency Medical Responder",
   "Respiratory Therapist",
-  "Personal Support Worker"
+  "Medical Laboratory Technologist",
+  "Radiologic Technologist",
+  "Pharmacy Technician",
+  "Occupational Therapist",
+  "Speech-Language Pathologist",
+  "Social Worker",
+  "Psychologist",
+  "Counsellor / Therapist",
+  "Medical Office Assistant",
+  "Medical Billing & Coding Specialist",
+  "Health Records Clerk",
+  "Sterile Processing Technician"
 ];
 
 /**
  * Role lists differ slightly by region: "Chiropodist" is a regulated title
  * specific to Ontario (foot care within a limited scope); everywhere else in
- * Canada and in the US, "Podiatrist" is the equivalent title.
+ * Canada and in the US, "Podiatrist" is the equivalent title. The same pattern
+ * applies to a handful of other titles below, where the underlying job is the
+ * same but the regulated/common title genuinely differs by country.
  */
 export function rolesForRegion(region: Region): string[] {
   if (region === "CA") {
-    return [...COMMON_ROLES, "Chiropodist (Ontario)", "Podiatrist", "Other healthcare worker"];
+    return [
+      ...COMMON_ROLES,
+      "Registered Practical Nurse",
+      "Personal Support Worker",
+      "Primary Care Paramedic",
+      "Advanced Care Paramedic",
+      "Physiotherapist",
+      "Chiropodist (Ontario)",
+      "Podiatrist",
+      "Other healthcare worker"
+    ];
   }
-  return [...COMMON_ROLES, "Podiatrist", "Other healthcare worker"];
+  return [
+    ...COMMON_ROLES,
+    "Licensed Practical Nurse",
+    "Certified Nursing Assistant",
+    "EMT-Basic",
+    "AEMT",
+    "Physical Therapist",
+    "Podiatrist",
+    "Other healthcare worker"
+  ];
 }

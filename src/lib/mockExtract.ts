@@ -144,6 +144,210 @@ const KNOWN_TEMPLATES: Template[] = [
       tip: "Many employers reimburse this course — check before you pay out of pocket.",
       renewalUrl: "https://www.redcross.org/take-a-class"
     }
+  },
+  {
+    match: /nrp|neonatal.resuscitation/i,
+    ca: {
+      name: "Neonatal Resuscitation Program (NRP)",
+      issuer: "Heart and Stroke Foundation",
+      credentialType: "certification",
+      tip: "Required for most L&D/NICU roles — book through your hospital's education department.",
+      renewalUrl: "https://www.heartandstroke.ca/cpr/find-a-course"
+    },
+    us: {
+      name: "Neonatal Resuscitation Program (NRP)",
+      issuer: "American Heart Association",
+      credentialType: "certification",
+      tip: "Required for most L&D/NICU roles — book through your hospital's education department.",
+      renewalUrl: "https://www.heart.org/en/cpr/nrp"
+    }
+  },
+  {
+    match: /phtls|prehospital.trauma/i,
+    ca: {
+      name: "Prehospital Trauma Life Support (PHTLS)",
+      issuer: "NAEMT",
+      credentialType: "certification",
+      tip: "Valid for 4 years — the refresher course is shorter than the full provider course, book that instead.",
+      renewalUrl: "https://www.naemt.org/education/phtls"
+    },
+    us: {
+      name: "Prehospital Trauma Life Support (PHTLS)",
+      issuer: "NAEMT",
+      credentialType: "certification",
+      tip: "Valid for 4 years — the refresher course is shorter than the full provider course, book that instead.",
+      renewalUrl: "https://www.naemt.org/education/phtls"
+    }
+  },
+  {
+    match: /atls|advanced.trauma/i,
+    ca: {
+      name: "Advanced Trauma Life Support (ATLS)",
+      issuer: "American College of Surgeons",
+      credentialType: "certification",
+      tip: "Valid for 4 years — you can start the refresher course up to 6 months before it expires.",
+      renewalUrl: "https://www.facs.org/quality-programs/trauma/education/advanced-trauma-life-support/"
+    },
+    us: {
+      name: "Advanced Trauma Life Support (ATLS)",
+      issuer: "American College of Surgeons",
+      credentialType: "certification",
+      tip: "Valid for 4 years — you can start the refresher course up to 6 months before it expires.",
+      renewalUrl: "https://www.facs.org/quality-programs/trauma/education/advanced-trauma-life-support/"
+    }
+  },
+  {
+    match: /tb.(skin.)?test|tuberculosis.screen/i,
+    ca: {
+      name: "TB Skin Test / Screening",
+      issuer: "Occupational Health",
+      credentialType: "training",
+      tip: "Usually renews annually through your employer's occupational health department.",
+      renewalUrl: "https://www.canada.ca/en/public-health/services/diseases/tuberculosis.html"
+    },
+    us: {
+      name: "TB Skin Test / Screening",
+      issuer: "Occupational Health",
+      credentialType: "training",
+      tip: "Usually renews annually through your employer's occupational health department.",
+      renewalUrl: "https://www.cdc.gov/tb/index.html"
+    }
+  },
+  {
+    match: /influenza|flu.(shot|vaccin)/i,
+    ca: {
+      name: "Influenza Vaccination",
+      issuer: "Public Health",
+      credentialType: "training",
+      tip: "Seasonal — most employers require proof each fall before flu season starts.",
+      renewalUrl: "https://www.canada.ca/en/public-health/services/immunization/vaccines/influenza-flu.html"
+    },
+    us: {
+      name: "Influenza Vaccination",
+      issuer: "Public Health",
+      credentialType: "training",
+      tip: "Seasonal — most employers require proof each fall before flu season starts.",
+      renewalUrl: "https://www.cdc.gov/flu/index.htm"
+    }
+  },
+  {
+    match: /bloodborne/i,
+    ca: {
+      name: "Bloodborne Pathogens Training",
+      issuer: "Provincial Occupational Health & Safety",
+      credentialType: "training",
+      tip: "Often bundled with your employer's annual WHMIS refresher.",
+      renewalUrl: "https://www.ccohs.ca/oshanswers/diseases/bbp.html"
+    },
+    us: {
+      name: "Bloodborne Pathogens Training",
+      issuer: "OSHA",
+      credentialType: "training",
+      tip: "Legally required annually under OSHA — usually a short online module through your employer.",
+      renewalUrl: "https://www.osha.gov/bloodborne-pathogens"
+    }
+  },
+  {
+    match: /first.aid/i,
+    ca: {
+      name: "First Aid",
+      issuer: "Canadian Red Cross",
+      credentialType: "certification",
+      tip: "Many employers reimburse this course — check before you pay out of pocket.",
+      renewalUrl: "https://www.redcross.ca/training-and-certification"
+    },
+    us: {
+      name: "First Aid",
+      issuer: "American Red Cross",
+      credentialType: "certification",
+      tip: "Many employers reimburse this course — check before you pay out of pocket.",
+      renewalUrl: "https://www.redcross.org/take-a-class"
+    }
+  },
+  {
+    match: /radiation.safety/i,
+    ca: {
+      name: "Radiation Safety Certification",
+      issuer: "Canadian Nuclear Safety Commission",
+      credentialType: "certification",
+      tip: "Check with your facility's radiation safety officer for the exact renewal window.",
+      renewalUrl: "https://nuclearsafety.gc.ca/eng/"
+    },
+    us: {
+      name: "Radiation Safety Certification",
+      issuer: "State Radiation Control Program",
+      credentialType: "certification",
+      tip: "Renewal requirements vary by state — check with your facility's radiation safety officer.",
+      renewalUrl: "https://www.nrc.gov/"
+    }
+  },
+  {
+    match: /infection.control/i,
+    ca: {
+      name: "Infection Control Certification",
+      issuer: "Public Health Agency of Canada",
+      credentialType: "training",
+      tip: "Often an annual online module through your employer's education portal.",
+      renewalUrl: "https://www.canada.ca/en/public-health.html"
+    },
+    us: {
+      name: "Infection Control Certification",
+      issuer: "CDC",
+      credentialType: "training",
+      tip: "Often an annual online module through your employer's education portal.",
+      renewalUrl: "https://www.cdc.gov/infectioncontrol/index.html"
+    }
+  },
+  {
+    match: /coding.certif|cpc|medical.billing/i,
+    ca: {
+      name: "Medical Coding Certification",
+      issuer: "AAPC",
+      credentialType: "certification",
+      tip: "Renews annually — log your CEUs throughout the year so you're not scrambling at renewal time.",
+      renewalUrl: "https://www.aapc.com/certification/"
+    },
+    us: {
+      name: "Medical Coding Certification",
+      issuer: "AAPC",
+      credentialType: "certification",
+      tip: "Renews annually — log your CEUs throughout the year so you're not scrambling at renewal time.",
+      renewalUrl: "https://www.aapc.com/certification/"
+    }
+  },
+  {
+    match: /crcst|sterile.processing/i,
+    ca: {
+      name: "Sterile Processing Certification (CRCST)",
+      issuer: "HSPA",
+      credentialType: "certification",
+      tip: "Renews annually — requires logged continuing education credits.",
+      renewalUrl: "https://myhspa.org/certification/"
+    },
+    us: {
+      name: "Sterile Processing Certification (CRCST)",
+      issuer: "HSPA",
+      credentialType: "certification",
+      tip: "Renews annually — requires logged continuing education credits.",
+      renewalUrl: "https://myhspa.org/certification/"
+    }
+  },
+  {
+    match: /pance|nccpa|physician.assistant.certif/i,
+    ca: {
+      name: "Physician Assistant Certification",
+      issuer: "Canadian Association of Physician Assistants",
+      credentialType: "certification",
+      tip: "Check current recertification requirements — the PA credentialing process differs by province.",
+      renewalUrl: "https://capa-acam.ca/"
+    },
+    us: {
+      name: "Physician Assistant Certification (PANCE)",
+      issuer: "NCCPA",
+      credentialType: "certification",
+      tip: "Certification maintenance runs on a multi-year cycle — log your CME annually so you're not scrambling.",
+      renewalUrl: "https://www.nccpa.net/"
+    }
   }
 ];
 
