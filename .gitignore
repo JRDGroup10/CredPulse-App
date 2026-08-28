@@ -4,3 +4,7 @@ dev-dist
 .env
 .env.local
 .DS_Store
+dist2/
+dist3/
+dist4/
+vite.config.ts.timestamp-*.mjs

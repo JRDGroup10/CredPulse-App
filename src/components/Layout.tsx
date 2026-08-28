@@ -5,6 +5,7 @@ import { signOut } from "../lib/store";
 import { PLANS } from "../lib/plans";
 import { useTheme } from "../lib/ThemeContext";
 import Logo from "./Logo";
+import AccountMenu from "./AccountMenu";
 const NAV = [
   { to: "/", label: "Dashboard" },
   { to: "/add", label: "Add Certificate" },
@@ -38,6 +39,23 @@ function ThemeToggle() {
   );
 }
 
+function HomeButton() {
+  return (
+    <Link
+      to="/home"
+      title="Visit homepage"
+      aria-label="Visit homepage"
+      className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+        <path d="M3 10.5L12 3l9 7.5" />
+        <path d="M5 9.5V21h14V9.5" />
+        <path d="M9 21v-6h6v6" />
+      </svg>
+    </Link>
+  );
+}
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const { state } = useAppState();
@@ -47,9 +65,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex flex-col bg-surface dark:bg-slate-950 transition-colors">
       <header className="border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="inline-flex transition-transform hover:scale-105">
-            <Logo markClassName="w-8 h-8" textClassName="text-base" />
-          </Link>
+          <div className="flex items-center gap-1">
+            <HomeButton />
+            <Link to="/" className="inline-flex items-center pl-1 transition-transform hover:scale-105">
+              <Logo markClassName="w-8 h-8" textClassName="text-base" />
+            </Link>
+          </div>
           <nav className="flex items-center gap-1">
             {NAV.map((item) => (
               <Link
@@ -64,20 +85,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {item.label}
               </Link>
             ))}
-            <Link
-              to="/billing"
-              className={`ml-1 px-3 py-1.5 rounded-full text-xs font-semibold transition border ${
-                pathname === "/billing"
-                  ? "bg-brand-600 text-white border-brand-600"
-                  : state.profile.plan === "free"
-                  ? "border-brand-200 text-brand-700 hover:bg-brand-50 dark:border-brand-800 dark:text-brand-300 dark:hover:bg-brand-900/40"
-                  : "border-accent-200 text-accent-600 hover:bg-accent-50 dark:border-accent-800 dark:text-accent-400 dark:hover:bg-accent-900/20"
-              }`}
-            >
-              {plan.name} plan
-            </Link>
-            <div className="ml-1 pl-1 border-l border-slate-200 dark:border-slate-700">
+            <div className="ml-1 pl-1 border-l border-slate-200 dark:border-slate-700 flex items-center gap-1">
               <ThemeToggle />
+              <AccountMenu profile={state.profile} planName={plan.name} />
             </div>
           </nav>
         </div>

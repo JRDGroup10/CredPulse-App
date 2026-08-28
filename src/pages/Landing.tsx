@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { BillingCycle } from "../lib/types";
+import { Link, useNavigate } from "react-router-dom";
+import { BillingCycle, Plan } from "../lib/types";
 import PricingCards from "../components/PricingCards";
 import MedicalIllustration from "../components/MedicalIllustration";
 import Logo from "../components/Logo";
@@ -21,9 +21,9 @@ const FEATURES = [
     icon: "🧭"
   },
   {
-    title: "Built for how Canadian credentials actually work",
-    body: "BLS, ACLS, N95 fit tests, WHMIS, vulnerable sector checks — the hard-expiry certifications no college portal tracks for you.",
-    icon: "🍁"
+    title: "Purpose-built for healthcare credentials across North America",
+    body: "From BLS and ACLS to WHMIS and OSHA compliance, vulnerable sector checks and background checks — CredPulse tracks the hard-expiry credentials that keep you eligible to work, wherever you're licensed in Canada or the US.",
+    icon: "🇨🇦🇺🇸"
   }
 ];
 
@@ -35,12 +35,25 @@ const STEPS = [
 
 export default function Landing({
   onGetStarted,
-  onLogin
+  onLogin,
+  loggedIn = false
 }: {
   onGetStarted: () => void;
   onLogin: () => void;
+  loggedIn?: boolean;
 }) {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
+  const navigate = useNavigate();
+
+  // Signed-in visitors land here via the homepage button, not the signup/login
+  // flow — clicking a pricing card should take them to billing, not sign-up.
+  function handlePricingAction(_plan: Plan) {
+    if (loggedIn) {
+      navigate("/billing");
+    } else {
+      onGetStarted();
+    }
+  }
 
   return (
     <div className="bg-surface">
@@ -49,15 +62,26 @@ export default function Landing({
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <Logo markClassName="w-8 h-8" textClassName="text-base" themeAware={false} />
           <div className="flex items-center gap-4">
-            <button onClick={onLogin} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-              Log in
-            </button>
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all hover:-translate-y-0.5"
-            >
-              Get started free
-            </button>
+            {loggedIn ? (
+              <Link
+                to="/"
+                className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all hover:-translate-y-0.5"
+              >
+                Go to dashboard
+              </Link>
+            ) : (
+              <>
+                <button onClick={onLogin} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+                  Log in
+                </button>
+                <button
+                  onClick={onGetStarted}
+                  className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all hover:-translate-y-0.5"
+                >
+                  Get started free
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -74,7 +98,7 @@ export default function Landing({
         <div className="relative max-w-5xl mx-auto px-4 pt-16 pb-20 text-center">
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-brand-700 bg-white/70 backdrop-blur border border-brand-100 px-3 py-1.5 rounded-full mb-5 shadow-sm animate-fade-in-up">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            FOR NURSES, PARAMEDICS & ALLIED HEALTH WORKERS
+            FOR EVERYONE IN HEALTHCARE WITH A CERTIFICATION, LICENSE, OR COURSE TO TRACK
           </span>
           <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.05] animate-fade-in-up" style={{ animationDelay: "80ms" }}>
             Never miss a<br className="hidden sm:block" /> <span className="text-gradient">certification renewal</span> again.
@@ -84,19 +108,30 @@ export default function Landing({
             to keep current — and reminds you with enough time to actually renew, not scramble.
           </p>
           <div className="mt-8 flex items-center justify-center gap-3 animate-fade-in-up" style={{ animationDelay: "240ms" }}>
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow transition-all hover:-translate-y-0.5"
-            >
-              Get started — it's free
-            </button>
+            {loggedIn ? (
+              <Link
+                to="/"
+                className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow transition-all hover:-translate-y-0.5"
+              >
+                Go to dashboard
+              </Link>
+            ) : (
+              <button
+                onClick={onGetStarted}
+                className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow transition-all hover:-translate-y-0.5"
+              >
+                Get started — it's free
+              </button>
+            )}
             <a href="#pricing" className="text-sm font-medium text-slate-600 px-6 py-3 hover:text-slate-900 transition-colors">
               See pricing
             </a>
           </div>
-          <p className="mt-4 text-xs text-slate-400 animate-fade-in-up" style={{ animationDelay: "280ms" }}>
-            No credit card required for the free plan.
-          </p>
+          {!loggedIn && (
+            <p className="mt-4 text-xs text-slate-400 animate-fade-in-up" style={{ animationDelay: "280ms" }}>
+              No credit card required for the free plan.
+            </p>
+          )}
 
           {/* Product preview mock */}
           <div className="mt-14 max-w-md mx-auto rounded-2xl border border-slate-200 shadow-glow bg-white/90 backdrop-blur p-4 text-left animate-fade-in-up hover:-translate-y-1 transition-transform duration-300" style={{ animationDelay: "340ms" }}>
@@ -208,7 +243,7 @@ export default function Landing({
             </button>
           </div>
         </div>
-        <PricingCards billingCycle={billingCycle} onAction={onGetStarted} />
+        <PricingCards billingCycle={billingCycle} onAction={handlePricingAction} />
       </section>
 
       {/* Footer */}

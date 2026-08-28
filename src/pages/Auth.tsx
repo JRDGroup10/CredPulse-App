@@ -7,7 +7,7 @@ import { rolesForRegion } from "../lib/roles";
 import { LogoMark } from "../components/Logo";
 type Mode = "signup" | "login";
 
-export default function Auth({ initialMode = "signup" }: { initialMode?: Mode }) {
+export default function Auth({ initialMode = "signup", onBack }: { initialMode?: Mode; onBack?: () => void }) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
   const [region, setRegion] = useState<Region>("CA");
@@ -86,6 +86,17 @@ export default function Auth({ initialMode = "signup" }: { initialMode?: Mode })
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-slate-950 px-4">
       <div className="max-w-sm w-full animate-fade-in-up">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors"
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.56l4.22 4.22a.75.75 0 11-1.06 1.06l-5.5-5.5a.75.75 0 010-1.06l5.5-5.5a.75.75 0 111.06 1.06L5.56 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+            </svg>
+            Back to homepage
+          </button>
+        )}
         <div className="text-center mb-8">
           <LogoMark className="w-14 h-14 mx-auto mb-3 drop-shadow-md" />
           <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">

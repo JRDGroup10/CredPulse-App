@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { AppStateProvider, useAuth } from "./lib/AppContext";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
@@ -23,6 +23,7 @@ function Routed() {
   const { session, loading } = useAuth();
   const [showAuth, setShowAuth] = useState<"signup" | "login" | null>(null);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
 
   // Legal pages are public and don't depend on auth state.
   if (pathname === "/terms") return <Terms />;
@@ -32,9 +33,36 @@ function Routed() {
     return <Spinner />;
   }
 
+  // The public marketing homepage. Reachable from anywhere in the app (see the
+  // home icon in Layout.tsx) without signing anyone out — it just shows a
+  // different header/CTA depending on whether there's an active session.
+  if (pathname === "/home") {
+    return (
+      <Landing
+        loggedIn={!!session}
+        onGetStarted={() => {
+          setShowAuth("signup");
+          navigate("/");
+        }}
+        onLogin={() => {
+          setShowAuth("login");
+          navigate("/");
+        }}
+      />
+    );
+  }
+
   if (!session) {
     if (showAuth) {
-      return <Auth initialMode={showAuth} />;
+      return (
+        <Auth
+          initialMode={showAuth}
+          onBack={() => {
+            setShowAuth(null);
+            navigate("/home");
+          }}
+        />
+      );
     }
     return (
       <Landing
