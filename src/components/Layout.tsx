@@ -6,7 +6,8 @@ import { PLANS } from "../lib/plans";
 import { useTheme } from "../lib/ThemeContext";
 import Logo from "./Logo";
 import AccountMenu from "./AccountMenu";
-const NAV = [
+import TeamInviteBanner from "./TeamInviteBanner";
+const BASE_NAV = [
   { to: "/", label: "Dashboard" },
   { to: "/add", label: "Add Certificate" },
   { to: "/settings", label: "Settings" }
@@ -60,6 +61,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const { state } = useAppState();
   const plan = PLANS[state.profile.plan];
+  const isOrgAdmin =
+    !!state.profile.organizationId && (state.profile.orgRole === "owner" || state.profile.orgRole === "admin");
+  const nav = isOrgAdmin
+    ? [...BASE_NAV.slice(0, 2), { to: "/team", label: "Team" }, ...BASE_NAV.slice(2)]
+    : BASE_NAV;
 
   return (
     <div className="min-h-screen flex flex-col bg-surface dark:bg-slate-950 transition-colors">
@@ -72,7 +78,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
           <nav className="flex items-center gap-1">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -92,6 +98,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
+      <TeamInviteBanner />
       <main key={pathname} className="flex-1 max-w-3xl w-full mx-auto px-4 py-6 animate-fade-in-up">
         {children}
       </main>

@@ -18,13 +18,16 @@ export interface Extracted {
 
 type RegionVariant = Omit<Extracted, "issuedDate" | "expiryDate" | "confidence">;
 
-interface Template {
+export interface Template {
   match: RegExp;
   ca: RegionVariant;
   us: RegionVariant;
 }
 
-const KNOWN_TEMPLATES: Template[] = [
+// Exported so other features (e.g. the role-based signup checklist in
+// roleChecklist.ts) can reuse the exact same name/region matching instead of
+// duplicating this list and risking it drifting out of sync.
+export const KNOWN_TEMPLATES: Template[] = [
   {
     match: /bls|basic.life/i,
     ca: {

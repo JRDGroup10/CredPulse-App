@@ -60,11 +60,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Raw context access — used only at the top-level router to decide which screen to show. */
+/** Raw context access — used at the top-level router to decide which screen
+ * to show, and by pre-session flows like ClinicSignup that need to force a
+ * reload of profile/cert state right after creating an org (so the app
+ * reflects it immediately instead of waiting for the next natural reload). */
 export function useAuth() {
   const ctx = useContext(AppStateContext);
   if (!ctx) throw new Error("useAuth must be used within AppStateProvider");
-  return { session: ctx.session, loading: ctx.loading };
+  return { session: ctx.session, loading: ctx.loading, refresh: ctx.refresh };
 }
 
 /**

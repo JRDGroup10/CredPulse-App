@@ -3,6 +3,17 @@ export type CredStatus = "expired" | "urgent" | "upcoming" | "valid";
 export type Plan = "free" | "plus" | "pro";
 export type BillingCycle = "monthly" | "yearly";
 export type Region = "CA" | "US";
+export type OrgRole = "owner" | "admin" | "member";
+
+// Seat-based plans for clinics/teams — separate from the cert-count-based
+// individual Plan above. See src/lib/orgPlans.ts for pricing/seat limits.
+export type OrgPlan = "starter" | "team" | "clinic" | "business" | "enterprise";
+export type OrgSubscriptionStatus = "trialing" | "active" | "past_due" | "canceled" | "incomplete";
+
+// Whether a certificate counts against the clinic's unlimited allotment
+// (visible to the clinic admin) or the individual's own plan limit (private
+// to them). Meaningless/always "personal" for a user with no organization.
+export type CertScope = "clinic" | "personal";
 
 export interface Certificate {
   id: string;
@@ -16,6 +27,7 @@ export interface Certificate {
   notes?: string;
   tip?: string; // e.g. "Renew in person, book ahead — slots fill up." (Plus/Pro only)
   renewalUrl?: string; // direct link to the renewal/booking site (Plus/Pro only)
+  scope: CertScope;
 }
 
 export interface UserProfile {
@@ -26,9 +38,45 @@ export interface UserProfile {
   plan: Plan;
   billingCycle: BillingCycle;
   region: Region;
+  organizationId: string | null; // set once this user creates or joins a team
+  orgRole: OrgRole;
 }
 
 export interface AppState {
   profile: UserProfile;
   certificates: Certificate[];
+}
+
+// ============================================================
+// Team/Clinic compliance dashboard
+// ============================================================
+
+export interface Organization {
+  id: string;
+  name: string;
+  ownerId: string;
+  plan: OrgPlan;
+  billingCycle: BillingCycle;
+  subscriptionStatus: OrgSubscriptionStatus;
+  trialEndsAt: string | null;
+}
+
+export interface OrgMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string; // their healthcare role, e.g. "Registered Nurse"
+  orgRole: OrgRole;
+}
+
+export interface OrgInvite {
+  id: string;
+  email: string;
+  status: "pending" | "accepted" | "revoked";
+  createdAt: string;
+}
+
+export interface OrgInviteWithOrgName extends OrgInvite {
+  organizationId: string;
+  organizationName: string;
 }

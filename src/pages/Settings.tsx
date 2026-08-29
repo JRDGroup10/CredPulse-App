@@ -5,13 +5,18 @@ import { canUseTipsAndLinks, updateProfile } from "../lib/store";
 import { PLANS } from "../lib/plans";
 import { Region } from "../lib/types";
 import { PushStatus, getPushSubscriptionStatus, sendTestPush, subscribeToPush, unsubscribeFromPush } from "../lib/push";
+import TeamSettings from "../components/TeamSettings";
 
 const REMINDER_OPTIONS = [90, 60, 30, 14, 7, 3, 1];
 
 export default function Settings() {
   const { userId, state, refresh } = useAppState();
   const [saved, setSaved] = useState(false);
-  const canCustomize = canUseTipsAndLinks(state);
+  // Reminder-schedule customization applies across all of a person's certs
+  // (clinic and personal alike), not one at a time — so unlike per-cert tips
+  // and links, team membership alone unlocks it, same as before the
+  // clinic/personal cert-scope split existed.
+  const canCustomize = !!state.profile.organizationId || canUseTipsAndLinks(state);
   const plan = PLANS[state.profile.plan];
 
   const [pushStatus, setPushStatus] = useState<PushStatus>("checking");
@@ -86,6 +91,8 @@ export default function Settings() {
         <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Settings</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Your profile and reminder preferences.</p>
       </div>
+
+      <TeamSettings />
 
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
         <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-3">Profile</h2>

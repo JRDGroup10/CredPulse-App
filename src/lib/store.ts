@@ -1,6 +1,22 @@
 import { supabase } from "./supabaseClient";
-import { AppState, BillingCycle, Certificate, Plan, Region, UserProfile } from "./types";
+import {
+  AppState,
+  BillingCycle,
+  CertScope,
+  Certificate,
+  OrgInvite,
+  OrgInviteWithOrgName,
+  OrgMember,
+  OrgPlan,
+  OrgRole,
+  OrgSubscriptionStatus,
+  Organization,
+  Plan,
+  Region,
+  UserProfile
+} from "./types";
 import { PLANS } from "./plans";
+import { ORG_PLANS, nextOrgPlanAbove } from "./orgPlans";
 import { Extracted, enrichWithTemplate, mockExtractCertificate } from "./mockExtract";
 
 // ============================================================
@@ -15,7 +31,9 @@ function mapProfileRow(row: Record<string, unknown> | null, fallbackEmail: strin
     reminderDays: (row?.reminder_days as number[]) ?? [90, 30, 7],
     plan: ((row?.plan as Plan) ?? "free") as Plan,
     billingCycle: ((row?.billing_cycle as BillingCycle) ?? "monthly") as BillingCycle,
-    region: ((row?.region as Region) ?? "CA") as Region
+    region: ((row?.region as Region) ?? "CA") as Region,
+    organizationId: (row?.organization_id as string) ?? null,
+    orgRole: ((row?.org_role as OrgRole) ?? "member") as OrgRole
   };
 }
 
@@ -29,7 +47,8 @@ function mapCertRow(row: Record<string, unknown>): Certificate {
     expiryDate: row.expiry_date as string,
     filePath: (row.file_path as string) ?? undefined,
     tip: (row.tip as string) ?? undefined,
-    renewalUrl: (row.renewal_url as string) ?? undefined
+    renewalUrl: (row.renewal_url as string) ?? undefined,
+    scope: ((row.scope as CertScope) ?? "personal") as CertScope
   };
 }
 
@@ -37,13 +56,21 @@ function mapCertRow(row: Record<string, unknown>): Certificate {
 // Auth
 // ============================================================
 
+/**
+ * Returns the raw signUp result (not just void) because callers that need to
+ * act immediately afterward — like ClinicSignup creating the org right
+ * away — need the new user's id, and need to know whether a session came
+ * back immediately or whether email confirmation is required first (in
+ * which case `session` is null and there's no auth.uid() yet for RLS).
+ */
 export async function signUp(email: string, password: string, name: string, role: string, region: Region) {
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { name, role, region } }
   });
   if (error) throw error;
+  return data;
 }
 
 export async function signIn(email: string, password: string) {
@@ -88,6 +115,8 @@ export async function updateProfile(
     plan: Plan;
     billingCycle: BillingCycle;
     region: Region;
+    organizationId: string | null;
+    orgRole: OrgRole;
   }>
 ): Promise<void> {
   const dbPatch: Record<string, unknown> = {};
@@ -97,6 +126,8 @@ export async function updateProfile(
   if (patch.plan !== undefined) dbPatch.plan = patch.plan;
   if (patch.billingCycle !== undefined) dbPatch.billing_cycle = patch.billingCycle;
   if (patch.region !== undefined) dbPatch.region = patch.region;
+  if (patch.organizationId !== undefined) dbPatch.organization_id = patch.organizationId;
+  if (patch.orgRole !== undefined) dbPatch.org_role = patch.orgRole;
 
   const { error } = await supabase.from("profiles").update(dbPatch).eq("id", userId);
   if (error) throw error;
@@ -142,6 +173,37 @@ export async function startCheckout(
       err
     );
     await mockCheckout(userId, plan, billingCycle);
+    return { redirectUrl: null };
+  }
+}
+
+/**
+ * Starts a real Stripe Checkout session for a clinic/team's seat-based plan,
+ * with a free trial (see ORG_TRIAL_DAYS in orgPlans.ts) built into the
+ * subscription. Falls back to a no-op "demo trial" if the
+ * create-org-checkout-session Edge Function isn't deployed/configured yet —
+ * the org was already created with this plan/cycle and a trial_ends_at
+ * default from the database, so there's nothing more to do locally in that
+ * case; the caller can just continue as if checkout succeeded.
+ */
+export async function startOrgCheckout(
+  organizationId: string,
+  plan: OrgPlan,
+  billingCycle: BillingCycle
+): Promise<{ redirectUrl: string | null }> {
+  try {
+    const { data, error } = await supabase.functions.invoke("create-org-checkout-session", {
+      body: { organizationId, plan, billingCycle, origin: window.location.origin }
+    });
+    if (error) throw error;
+    if (!data?.url) throw new Error("No checkout URL returned");
+    return { redirectUrl: data.url as string };
+  } catch (err) {
+    console.warn(
+      "[CredPulse] Real Stripe org checkout unavailable, continuing with demo trial instead. " +
+        "Deploy create-org-checkout-session and set your Stripe org price secrets to enable it — see DEPLOYMENT.md.",
+      err
+    );
     return { redirectUrl: null };
   }
 }
@@ -238,7 +300,8 @@ export async function addCertificate(
     expiry_date: cert.expiryDate,
     tip: cert.tip || null,
     renewal_url: cert.renewalUrl || null,
-    file_path: filePath
+    file_path: filePath,
+    scope: cert.scope
   });
   if (error) throw error;
 }
@@ -259,19 +322,238 @@ export async function getCertificateFileUrl(filePath: string): Promise<string | 
 }
 
 // ============================================================
+// Organizations (Team/Clinic compliance dashboard)
+//
+// There's no separate "clinic signup" — any user can create a team here and
+// becomes its 'owner'; anyone they invite by email joins as 'member', either
+// automatically (if they don't have an account yet — see handle_new_user()
+// in supabase/organizations-schema.sql) or by accepting manually below.
+// ============================================================
+
+/**
+ * Creates a brand-new team/clinic. Every org needs a seat-based plan from
+ * the moment it exists — there's no "free" org tier, but new orgs start in
+ * the 'trialing' status for ORG_TRIAL_DAYS (see the trial_ends_at column
+ * default in organizations-schema.sql), so nothing gets billed immediately.
+ */
+export async function createOrganization(
+  userId: string,
+  name: string,
+  plan: OrgPlan,
+  billingCycle: BillingCycle
+): Promise<string> {
+  const { data, error } = await supabase
+    .from("organizations")
+    .insert({ name: name.trim(), owner_id: userId, plan, billing_cycle: billingCycle })
+    .select("id")
+    .single();
+  if (error) throw error;
+
+  const organizationId = data.id as string;
+  await updateProfile(userId, { organizationId, orgRole: "owner" });
+  return organizationId;
+}
+
+export async function getOrganization(organizationId: string): Promise<Organization | null> {
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("id, name, owner_id, plan, billing_cycle, subscription_status, trial_ends_at")
+    .eq("id", organizationId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return {
+    id: data.id as string,
+    name: data.name as string,
+    ownerId: data.owner_id as string,
+    plan: (data.plan as OrgPlan) ?? "starter",
+    billingCycle: (data.billing_cycle as BillingCycle) ?? "monthly",
+    subscriptionStatus: (data.subscription_status as OrgSubscriptionStatus) ?? "trialing",
+    trialEndsAt: (data.trial_ends_at as string) ?? null
+  };
+}
+
+/** How many of the org's seats are already spoken for — current members
+ * plus pending (not-yet-accepted) invites, so you can't over-invite past
+ * what you're paying for even before those invites are accepted. */
+export async function countOrgSeatsUsed(organizationId: string): Promise<number> {
+  const [membersRes, invitesRes] = await Promise.all([
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("organization_id", organizationId),
+    supabase
+      .from("organization_invites")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organizationId)
+      .eq("status", "pending")
+  ]);
+  if (membersRes.error) throw membersRes.error;
+  if (invitesRes.error) throw invitesRes.error;
+  return (membersRes.count ?? 0) + (invitesRes.count ?? 0);
+}
+
+export async function inviteToOrganization(organizationId: string, invitedBy: string, email: string): Promise<void> {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Enforce the seat limit before creating the invite — better to block
+  // here with a clear upgrade message than to let someone invite past what
+  // their plan covers.
+  const org = await getOrganization(organizationId);
+  if (org) {
+    const seatLimit = ORG_PLANS[org.plan].seatLimit;
+    const seatsUsed = await countOrgSeatsUsed(organizationId);
+    if (seatsUsed >= seatLimit) {
+      const suggestion = nextOrgPlanAbove(seatLimit);
+      throw new Error(
+        suggestion
+          ? `You've used all ${seatLimit} seats on your ${ORG_PLANS[org.plan].name} plan. Upgrade to ${ORG_PLANS[suggestion].name} to invite more teammates.`
+          : `You've used all ${seatLimit} seats on your ${ORG_PLANS[org.plan].name} plan.`
+      );
+    }
+  }
+
+  const { error } = await supabase.from("organization_invites").insert({
+    organization_id: organizationId,
+    invited_by: invitedBy,
+    email: normalizedEmail
+  });
+  if (error) throw error;
+
+  // Best-effort: let the invited person know by email. If this fails (mail
+  // service hiccup, secret not set yet, etc.) the invite row still exists —
+  // they'll still auto-join on signup, or see the accept banner on login.
+  try {
+    const [org, inviterProfile] = await Promise.all([
+      getOrganization(organizationId),
+      supabase.from("profiles").select("name").eq("id", invitedBy).maybeSingle()
+    ]);
+    await supabase.functions.invoke("send-team-invite", {
+      body: {
+        email: normalizedEmail,
+        organizationName: org?.name ?? "your team",
+        inviterName: (inviterProfile.data?.name as string) || "A CredPulse user"
+      }
+    });
+  } catch (err) {
+    console.warn("[CredPulse] Couldn't send invite email (invite was still created):", err);
+  }
+}
+
+export async function revokeInvite(inviteId: string): Promise<void> {
+  const { error } = await supabase.from("organization_invites").update({ status: "revoked" }).eq("id", inviteId);
+  if (error) throw error;
+}
+
+export async function listOrgInvites(organizationId: string): Promise<OrgInvite[]> {
+  const { data, error } = await supabase
+    .from("organization_invites")
+    .select("id, email, status, created_at")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    email: r.email as string,
+    status: r.status as OrgInvite["status"],
+    createdAt: r.created_at as string
+  }));
+}
+
+export async function listOrgMembers(organizationId: string): Promise<OrgMember[]> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, name, email, role, org_role")
+    .eq("organization_id", organizationId);
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    name: (r.name as string) ?? "",
+    email: r.email as string,
+    role: (r.role as string) ?? "",
+    orgRole: (r.org_role as OrgRole) ?? "member"
+  }));
+}
+
+/** Only ever returns 'clinic'-scoped certificates — a member's 'personal'
+ * ones are never visible to the org admin, by design (see certLimit/
+ * canUseTipsAndLinks below for how scope affects billing on the member's
+ * side). This is the only place the manager dashboard (Team.tsx) reads
+ * member certificates from, so that privacy boundary is enforced in one
+ * spot rather than trusted to every caller. */
+export async function listOrgMemberCertificates(memberUserId: string): Promise<Certificate[]> {
+  const { data, error } = await supabase
+    .from("certificates")
+    .select("*")
+    .eq("user_id", memberUserId)
+    .eq("scope", "clinic")
+    .order("expiry_date", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(mapCertRow);
+}
+
+/** Pending invites addressed to this email — surfaced to an existing user as
+ * an "accept your team invite" prompt (see App.tsx). */
+export async function getPendingInvitesForEmail(email: string): Promise<OrgInviteWithOrgName[]> {
+  const { data, error } = await supabase
+    .from("organization_invites")
+    .select("id, email, status, created_at, organization_id, organizations(name)")
+    .eq("email", email.trim().toLowerCase())
+    .eq("status", "pending");
+  if (error) throw error;
+  return (data ?? []).map((r: Record<string, unknown>) => ({
+    id: r.id as string,
+    email: r.email as string,
+    status: r.status as OrgInvite["status"],
+    createdAt: r.created_at as string,
+    organizationId: r.organization_id as string,
+    organizationName: ((r.organizations as { name?: string } | null)?.name as string) ?? "your team"
+  }));
+}
+
+export async function acceptOrganizationInvite(
+  userId: string,
+  invite: { id: string; organizationId: string }
+): Promise<void> {
+  await updateProfile(userId, { organizationId: invite.organizationId, orgRole: "member" });
+  const { error } = await supabase
+    .from("organization_invites")
+    .update({ status: "accepted", accepted_at: new Date().toISOString() })
+    .eq("id", invite.id);
+  if (error) throw error;
+}
+
+// ============================================================
 // Pure helpers — plan/date logic, no storage dependency, unchanged
 // regardless of where the data lives.
 // ============================================================
 
+// A team member's certificates aren't automatically all "covered" just by
+// being on a team — only the ones they mark 'clinic' scope are unlimited
+// and funded by the clinic's seat. Anything they mark 'personal' still
+// counts against their own individual plan (free/plus/pro), same as if they
+// weren't on a team at all. certLimit() is that individual-plan number;
+// certLimitReached()/canUseTipsAndLinks() are the two places that need to
+// know which bucket (clinic vs personal) a given certificate falls into.
 export function certLimit(state: AppState): number {
   return PLANS[state.profile.plan].certLimit;
 }
 
-export function certLimitReached(state: AppState): boolean {
-  return state.certificates.length >= certLimit(state);
+/** Whether adding one more certificate of the given scope would be blocked.
+ * 'clinic' is never blocked (unlimited, paid for by the org's seat) —
+ * only 'personal' certs count against the individual plan's limit, and for
+ * a user with no organization at all, everything they add is implicitly
+ * 'personal' anyway. */
+export function certLimitReached(state: AppState, scope: CertScope = "personal"): boolean {
+  if (scope === "clinic") return false;
+  const relevantCount = state.profile.organizationId
+    ? state.certificates.filter((c) => c.scope === "personal").length
+    : state.certificates.length;
+  return relevantCount >= certLimit(state);
 }
 
-export function canUseTipsAndLinks(state: AppState): boolean {
+/** 'clinic'-scoped certs always get renewal tips/links (part of what the
+ * clinic's seat pays for); 'personal' ones follow the individual's own plan,
+ * same as a user with no organization at all. */
+export function canUseTipsAndLinks(state: AppState, scope: CertScope = "personal"): boolean {
+  if (scope === "clinic") return true;
   return PLANS[state.profile.plan].includesTipsAndLinks;
 }
 

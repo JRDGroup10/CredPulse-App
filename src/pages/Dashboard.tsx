@@ -1,21 +1,83 @@
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppState } from "../lib/AppContext";
-import { certLimit, daysUntil, removeCertificate, statusFor } from "../lib/store";
+import { canUseTipsAndLinks, certLimit, daysUntil, removeCertificate, statusFor } from "../lib/store";
 import { PLANS } from "../lib/plans";
+import { CertScope, CredStatus } from "../lib/types";
 import CertCard from "../components/CertCard";
 import CountUp from "../components/CountUp";
 import ProgressRing from "../components/ProgressRing";
+import RoleChecklistCard from "../components/RoleChecklistCard";
+import InviteTeamPrompt from "../components/InviteTeamPrompt";
 
 const ORDER: Record<string, number> = { expired: 0, urgent: 1, upcoming: 2, valid: 3 };
 
+type StatusFilter = "all" | CredStatus;
+type ScopeFilter = "all" | CertScope;
+type SortMode = "expiry-soonest" | "expiry-furthest" | "name";
+
 export default function Dashboard() {
   const { state, refresh } = useAppState();
+  const isOrgMember = !!state.profile.organizationId;
 
-  const sorted = [...state.certificates].sort((a, b) => {
-    const byStatus = ORDER[statusFor(a.expiryDate)] - ORDER[statusFor(b.expiryDate)];
-    if (byStatus !== 0) return byStatus;
-    return daysUntil(a.expiryDate) - daysUntil(b.expiryDate);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("all");
+  const [sortMode, setSortMode] = useState<SortMode>("expiry-soonest");
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const filtered = state.certificates.filter((c) => {
+    if (statusFilter !== "all" && statusFor(c.expiryDate) !== statusFilter) return false;
+    if (scopeFilter !== "all" && c.scope !== scopeFilter) return false;
+    return true;
   });
+
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      if (sortMode === "name") return a.name.localeCompare(b.name);
+      const byStatus = ORDER[statusFor(a.expiryDate)] - ORDER[statusFor(b.expiryDate)];
+      if (sortMode === "expiry-furthest") {
+        return daysUntil(b.expiryDate) - daysUntil(a.expiryDate);
+      }
+      if (byStatus !== 0) return byStatus;
+      return daysUntil(a.expiryDate) - daysUntil(b.expiryDate);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered, sortMode]);
+
+  const filtersActive = statusFilter !== "all" || scopeFilter !== "all";
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function exitBulkMode() {
+    setBulkMode(false);
+    setSelectedIds(new Set());
+  }
+
+  async function handleBulkDelete() {
+    if (selectedIds.size === 0) return;
+    const ok = window.confirm(
+      `Remove ${selectedIds.size} certificate${selectedIds.size === 1 ? "" : "s"}? This can't be undone.`
+    );
+    if (!ok) return;
+    setBulkDeleting(true);
+    try {
+      const targets = state.certificates.filter((c) => selectedIds.has(c.id));
+      await Promise.all(targets.map((c) => removeCertificate(c.id, c.filePath)));
+      await refresh();
+      exitBulkMode();
+    } finally {
+      setBulkDeleting(false);
+    }
+  }
 
   const total = state.certificates.length;
   const expiredCount = state.certificates.filter((c) => statusFor(c.expiryDate) === "expired").length;
@@ -24,7 +86,11 @@ export default function Dashboard() {
   const limit = certLimit(state);
   const isUnlimited = !Number.isFinite(limit);
   const plan = PLANS[state.profile.plan];
-  const usagePct = isUnlimited ? 0 : Math.min(100, (total / limit) * 100);
+  // The plan-usage bar only ever tracks 'personal' certs for a team member —
+  // clinic-scoped ones are unlimited and shouldn't count against it. For
+  // anyone with no organization, that's just all of their certificates.
+  const relevantCount = isOrgMember ? state.certificates.filter((c) => c.scope === "personal").length : total;
+  const usagePct = isUnlimited ? 0 : Math.min(100, (relevantCount / limit) * 100);
   const healthPct = total === 0 ? 0 : Math.round((validCount / total) * 100);
 
   const upcoming = sorted.filter((c) => statusFor(c.expiryDate) !== "valid").slice(0, 3);
@@ -51,6 +117,9 @@ export default function Dashboard() {
           + Add certificate
         </Link>
       </div>
+
+      <RoleChecklistCard />
+      <InviteTeamPrompt />
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -89,9 +158,9 @@ export default function Dashboard() {
             <ProgressRing pct={usagePct} color={usagePct >= 100 ? "#ef4444" : "#2563eb"} size={28} stroke={4} />
           </div>
           <div className="flex-1 text-xs text-slate-500 dark:text-slate-400">
-            {state.certificates.length} of {limit} certificates used on the {plan.name} plan
+            {relevantCount} of {limit} {isOrgMember ? "personal " : ""}certificates used on the {plan.name} plan
           </div>
-          {state.certificates.length >= limit && (
+          {relevantCount >= limit && (
             <Link to="/billing" className="text-xs font-semibold text-brand-600 dark:text-brand-400 whitespace-nowrap">
               Upgrade
             </Link>
@@ -146,7 +215,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {sorted.length === 0 ? (
+      {total === 0 ? (
         <div className="text-center py-16 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400">
           <p className="mb-3">No certifications tracked yet.</p>
           <Link to="/add" className="text-brand-600 dark:text-brand-400 font-medium">
@@ -154,13 +223,100 @@ export default function Dashboard() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
-          {sorted.map((cert, i) => (
-            <div key={cert.id} style={{ animationDelay: `${i * 50}ms` }} className="animate-fade-in-up">
-              <CertCard cert={cert} onRemove={handleRemove} />
+        <>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400"
+            >
+              <option value="all">All statuses</option>
+              <option value="expired">Expired</option>
+              <option value="urgent">Renew now</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="valid">Valid</option>
+            </select>
+
+            {isOrgMember && (
+              <select
+                value={scopeFilter}
+                onChange={(e) => setScopeFilter(e.target.value as ScopeFilter)}
+                className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400"
+              >
+                <option value="all">Clinic &amp; personal</option>
+                <option value="clinic">Clinic only</option>
+                <option value="personal">Personal only</option>
+              </select>
+            )}
+
+            <select
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value as SortMode)}
+              className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400"
+            >
+              <option value="expiry-soonest">Sort: expiring soonest</option>
+              <option value="expiry-furthest">Sort: expiring furthest</option>
+              <option value="name">Sort: name A–Z</option>
+            </select>
+
+            <button
+              onClick={() => (bulkMode ? exitBulkMode() : setBulkMode(true))}
+              className={`ml-auto text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
+                bulkMode
+                  ? "border-brand-300 dark:border-brand-700 bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300"
+                  : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
+              }`}
+            >
+              {bulkMode ? "Done selecting" : "Select multiple"}
+            </button>
+          </div>
+
+          {bulkMode && (
+            <div className="mb-4 flex items-center gap-3 bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-lg px-3 py-2.5">
+              <span className="text-xs text-slate-500 dark:text-slate-400 flex-1">
+                {selectedIds.size === 0 ? "Select certificates to remove" : `${selectedIds.size} selected`}
+              </span>
+              <button
+                onClick={handleBulkDelete}
+                disabled={selectedIds.size === 0 || bulkDeleting}
+                className="text-xs font-semibold text-red-600 dark:text-red-400 disabled:opacity-40 hover:text-red-700 dark:hover:text-red-300"
+              >
+                {bulkDeleting ? "Removing…" : "Remove selected"}
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+
+          {sorted.length === 0 ? (
+            <div className="text-center py-12 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400">
+              <p className="mb-2">No certificates match this filter.</p>
+              <button
+                onClick={() => {
+                  setStatusFilter("all");
+                  setScopeFilter("all");
+                }}
+                className="text-brand-600 dark:text-brand-400 font-medium text-sm"
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sorted.map((cert, i) => (
+                <div key={cert.id} style={{ animationDelay: `${i * 50}ms` }} className="animate-fade-in-up">
+                  <CertCard
+                    cert={cert}
+                    onRemove={handleRemove}
+                    canUseTipsAndLinks={canUseTipsAndLinks(state, cert.scope)}
+                    showScopeBadge={isOrgMember}
+                    selectable={bulkMode}
+                    selected={selectedIds.has(cert.id)}
+                    onToggleSelect={toggleSelect}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

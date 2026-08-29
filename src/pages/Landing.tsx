@@ -154,6 +154,24 @@ export default function Landing({
             </div>
           </div>
         </div>
+
+        {/* Trust signals — every line here is a true, checkable statement
+            (see Privacy.tsx / Terms.tsx), never a fabricated stat or badge. */}
+        <div className="relative max-w-4xl mx-auto px-4 pb-14">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            {[
+              { icon: "🔒", label: "Data encrypted, never sold" },
+              { icon: "🇨🇦🇺🇸", label: "Built for CA & US compliance rules" },
+              { icon: "↩️", label: "Cancel anytime, no contract" },
+              { icon: "🚫", label: "No spam — only cert reminders" }
+            ].map((item) => (
+              <div key={item.label} className="flex flex-col items-center gap-1.5 text-xs font-medium text-slate-500">
+                <span className="text-lg">{item.icon}</span>
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* What we do */}
@@ -176,6 +194,54 @@ export default function Landing({
           </div>
           <div className="max-w-xs mx-auto md:max-w-none">
             <MedicalIllustration />
+          </div>
+        </div>
+      </section>
+
+      {/* Built for teams and individuals */}
+      <section className="max-w-5xl mx-auto px-4 py-16">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 text-center mb-3">Built for how you actually work</h2>
+        <p className="text-slate-500 text-center max-w-xl mx-auto mb-10">
+          Whether you're tracking your own credentials or responsible for a whole clinic's compliance,
+          CredPulse fits the job.
+        </p>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="border border-slate-200 rounded-2xl p-6 bg-white hover:shadow-glow hover:border-brand-200 hover:-translate-y-1 transition-all duration-300">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-50 to-accent-50 flex items-center justify-center text-2xl mb-4">
+              🏥
+            </div>
+            <div className="text-xs font-semibold tracking-wide text-brand-600 uppercase mb-1">
+              For clinics &amp; healthcare teams
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-3">One dashboard for your whole staff's compliance</h3>
+            <ul className="space-y-2 text-sm text-slate-600 list-disc list-inside">
+              <li>Invite your team — clinic-covered certifications roll up into one manager view</li>
+              <li>See at a glance who's expired, who's due soon, and who hasn't onboarded yet</li>
+              <li>Grouped by certification, so you can answer "who's covered for CPR?" in seconds</li>
+              <li>Each staff member keeps their own personal certificates private, unless they choose to share one with the clinic</li>
+              <li>Priced per seat, not per certificate — plans from $25/mo for up to 5 people</li>
+            </ul>
+            <button
+              onClick={() => navigate("/signup/clinic")}
+              className="mt-5 w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg shadow-sm transition-all hover:-translate-y-0.5"
+            >
+              Set up your clinic
+            </button>
+          </div>
+          <div className="border border-slate-200 rounded-2xl p-6 bg-white hover:shadow-glow hover:border-brand-200 hover:-translate-y-1 transition-all duration-300">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-50 to-accent-50 flex items-center justify-center text-2xl mb-4">
+              🧑‍⚕️
+            </div>
+            <div className="text-xs font-semibold tracking-wide text-brand-600 uppercase mb-1">
+              For individual healthcare workers
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-3">Your own certifications, tracked automatically</h3>
+            <ul className="space-y-2 text-sm text-slate-600 list-disc list-inside">
+              <li>Upload a photo or PDF — CredPulse reads the details for you</li>
+              <li>Reminders sent with enough lead time to actually book a renewal</li>
+              <li>A starter checklist of what's typically needed for your specific role</li>
+              <li>Upgrade any time to invite coworkers and start a team</li>
+            </ul>
           </div>
         </div>
       </section>
