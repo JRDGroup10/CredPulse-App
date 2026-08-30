@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BillingCycle, Plan } from "../lib/types";
+import { setIndustryPref } from "../lib/industryPref";
 import PricingCards from "../components/PricingCards";
 import MedicalIllustration from "../components/MedicalIllustration";
 import Logo from "../components/Logo";
@@ -45,6 +46,13 @@ export default function Landing({
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const navigate = useNavigate();
 
+  // Landing here (via the chooser, a direct link, or a bookmark) means this
+  // visitor is a healthcare one — remember it so their next visit to "/"
+  // skips the chooser. See lib/industryPref.ts.
+  useEffect(() => {
+    setIndustryPref("healthcare");
+  }, []);
+
   // Signed-in visitors land here via the homepage button, not the signup/login
   // flow — clicking a pricing card should take them to billing, not sign-up.
   function handlePricingAction(_plan: Plan) {
@@ -61,7 +69,13 @@ export default function Landing({
       <header className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <Logo markClassName="w-8 h-8" textClassName="text-base" themeAware={false} />
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Link
+              to="/choose"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-300 rounded-full px-3 py-1.5 transition-colors"
+            >
+              🏗️ Not healthcare? Browse other industries
+            </Link>
             {loggedIn ? (
               <Link
                 to="/"
@@ -129,10 +143,7 @@ export default function Landing({
           </div>
           {!loggedIn && (
             <p className="mt-4 text-xs text-slate-400 animate-fade-in-up" style={{ animationDelay: "280ms" }}>
-              No credit card required for the free plan. Not in healthcare?{" "}
-              <Link to="/industries" className="font-medium text-brand-600 underline">
-                See construction, schools &amp; policing →
-              </Link>
+              No credit card required for the free plan.
             </p>
           )}
 

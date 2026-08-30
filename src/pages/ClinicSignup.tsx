@@ -5,7 +5,8 @@ import { createOrganization, signUp, startOrgCheckout } from "../lib/store";
 import { savePendingClinicSetup } from "../lib/pendingClinicSetup";
 import { supabaseConfigured } from "../lib/supabaseClient";
 import { BillingCycle, OrgPlan, Region } from "../lib/types";
-import { rolesForRegion } from "../lib/roles";
+import { orderedRoleGroups } from "../lib/roles";
+import { getIndustryPref, marketingHomePath } from "../lib/industryPref";
 import { LogoMark } from "../components/Logo";
 import TierPicker from "../components/TierPicker";
 
@@ -28,8 +29,13 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
   const [clinicName, setClinicName] = useState("");
   const [name, setName] = useState("");
   const [region, setRegion] = useState<Region>("CA");
-  const roles = useMemo(() => rolesForRegion(region), [region]);
-  const [role, setRole] = useState(roles[0]);
+  // Which group of roles leads the dropdown — the group matching whichever
+  // side of the homepage split-screen chooser this visitor picked (see
+  // lib/industryPref.ts), so a school board admin setting up a team doesn't
+  // have to scroll past two dozen healthcare titles to find their own.
+  const preferOther = useMemo(() => getIndustryPref() === "other", []);
+  const roleGroups = useMemo(() => orderedRoleGroups(region, preferOther), [region, preferOther]);
+  const [role, setRole] = useState(roleGroups[0].roles[0]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -41,8 +47,8 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
 
   function handleRegionChange(next: Region) {
     setRegion(next);
-    const nextRoles = rolesForRegion(next);
-    if (!nextRoles.includes(role)) setRole(nextRoles[0]);
+    const nextGroups = orderedRoleGroups(next, preferOther);
+    if (!nextGroups.some((g) => g.roles.includes(role))) setRole(nextGroups[0].roles[0]);
   }
 
   if (!supabaseConfigured) {
@@ -193,8 +199,12 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
               >
-                {roles.map((r) => (
-                  <option key={r}>{r}</option>
+                {roleGroups.map((g) => (
+                  <optgroup label={g.label} key={g.label}>
+                    {g.roles.map((r) => (
+                      <option key={r}>{r}</option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
@@ -234,7 +244,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
 
             <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
               Signing up as an individual instead?{" "}
-              <Link to="/home" className="font-medium text-brand-600 dark:text-brand-400">
+              <Link to={marketingHomePath()} className="font-medium text-brand-600 dark:text-brand-400">
                 Go back
               </Link>
             </p>

@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { signOut } from "../lib/store";
 import { UserProfile } from "../lib/types";
+import { marketingHomePath } from "../lib/industryPref";
 
 function initials(profile: UserProfile): string {
   const source = (profile.name || "").trim() || profile.email || "";
@@ -70,7 +71,7 @@ export default function AccountMenu({ profile, planName }: { profile: UserProfil
           Settings
         </Link>
         <Link
-          to="/home"
+          to={marketingHomePath()}
           onClick={close}
           className="block px-1 py-1.5 text-sm rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
         >

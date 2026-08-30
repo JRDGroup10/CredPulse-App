@@ -78,10 +78,13 @@ const ROLE_KEYWORDS: Record<string, string[]> = {
   // KNOWN_TEMPLATES.
   "Construction Worker / Site Supervisor": ["fall protection", "confined space", "whmis"],
   "Crane / Heavy Equipment Operator": ["crane operator", "forklift", "whmis"],
+  "Other construction worker": ["fall protection", "whmis"],
   "Teacher / Education Staff": ["vulnerable", "first aid", "mental health first aid"],
   "School Support Staff (EA, Custodial, Cafeteria)": ["vulnerable", "food handler", "whmis"],
+  "Other education staff": ["vulnerable", "first aid"],
   "Police Officer": ["use of force", "firearms qualif", "first aid"],
-  "Police Support / Dispatch": ["vulnerable", "crisis intervention", "first aid"]
+  "Police Support / Dispatch": ["vulnerable", "crisis intervention", "first aid"],
+  "Other public safety worker": ["first aid", "vulnerable"]
 };
 
 // Fallback for "Other healthcare worker" and any role not explicitly listed

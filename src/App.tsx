@@ -9,6 +9,8 @@ import Team from "./pages/Team";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
 import Industries from "./pages/Industries";
+import IndustryChooser from "./pages/IndustryChooser";
+import { getIndustryPref, marketingHomePath } from "./lib/industryPref";
 import JoinTeam from "./pages/JoinTeam";
 import ClinicSignup from "./pages/ClinicSignup";
 import Billing from "./pages/Billing";
@@ -40,6 +42,13 @@ function Routed() {
   // Legal pages are public and don't depend on auth state.
   if (pathname === "/terms") return <Terms />;
   if (pathname === "/privacy") return <Privacy />;
+
+  // Split-screen industry chooser — always reachable here, regardless of any
+  // remembered preference, so "Switch industry" links (see Landing.tsx and
+  // Industries.tsx headers) always land on a real choice, not a redirect.
+  if (pathname === "/choose") {
+    return <IndustryChooser />;
+  }
 
   if (loading) {
     return <Spinner />;
@@ -113,7 +122,7 @@ function Routed() {
     }
     return (
       <ClinicSignup
-        onBack={() => navigate("/home")}
+        onBack={() => navigate(marketingHomePath())}
         onLogin={() => {
           setShowAuth("login");
           navigate("/");
@@ -131,8 +140,24 @@ function Routed() {
           onBack={() => {
             setShowAuth(null);
             setJoiningOrgName(null);
-            navigate("/home");
+            navigate(marketingHomePath());
           }}
+        />
+      );
+    }
+    // Fresh, undecided visitor — show the split-screen chooser instead of
+    // assuming healthcare. Returning visitors who already picked a side
+    // skip straight to their industry's page (still switchable via
+    // "/choose" — see the header link on both Landing.tsx and Industries.tsx).
+    const pref = getIndustryPref();
+    if (!pref) {
+      return <IndustryChooser />;
+    }
+    if (pref === "other") {
+      return (
+        <Industries
+          onGetStarted={() => setShowAuth("signup")}
+          onLogin={() => setShowAuth("login")}
         />
       );
     }

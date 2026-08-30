@@ -4,6 +4,7 @@ import { useAppState } from "../lib/AppContext";
 import { signOut } from "../lib/store";
 import { PLANS } from "../lib/plans";
 import { useTheme } from "../lib/ThemeContext";
+import { marketingHomePath } from "../lib/industryPref";
 import Logo from "./Logo";
 import AccountMenu from "./AccountMenu";
 import TeamInviteBanner from "./TeamInviteBanner";
@@ -43,7 +44,7 @@ function ThemeToggle() {
 function HomeButton() {
   return (
     <Link
-      to="/home"
+      to={marketingHomePath()}
       title="Visit homepage"
       aria-label="Visit homepage"
       className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition"

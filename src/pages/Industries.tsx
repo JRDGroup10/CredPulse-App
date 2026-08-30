@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { setIndustryPref } from "../lib/industryPref";
 import Logo from "../components/Logo";
 
 // Same backend as the healthcare product (see Landing.tsx) — organizations,
@@ -36,15 +38,26 @@ export default function Industries({
 }) {
   const navigate = useNavigate();
 
+  // Landing here (via the chooser, a direct link, or a bookmark) means this
+  // visitor isn't a healthcare one — remember it so their next visit to "/"
+  // skips the chooser. See lib/industryPref.ts.
+  useEffect(() => {
+    setIndustryPref("other");
+  }, []);
+
   return (
     <div className="bg-surface">
       {/* Nav */}
       <header className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/home">
-            <Logo markClassName="w-8 h-8" textClassName="text-base" themeAware={false} />
-          </Link>
-          <div className="flex items-center gap-4">
+          <Logo markClassName="w-8 h-8" textClassName="text-base" themeAware={false} />
+          <div className="flex items-center gap-3">
+            <Link
+              to="/choose"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-300 rounded-full px-3 py-1.5 transition-colors"
+            >
+              🏥 Healthcare instead? Switch industries
+            </Link>
             <button onClick={onLogin} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
               Log in
             </button>

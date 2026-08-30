@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { signIn, signUp } from "../lib/store";
 import { supabaseConfigured } from "../lib/supabaseClient";
 import { Region } from "../lib/types";
-import { rolesForRegion } from "../lib/roles";
+import { orderedRoleGroups } from "../lib/roles";
+import { getIndustryPref } from "../lib/industryPref";
 import { LogoMark } from "../components/Logo";
 type Mode = "signup" | "login";
 
@@ -24,8 +25,13 @@ export default function Auth({
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
   const [region, setRegion] = useState<Region>("CA");
-  const roles = useMemo(() => rolesForRegion(region), [region]);
-  const [role, setRole] = useState(roles[0]);
+  // Which group of roles leads the dropdown — the group matching whichever
+  // side of the homepage split-screen chooser this visitor picked (see
+  // lib/industryPref.ts), so a construction worker signing up doesn't have
+  // to scroll past two dozen healthcare titles to find their own.
+  const preferOther = useMemo(() => getIndustryPref() === "other", []);
+  const roleGroups = useMemo(() => orderedRoleGroups(region, preferOther), [region, preferOther]);
+  const [role, setRole] = useState(roleGroups[0].roles[0]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,8 +40,8 @@ export default function Auth({
 
   function handleRegionChange(next: Region) {
     setRegion(next);
-    const nextRoles = rolesForRegion(next);
-    if (!nextRoles.includes(role)) setRole(nextRoles[0]);
+    const nextGroups = orderedRoleGroups(next, preferOther);
+    if (!nextGroups.some((g) => g.roles.includes(role))) setRole(nextGroups[0].roles[0]);
   }
 
   if (!supabaseConfigured) {
@@ -173,8 +179,12 @@ export default function Auth({
                   onChange={(e) => setRole(e.target.value)}
                   className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
                 >
-                  {roles.map((r) => (
-                    <option key={r}>{r}</option>
+                  {roleGroups.map((g) => (
+                    <optgroup label={g.label} key={g.label}>
+                      {g.roles.map((r) => (
+                        <option key={r}>{r}</option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </div>
