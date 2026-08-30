@@ -96,7 +96,7 @@ export default function Settings() {
 
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
         <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-3">Profile</h2>
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
             <div className="text-xs text-slate-400 dark:text-slate-500">Name</div>
             <div className="text-slate-700 dark:text-slate-200">{state.profile.name}</div>
