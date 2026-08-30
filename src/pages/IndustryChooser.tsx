@@ -73,7 +73,7 @@ export default function IndustryChooser() {
                   ? "bg-gradient-to-br from-brand-600 to-brand-500"
                   : "bg-slate-900"
                 : hovered === "other"
-                ? "bg-gradient-to-br from-slate-700 to-slate-600"
+                ? "bg-gradient-to-br from-amber-600 to-orange-500"
                 : "bg-slate-950"
             }`}
           >

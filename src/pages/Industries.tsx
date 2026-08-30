@@ -63,7 +63,7 @@ export default function Industries({
             </button>
             <button
               onClick={onGetStarted}
-              className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all hover:-translate-y-0.5"
+              className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow-amber transition-all hover:-translate-y-0.5"
             >
               Get started free
             </button>
@@ -74,16 +74,19 @@ export default function Industries({
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-brand-300/30 rounded-full blur-3xl animate-float-slow" />
-          <div className="absolute top-10 -right-24 w-[28rem] h-[28rem] bg-accent-500/20 rounded-full blur-3xl animate-float-slower" />
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-amber-300/30 rounded-full blur-3xl animate-float-slow" />
+          <div className="absolute top-10 -right-24 w-[28rem] h-[28rem] bg-orange-400/20 rounded-full blur-3xl animate-float-slower" />
         </div>
         <div className="relative max-w-5xl mx-auto px-4 pt-16 pb-14 text-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-brand-700 bg-white/70 backdrop-blur border border-brand-100 px-3 py-1.5 rounded-full mb-5 shadow-sm animate-fade-in-up">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-amber-800 bg-white/70 backdrop-blur border border-amber-200 px-3 py-1.5 rounded-full mb-5 shadow-sm animate-fade-in-up">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             FOR ANY JOB THAT REQUIRES A CERTIFICATION TO STAY ELIGIBLE TO WORK
           </span>
           <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.05] animate-fade-in-up" style={{ animationDelay: "80ms" }}>
-            Certification tracking<br className="hidden sm:block" /> for <span className="text-gradient">any regulated workplace.</span>
+            Certification tracking<br className="hidden sm:block" /> for{" "}
+            <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 bg-clip-text text-transparent">
+              any regulated workplace.
+            </span>
           </h1>
           <p className="mt-6 text-lg text-slate-500 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "160ms" }}>
             CredPulse started in healthcare, but the problem it solves — a required certification quietly
@@ -94,7 +97,7 @@ export default function Industries({
           <div className="mt-8 flex items-center justify-center gap-3 animate-fade-in-up" style={{ animationDelay: "240ms" }}>
             <button
               onClick={onGetStarted}
-              className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow transition-all hover:-translate-y-0.5"
+              className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow-amber transition-all hover:-translate-y-0.5"
             >
               Get started — it's free
             </button>
@@ -123,9 +126,9 @@ export default function Industries({
             {INDUSTRIES.map((ind) => (
               <div
                 key={ind.title}
-                className="border border-slate-200 rounded-2xl p-6 bg-white hover:shadow-glow hover:border-brand-200 hover:-translate-y-1 transition-all duration-300"
+                className="border border-slate-200 rounded-2xl p-6 bg-white hover:shadow-glow-amber hover:border-amber-300 hover:-translate-y-1 transition-all duration-300"
               >
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-50 to-accent-50 flex items-center justify-center text-2xl mb-4">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center text-2xl mb-4">
                   {ind.icon}
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 mb-2">{ind.title}</h3>
@@ -133,7 +136,7 @@ export default function Industries({
                 <ul className="space-y-1.5 text-xs text-slate-500">
                   {ind.examples.map((ex) => (
                     <li key={ex} className="flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-brand-400 flex-shrink-0" />
+                      <span className="w-1 h-1 rounded-full bg-amber-500 flex-shrink-0" />
                       {ex}
                     </li>
                   ))}
@@ -189,7 +192,7 @@ export default function Industries({
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <button
               onClick={onGetStarted}
-              className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow transition-all hover:-translate-y-0.5"
+              className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow-amber transition-all hover:-translate-y-0.5"
             >
               Track my own certifications
             </button>
@@ -202,7 +205,7 @@ export default function Industries({
           </div>
           <p className="mt-6 text-sm text-slate-400">
             Working in healthcare instead?{" "}
-            <Link to="/home" className="font-medium text-brand-600">See the healthcare-focused page →</Link>
+            <Link to="/home" className="font-medium text-amber-700">See the healthcare-focused page →</Link>
           </p>
         </div>
       </section>

@@ -31,7 +31,10 @@ export default {
       },
       boxShadow: {
         card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12)",
-        glow: "0 0 0 1px rgba(37, 99, 235, 0.08), 0 20px 40px -12px rgba(37, 99, 235, 0.35)"
+        glow: "0 0 0 1px rgba(37, 99, 235, 0.08), 0 20px 40px -12px rgba(37, 99, 235, 0.35)",
+        // Amber/orange equivalent of "glow", used on the /industries page so
+        // its accent color doesn't come out blue-tinted in the shadows.
+        "glow-amber": "0 0 0 1px rgba(217, 119, 6, 0.08), 0 20px 40px -12px rgba(217, 119, 6, 0.35)"
       },
       keyframes: {
         fadeInUp: {
