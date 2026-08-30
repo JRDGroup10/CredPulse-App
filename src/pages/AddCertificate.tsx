@@ -152,7 +152,7 @@ export default function AddCertificate() {
             >
               <div className="text-4xl mb-3">📄</div>
               <p className="font-medium text-slate-700 dark:text-slate-200">Click to upload, or drag a file here</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">JPG, PNG, or PDF — try naming it "bls.pdf" or "n95.jpg" for a demo match</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">JPG, PNG, or PDF — up to 10MB</p>
               <input
                 ref={fileInput}
                 type="file"

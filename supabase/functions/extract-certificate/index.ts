@@ -1,33 +1,52 @@
-// Supabase Edge Function — real AI certificate extraction.
+// Supabase Edge Function — reads an uploaded certificate (image or PDF)
+// with Claude's vision capability and returns structured fields. This is
+// the ONLY piece of "AI extraction" in the app — everything downstream
+// (attaching a renewal tip/link, matching a known template) happens
+// client-side in src/lib/mockExtract.ts's enrichWithTemplate(), which this
+// function's output feeds into. Keep this function's job narrow: read the
+// document, return { name, issuer, credentialType, issuedDate, expiryDate,
+// confidence } as JSON. Nothing else.
 //
-// Receives an uploaded certificate photo/PDF from the client, sends it to
-// Claude (Anthropic's vision-capable model) with a strict extraction prompt,
-// and returns structured JSON. This function requires a valid Supabase user
-// session (Supabase verifies the JWT automatically before invoking it) and
-// the ANTHROPIC_API_KEY secret to be set — see DEPLOYMENT.md.
+// Called from src/lib/store.ts's extractCertificate(), which falls back to
+// the local demo extractor (mockExtractCertificate) if this function isn't
+// deployed, ANTHROPIC_API_KEY isn't set, or anything here throws — so the
+// app keeps working end-to-end either way. That fallback is silent by
+// design (console.warn only), so if uploads still look demo-ish after
+// deploying this, check the browser console for that warning first.
+//
+// Requires the ANTHROPIC_API_KEY secret:
+//   supabase secrets set ANTHROPIC_API_KEY=sk-ant-your-key-here
 //
 // Deploy with:
 //   supabase functions deploy extract-certificate
-// Set the secret once with:
-//   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 
 import { corsHeaders } from "../_shared/cors.ts";
 
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-const MODEL = "claude-sonnet-5";
-const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15MB — Anthropic's per-file limit
+const MODEL = "claude-haiku-4-5-20251001";
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB — comfortably under Anthropic's per-file limits
 
-interface ExtractedCore {
-  name: string;
-  issuer: string;
-  credentialType: "certification" | "license" | "training";
-  issuedDate: string;
-  expiryDate: string;
-  confidence: number;
+const SYSTEM_PROMPT = `You read healthcare certification/license/training documents (photos or PDFs) and extract structured data. Respond with ONLY a single JSON object, no prose before or after, no markdown code fences. The JSON object must have exactly these keys:
+
+{
+  "name": string — the credential's name, e.g. "Basic Life Support (BLS)". Use the full, standard name of the credential, not just what's printed if it's abbreviated oddly.
+  "issuer": string — the organization that issued it, e.g. "American Heart Association". Empty string if genuinely not visible.
+  "credentialType": one of "certification", "license", or "training" — pick the closest match.
+  "issuedDate": string in YYYY-MM-DD format — the date this specific credential was issued/completed. Empty string if not visible.
+  "expiryDate": string in YYYY-MM-DD format — the date this credential expires or must be renewed by. If the document shows a validity period (e.g. "valid for 2 years from issue date") instead of an explicit expiry date, calculate it from the issued date. This field is required — make your best reasonable estimate if it's ambiguous, and lower confidence accordingly.
+  "confidence": number between 0 and 1 — your genuine confidence that the above fields are accurate. Use lower values (below 0.7) when the image is blurry, cropped, a non-certificate document, or fields had to be guessed.
 }
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
+If the document is clearly not a certificate/license/training record at all, still return your best-effort JSON with a low confidence score — never refuse or return anything other than the JSON object.`;
+
+function corsJson(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
   const chunkSize = 0x8000;
   for (let i = 0; i < bytes.length; i += chunkSize) {
@@ -36,48 +55,25 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-function extractJson(text: string): unknown {
-  // Claude sometimes wraps JSON in a markdown code fence despite instructions — strip it.
-  const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-  return JSON.parse(cleaned);
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-  }
-
   if (!ANTHROPIC_API_KEY) {
-    return new Response(
-      JSON.stringify({ error: "AI extraction isn't configured on the server yet (missing ANTHROPIC_API_KEY)." }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return corsJson({ error: "AI extraction isn't configured on the server yet (missing ANTHROPIC_API_KEY)." }, 500);
   }
 
   try {
-    const form = await req.formData();
-    const file = form.get("file");
-    const region = (form.get("region") as string) === "US" ? "US" : "CA";
+    const formData = await req.formData();
+    const file = formData.get("file");
 
     if (!(file instanceof File)) {
-      return new Response(JSON.stringify({ error: "No file provided." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      return corsJson({ error: "No file was uploaded." }, 400);
     }
 
     if (file.size > MAX_FILE_BYTES) {
-      return new Response(JSON.stringify({ error: "File is too large (max 15MB)." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      return corsJson({ error: "That file is too large — try a photo under 10MB." }, 400);
     }
 
     const mediaType = file.type || "application/octet-stream";
@@ -85,47 +81,32 @@ Deno.serve(async (req) => {
     const isImage = mediaType.startsWith("image/");
 
     if (!isPdf && !isImage) {
-      return new Response(JSON.stringify({ error: "Only images (JPG/PNG/WEBP) or PDFs are supported." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      return corsJson({ error: "Unsupported file type — upload a JPG, PNG, or PDF." }, 400);
     }
 
-    const base64Data = arrayBufferToBase64(await file.arrayBuffer());
-    const today = new Date().toISOString().slice(0, 10);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const base64Data = bytesToBase64(bytes);
 
-    const contentBlock = isPdf
+    const documentBlock = isPdf
       ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64Data } }
       : { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } };
-
-    const prompt = `You are extracting structured data from a photo or scan of a professional certification, license, or training record belonging to a healthcare worker in ${region === "US" ? "the United States" : "Canada"}. Today's date is ${today}.
-
-Look at the document and return ONLY a single JSON object (no markdown, no commentary) with exactly these fields:
-{
-  "name": "full certification/license name, e.g. 'Basic Life Support (BLS)'",
-  "issuer": "the organization that issued it",
-  "credentialType": "certification" | "license" | "training",
-  "issuedDate": "YYYY-MM-DD, your best reading of the issue/completion date on the document",
-  "expiryDate": "YYYY-MM-DD, your best reading of the expiry/renewal-due date on the document",
-  "confidence": a number from 0 to 1 reflecting how confident you are in this extraction overall
-}
-
-If a date is genuinely illegible or absent, make your best reasonable estimate given standard renewal cycles for that credential type and lower the confidence score accordingly. Never leave a field blank.`;
 
     const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        "content-type": "application/json",
+        "Content-Type": "application/json",
         "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 1024,
+        temperature: 0,
+        system: SYSTEM_PROMPT,
         messages: [
           {
             role: "user",
-            content: [contentBlock, { type: "text", text: prompt }]
+            content: [documentBlock, { type: "text", text: "Extract this certificate's details as the JSON object described." }]
           }
         ]
       })
@@ -134,34 +115,40 @@ If a date is genuinely illegible or absent, make your best reasonable estimate g
     if (!anthropicRes.ok) {
       const errText = await anthropicRes.text();
       console.error("Anthropic API error:", anthropicRes.status, errText);
-      return new Response(JSON.stringify({ error: "AI extraction failed. Try again or enter details manually." }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      return corsJson({ error: "The AI extraction service returned an error." }, 502);
     }
 
-    const anthropicJson = await anthropicRes.json();
-    const text = anthropicJson?.content?.[0]?.text ?? "";
+    const anthropicData = await anthropicRes.json();
+    const rawText: string = anthropicData?.content?.[0]?.text ?? "";
 
-    let parsed: ExtractedCore;
+    // Claude was told to return ONLY JSON, but strip any accidental code
+    // fences / stray prose just in case, by grabbing the first {...} block.
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error("No JSON found in Claude's response:", rawText);
+      return corsJson({ error: "Couldn't parse the AI's response." }, 502);
+    }
+
+    let parsed: Record<string, unknown>;
     try {
-      parsed = extractJson(text) as ExtractedCore;
+      parsed = JSON.parse(jsonMatch[0]);
     } catch (parseErr) {
-      console.error("Failed to parse model output as JSON:", text, parseErr);
-      return new Response(JSON.stringify({ error: "Couldn't read that document clearly. Try a clearer photo or enter details manually." }), {
-        status: 422,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      console.error("Failed to parse extracted JSON:", parseErr, rawText);
+      return corsJson({ error: "Couldn't parse the AI's response." }, 502);
     }
 
-    return new Response(JSON.stringify(parsed), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    return corsJson({
+      name: typeof parsed.name === "string" ? parsed.name : "Unnamed Certification",
+      issuer: typeof parsed.issuer === "string" ? parsed.issuer : "",
+      credentialType: ["certification", "license", "training"].includes(parsed.credentialType as string)
+        ? parsed.credentialType
+        : "certification",
+      issuedDate: typeof parsed.issuedDate === "string" ? parsed.issuedDate : "",
+      expiryDate: typeof parsed.expiryDate === "string" && parsed.expiryDate ? parsed.expiryDate : new Date().toISOString().slice(0, 10),
+      confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5
     });
   } catch (err) {
     console.error("extract-certificate error:", err);
-    return new Response(JSON.stringify({ error: "Unexpected server error." }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    return corsJson({ error: "Couldn't extract this certificate. Try again." }, 500);
   }
 });
