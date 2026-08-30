@@ -129,7 +129,10 @@ export default function Landing({
           </div>
           {!loggedIn && (
             <p className="mt-4 text-xs text-slate-400 animate-fade-in-up" style={{ animationDelay: "280ms" }}>
-              No credit card required for the free plan.
+              No credit card required for the free plan. Not in healthcare?{" "}
+              <Link to="/industries" className="font-medium text-brand-600 underline">
+                See construction, schools &amp; policing →
+              </Link>
             </p>
           )}
 
@@ -318,6 +321,7 @@ export default function Landing({
           <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
             <Logo markClassName="w-6 h-6" textClassName="text-sm" themeAware={false} />
             <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
+              <Link to="/industries" className="hover:text-slate-900">Other industries</Link>
               <Link to="/terms" className="hover:text-slate-900">Terms</Link>
               <Link to="/privacy" className="hover:text-slate-900">Privacy</Link>
             </div>

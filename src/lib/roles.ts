@@ -30,7 +30,18 @@ const COMMON_ROLES = [
   "Medical Office Assistant",
   "Medical Billing & Coding Specialist",
   "Health Records Clerk",
-  "Sterile Processing Technician"
+  "Sterile Processing Technician",
+
+  // Non-healthcare roles — CredPulse tracks any hard-expiry certification,
+  // not just clinical ones, so these share the same signup flow and the
+  // same underlying cert-tracking backend as everything above. See the
+  // /industries page.
+  "Construction Worker / Site Supervisor",
+  "Crane / Heavy Equipment Operator",
+  "Teacher / Education Staff",
+  "School Support Staff (EA, Custodial, Cafeteria)",
+  "Police Officer",
+  "Police Support / Dispatch"
 ];
 
 /**

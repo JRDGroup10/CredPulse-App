@@ -351,6 +351,163 @@ export const KNOWN_TEMPLATES: Template[] = [
       tip: "Certification maintenance runs on a multi-year cycle — log your CME annually so you're not scrambling.",
       renewalUrl: "https://www.nccpa.net/"
     }
+  },
+
+  // --- Construction, education, and public-safety certifications ---
+  // Added so CredPulse works out of the box for the non-healthcare
+  // industries offered on the /industries page, not just healthcare.
+  {
+    match: /working.at.heights|fall.protection/i,
+    ca: {
+      name: "Working at Heights Training",
+      issuer: "Ontario Chief Prevention Officer-Approved Provider",
+      credentialType: "training",
+      tip: "Valid for 3 years in Ontario — must be retaken with an approved provider before it lapses.",
+      renewalUrl: "https://www.ontario.ca/page/working-heights-training-program-requirements"
+    },
+    us: {
+      name: "Fall Protection Training",
+      issuer: "OSHA",
+      credentialType: "training",
+      tip: "OSHA doesn't set a fixed renewal interval, but most employers require an annual refresher — check your program.",
+      renewalUrl: "https://www.osha.gov/fall-protection"
+    }
+  },
+  {
+    match: /confined.space/i,
+    ca: {
+      name: "Confined Space Entry Training",
+      issuer: "CSA-Compliant Training Provider",
+      credentialType: "training",
+      tip: "Renewal intervals vary by employer and provincial regulator — usually every 1-3 years.",
+      renewalUrl: "https://www.ccohs.ca/oshanswers/hsprograms/confinedspace/"
+    },
+    us: {
+      name: "Confined Space Entry Training",
+      issuer: "OSHA",
+      credentialType: "training",
+      tip: "Renewal intervals vary by employer — usually annually for permit-required confined spaces.",
+      renewalUrl: "https://www.osha.gov/confined-spaces"
+    }
+  },
+  {
+    match: /forklift|lift.truck|powered.industrial.truck/i,
+    ca: {
+      name: "Forklift Operator Certification",
+      issuer: "CSA-Compliant Training Provider",
+      credentialType: "certification",
+      tip: "Most provinces expect recertification every 3 years, or sooner after an incident — check locally.",
+      renewalUrl: "https://www.ccohs.ca/oshanswers/safety_haz/powered_lift_trucks.html"
+    },
+    us: {
+      name: "Powered Industrial Truck (Forklift) Certification",
+      issuer: "OSHA",
+      credentialType: "certification",
+      tip: "OSHA requires recertification every 3 years, or sooner after a near-miss or accident.",
+      renewalUrl: "https://www.osha.gov/powered-industrial-trucks"
+    }
+  },
+  {
+    match: /crane.operator/i,
+    ca: {
+      name: "Crane Operator Certification",
+      issuer: "Provincial Certifying Body (e.g. IUOE)",
+      credentialType: "certification",
+      tip: "Renewal requirements vary by province and crane class — confirm with your certifying body.",
+      renewalUrl: "https://www.ccohs.ca/oshanswers/safety_haz/cranes/"
+    },
+    us: {
+      name: "Crane Operator Certification (NCCCO)",
+      issuer: "NCCCO",
+      credentialType: "certification",
+      tip: "Valid for 5 years — start the renewal exam process a few months ahead of expiry.",
+      renewalUrl: "https://www.nccco.org/nccco/certification-programs/recertification"
+    }
+  },
+  {
+    match: /food.handler|food.safety.certif/i,
+    ca: {
+      name: "Food Handler Certification",
+      issuer: "Local Public Health Unit",
+      credentialType: "certification",
+      tip: "Usually a one-time online course, but some health units require periodic renewal — check locally.",
+      renewalUrl: "https://www.canada.ca/en/public-health/services/food-safety.html"
+    },
+    us: {
+      name: "Food Handler Certification",
+      issuer: "ServSafe / State Health Department",
+      credentialType: "certification",
+      tip: "Renewal interval depends on your state — many require recertification every 2-5 years.",
+      renewalUrl: "https://www.servsafe.com/"
+    }
+  },
+  {
+    match: /mental.health.first.aid/i,
+    ca: {
+      name: "Mental Health First Aid",
+      issuer: "Mental Health Commission of Canada",
+      credentialType: "training",
+      tip: "No fixed expiry, but many employers ask for a refresher every 3 years — check your policy.",
+      renewalUrl: "https://www.mhfa.ca/"
+    },
+    us: {
+      name: "Mental Health First Aid",
+      issuer: "National Council for Mental Wellbeing",
+      credentialType: "training",
+      tip: "No fixed expiry, but many employers ask for a refresher every 3 years — check your policy.",
+      renewalUrl: "https://www.mentalhealthfirstaid.org/"
+    }
+  },
+  {
+    match: /use.of.force/i,
+    ca: {
+      name: "Use of Force Recertification",
+      issuer: "Provincial Police College",
+      credentialType: "certification",
+      tip: "Typically required annually — confirm your service's exact cycle.",
+      renewalUrl: "https://www.iadlest.org/"
+    },
+    us: {
+      name: "Use of Force Recertification",
+      issuer: "State POST (Peace Officer Standards and Training)",
+      credentialType: "certification",
+      tip: "Typically required annually — requirements are set by your state's POST commission.",
+      renewalUrl: "https://www.iadlest.org/"
+    }
+  },
+  {
+    match: /firearms.qualif/i,
+    ca: {
+      name: "Firearms Qualification",
+      issuer: "Police Service / Canadian Firearms Program",
+      credentialType: "license",
+      tip: "Usually required annually or semi-annually — confirm your service's schedule.",
+      renewalUrl: "https://www.rcmp-grc.gc.ca/en/firearms"
+    },
+    us: {
+      name: "Firearms Qualification",
+      issuer: "Police Department / State POST",
+      credentialType: "license",
+      tip: "Usually required annually or semi-annually — confirm your department's schedule.",
+      renewalUrl: "https://www.iadlest.org/"
+    }
+  },
+  {
+    match: /crisis.intervention/i,
+    ca: {
+      name: "Crisis Intervention Training (CIT)",
+      issuer: "Canadian Association of Chiefs of Police",
+      credentialType: "training",
+      tip: "Renewal intervals vary by service — check your department's training calendar.",
+      renewalUrl: "https://cacp.ca/"
+    },
+    us: {
+      name: "Crisis Intervention Training (CIT)",
+      issuer: "CIT International",
+      credentialType: "training",
+      tip: "Renewal intervals vary by department — check your department's training calendar.",
+      renewalUrl: "https://www.citinternational.org/"
+    }
   }
 ];
 

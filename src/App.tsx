@@ -8,6 +8,7 @@ import Settings from "./pages/Settings";
 import Team from "./pages/Team";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
+import Industries from "./pages/Industries";
 import JoinTeam from "./pages/JoinTeam";
 import ClinicSignup from "./pages/ClinicSignup";
 import Billing from "./pages/Billing";
@@ -42,6 +43,24 @@ function Routed() {
 
   if (loading) {
     return <Spinner />;
+  }
+
+  // Public marketing page for non-healthcare industries (construction,
+  // school boards, policing) — same signup flows and same backend as
+  // Landing.tsx, just different messaging. See Industries.tsx.
+  if (pathname === "/industries") {
+    return (
+      <Industries
+        onGetStarted={() => {
+          setShowAuth("signup");
+          navigate("/");
+        }}
+        onLogin={() => {
+          setShowAuth("login");
+          navigate("/");
+        }}
+      />
+    );
   }
 
   // The public marketing homepage. Reachable from anywhere in the app (see the

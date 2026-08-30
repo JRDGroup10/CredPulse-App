@@ -133,7 +133,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
         <div className="text-center mb-8">
           <LogoMark className="w-14 h-14 mx-auto mb-3 drop-shadow-md" />
           <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
-            {step === "info" ? "Set up your clinic" : "Choose your plan"}
+            {step === "info" ? "Set up your team" : "Choose your plan"}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             {step === "info"
@@ -148,13 +148,13 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
             className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-card"
           >
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Clinic/team name</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Organization/team name</label>
               <input
                 value={clinicName}
                 onChange={(e) => setClinicName(e.target.value)}
                 required
                 className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
-                placeholder="Maple Street Clinic"
+                placeholder="Maple Street Clinic, Northside Elementary, ABC Construction…"
               />
             </div>
             <div>
@@ -168,7 +168,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Where is your clinic?</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Where is your team based?</label>
               <div className="grid grid-cols-2 gap-2">
                 {(["CA", "US"] as Region[]).map((r) => (
                   <button
@@ -209,7 +209,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
-                placeholder="you@clinic.com"
+                placeholder="you@yourteam.com"
               />
             </div>
             <div>

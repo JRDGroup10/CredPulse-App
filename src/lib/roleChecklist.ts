@@ -71,7 +71,17 @@ const ROLE_KEYWORDS: Record<string, string[]> = {
   Physiotherapist: ["bls", "cpr", "vulnerable"],
   "Physical Therapist": ["bls", "cpr", "vulnerable"],
   "Chiropodist (Ontario)": ["bls", "cpr", "whmis"],
-  Podiatrist: ["bls", "cpr", "bloodborne"]
+  Podiatrist: ["bls", "cpr", "bloodborne"],
+
+  // Non-healthcare roles (see roles.ts) — same checklist mechanism, just
+  // pointed at the construction/education/policing templates added to
+  // KNOWN_TEMPLATES.
+  "Construction Worker / Site Supervisor": ["fall protection", "confined space", "whmis"],
+  "Crane / Heavy Equipment Operator": ["crane operator", "forklift", "whmis"],
+  "Teacher / Education Staff": ["vulnerable", "first aid", "mental health first aid"],
+  "School Support Staff (EA, Custodial, Cafeteria)": ["vulnerable", "food handler", "whmis"],
+  "Police Officer": ["use of force", "firearms qualif", "first aid"],
+  "Police Support / Dispatch": ["vulnerable", "crisis intervention", "first aid"]
 };
 
 // Fallback for "Other healthcare worker" and any role not explicitly listed

@@ -160,43 +160,61 @@ export default function TeamSettings() {
     }
   }
 
-  // 1. No team yet.
+  // 1. No team yet. Collapsed by default — an individual visiting Settings
+  // isn't necessarily here to start a team/clinic, and the full plan-picker
+  // grid is a lot of vertical space to force on everyone up front.
   if (!organizationId) {
     return (
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
-        <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Team / Clinic</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-          Create a team to track certification compliance across your whole staff from one dashboard.
-          Coworkers you invite join automatically — no separate signup needed. Certificates they mark
-          "For my clinic" are unlimited and show up here; anything personal stays on their own plan and
-          private to them.
-        </p>
+      <details className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-card">
+        <summary className="p-5 cursor-pointer select-none list-none flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Team / Clinic</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Track certification compliance across your whole staff from one dashboard.
+            </p>
+          </div>
+          <svg
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 mt-0.5 transition-transform group-open:rotate-180"
+          >
+            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+          </svg>
+        </summary>
 
-        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Team/clinic name</label>
-        <input
-          value={teamName}
-          onChange={(e) => setTeamName(e.target.value)}
-          placeholder="e.g. Maple Street Clinic"
-          className="w-full max-w-sm text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 mb-4"
-        />
+        <div className="px-5 pb-5 border-t border-slate-100 dark:border-slate-800 pt-4">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Coworkers you invite join automatically — no separate signup needed. Certificates they mark
+            "For my clinic" are unlimited and show up here; anything personal stays on their own plan and
+            private to them.
+          </p>
 
-        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Choose a plan</label>
-        <TierPicker
-          billingCycle={createCycle}
-          onBillingCycleChange={setCreateCycle}
-          selectedPlan={createPlan}
-          onSelectPlan={setCreatePlan}
-        />
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Team/clinic name</label>
+          <input
+            value={teamName}
+            onChange={(e) => setTeamName(e.target.value)}
+            placeholder="e.g. Maple Street Clinic"
+            className="w-full max-w-sm text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 mb-4"
+          />
 
-        <button
-          onClick={handleCreate}
-          disabled={creating || !teamName.trim() || !createPlan}
-          className="mt-4 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all whitespace-nowrap"
-        >
-          {creating ? "Creating…" : "Start free trial"}
-        </button>
-        {createError && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{createError}</p>}
-      </div>
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Choose a plan</label>
+          <TierPicker
+            billingCycle={createCycle}
+            onBillingCycleChange={setCreateCycle}
+            selectedPlan={createPlan}
+            onSelectPlan={setCreatePlan}
+          />
+
+          <button
+            onClick={handleCreate}
+            disabled={creating || !teamName.trim() || !createPlan}
+            className="mt-4 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all whitespace-nowrap"
+          >
+            {creating ? "Creating…" : "Start free trial"}
+          </button>
+          {createError && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{createError}</p>}
+        </div>
+      </details>
     );
   }
 
