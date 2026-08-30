@@ -132,11 +132,18 @@ export default function Settings() {
           </div>
           <div className="col-span-2 flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
             <div>
-              <div className="text-xs text-slate-400 dark:text-slate-500">Plan</div>
+              <div className="text-xs text-slate-400 dark:text-slate-500">
+                {state.profile.organizationId ? "Personal plan" : "Plan"}
+              </div>
               <div className="text-slate-700 dark:text-slate-200">{plan.name}</div>
+              {state.profile.organizationId && (
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                  Covers certs marked "Personal" — separate from your clinic's plan above.
+                </div>
+              )}
             </div>
-            <Link to="/billing" className="text-sm font-medium text-brand-600 dark:text-brand-400">
-              Manage plan
+            <Link to="/billing" className="text-sm font-medium text-brand-600 dark:text-brand-400 whitespace-nowrap">
+              {state.profile.organizationId ? "Manage individual plan" : "Manage plan"}
             </Link>
           </div>
         </div>
