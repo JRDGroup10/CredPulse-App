@@ -15,7 +15,7 @@ html, body, #root {
    Layout.tsx sets data-industry="other" on the authenticated app's root
    element for accounts whose industry (see lib/industryPref.ts) is
    construction/education/policing rather than healthcare — the override
-   block below retints every bg-brand-*/text-brand-*/shadow-glow usage
+   block below retints every bg-brand-*, text-brand-*, and shadow-glow usage
    inside that subtree to amber/orange automatically, with no changes to
    any individual component. Pages rendered outside that wrapper (Landing,
    Industries, Auth, etc.) always see the :root defaults regardless of who's

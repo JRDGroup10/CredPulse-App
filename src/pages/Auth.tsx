@@ -67,45 +67,53 @@ export default function Auth({
     e.preventDefault();
     setError(null);
     setBusy(true);
-    // Covers the whole risky window: Supabase marks the session signed-in the
-    // instant signIn() resolves, before the industry check below can run —
-    // this flag tells App.tsx to hold on a spinner instead of rendering the
-    // (possibly wrong) dashboard in that gap. Cleared in `finally` either way.
-    setAuthGating(true);
     try {
       if (mode === "signup") {
         await signUp(email, password, name, role, region, industry);
         // If email confirmation is required, Supabase won't return a session yet.
         setCheckInbox(true);
       } else {
-        const { user } = await signIn(email, password);
-        if (user) {
-          // This account was created on one specific side of the homepage
-          // split-screen chooser (see lib/industryPref.ts) and can only log
-          // in from that same side — otherwise a healthcare account could
-          // wander into the construction/education/policing page and vice
-          // versa, which is confusing and not what either side promises.
-          const accountIndustry = await getAccountIndustry(user.id);
-          if (accountIndustry !== industry) {
-            await signOut();
-            // Correct the device's remembered preference to match the real
-            // account, so "Back to homepage" below — and any future visit —
-            // lands them on the right page without having to choose again.
-            setIndustryPref(accountIndustry);
-            setError(
-              accountIndustry === "healthcare"
-                ? "This account was created on the healthcare page. Go back and switch industries to log in."
-                : "This account was created on the other-industries page. Go back and switch industries to log in."
-            );
-            return;
+        // Gating only covers the login path — this is the only case with a
+        // real race condition (see AppContext.tsx: Supabase marks the
+        // session signed-in the instant signIn() resolves, before the
+        // industry check below can run, so App.tsx needs a signal to hold
+        // on a spinner instead of flashing the dashboard). Signup has no
+        // such risk, and wrapping it here previously caused this whole Auth
+        // component to get replaced by that spinner mid-submit — wiping out
+        // the "Check your inbox" screen's local state before it could show.
+        setAuthGating(true);
+        try {
+          const { user } = await signIn(email, password);
+          if (user) {
+            // This account was created on one specific side of the homepage
+            // split-screen chooser (see lib/industryPref.ts) and can only
+            // log in from that same side — otherwise a healthcare account
+            // could wander into the construction/education/policing page
+            // and vice versa, which is confusing and not what either side
+            // promises.
+            const accountIndustry = await getAccountIndustry(user.id);
+            if (accountIndustry !== industry) {
+              await signOut();
+              // Correct the device's remembered preference to match the
+              // real account, so "Back to homepage" below — and any future
+              // visit — lands them on the right page without choosing again.
+              setIndustryPref(accountIndustry);
+              setError(
+                accountIndustry === "healthcare"
+                  ? "This account was created on the healthcare page. Go back and switch industries to log in."
+                  : "This account was created on the other-industries page. Go back and switch industries to log in."
+              );
+              return;
+            }
           }
+        } finally {
+          setAuthGating(false);
         }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setBusy(false);
-      setAuthGating(false);
     }
   }
 
