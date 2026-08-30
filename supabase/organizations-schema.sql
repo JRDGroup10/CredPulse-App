@@ -208,6 +208,30 @@ alter table public.organizations add column if not exists trial_ends_at timestam
 --   select id, name, plan, billing_cycle, subscription_status, trial_ends_at from public.organizations;
 
 -- ============================================================
+-- Fix: brand-new orgs used to default to 'trialing' with a trial_ends_at
+-- already set, which meant a clinic got full trial access the instant the
+-- row was created — BEFORE Stripe Checkout ever ran. Abandoning checkout
+-- (closing the tab, refreshing) left them with a working, fully-featured
+-- trial and no card on file, so nothing would ever charge them when the
+-- trial "ended." New orgs now start 'incomplete' (not a real trial yet);
+-- the stripe-webhook handler is what flips them to 'trialing' with a real
+-- trial_ends_at, and only once Stripe confirms checkout.session.completed.
+-- The frontend (Team.tsx / TeamSettings.tsx) blocks the dashboard behind a
+-- "finish setting up billing" screen for orgs still stuck on 'incomplete'.
+-- ============================================================
+alter table public.organizations alter column subscription_status set default 'incomplete';
+alter table public.organizations alter column trial_ends_at drop default;
+
+-- Also store the actual Stripe subscription ID (not just customer ID) so a
+-- later plan change can modify the existing subscription directly instead
+-- of creating a whole new one.
+alter table public.organizations add column if not exists stripe_subscription_id text;
+
+-- To check it's working (new signups from now on should show 'incomplete'
+-- with a null trial_ends_at until they finish Stripe Checkout):
+--   select id, name, subscription_status, trial_ends_at, stripe_subscription_id from public.organizations order by created_at desc;
+
+-- ============================================================
 -- Certificate scope: 'clinic' vs 'personal'.
 --
 -- A team member's certificates aren't all automatically covered by their

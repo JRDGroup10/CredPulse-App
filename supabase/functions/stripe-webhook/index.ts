@@ -95,6 +95,7 @@ Deno.serve(async (req) => {
           if (typeof session.subscription === "string") {
             const sub = await stripe.subscriptions.retrieve(session.subscription);
             patch.subscription_status = sub.status;
+            patch.stripe_subscription_id = sub.id;
             if (sub.trial_end) patch.trial_ends_at = new Date(sub.trial_end * 1000).toISOString();
           }
 
@@ -130,7 +131,11 @@ Deno.serve(async (req) => {
           // fall back to, so we just mirror whatever Stripe says.
           const orgPlan = sub.metadata?.org_plan;
           const orgBillingCycle = sub.metadata?.org_billing_cycle;
-          const patch: Record<string, unknown> = { subscription_status: sub.status, stripe_customer_id: customerId };
+          const patch: Record<string, unknown> = {
+            subscription_status: sub.status,
+            stripe_customer_id: customerId,
+            stripe_subscription_id: sub.id
+          };
           if (orgPlan) patch.plan = orgPlan;
           if (orgBillingCycle) patch.billing_cycle = orgBillingCycle;
           await supabase.from("organizations").update(patch).eq("id", organizationId);

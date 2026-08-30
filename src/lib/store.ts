@@ -180,11 +180,17 @@ export async function startCheckout(
 /**
  * Starts a real Stripe Checkout session for a clinic/team's seat-based plan,
  * with a free trial (see ORG_TRIAL_DAYS in orgPlans.ts) built into the
- * subscription. Falls back to a no-op "demo trial" if the
- * create-org-checkout-session Edge Function isn't deployed/configured yet —
- * the org was already created with this plan/cycle and a trial_ends_at
- * default from the database, so there's nothing more to do locally in that
- * case; the caller can just continue as if checkout succeeded.
+ * subscription.
+ *
+ * IMPORTANT: a new org is created with subscription_status = 'incomplete'
+ * and no trial_ends_at (see organizations-schema.sql) — it does NOT get
+ * dashboard access until Stripe confirms checkout.session.completed via the
+ * webhook, which is what actually flips it to 'trialing'. If this call
+ * fails or the redirect URL is never returned (e.g. the Edge Function isn't
+ * deployed, or the admin abandons the Stripe Checkout page), the org
+ * correctly stays 'incomplete' and orgBillingIncomplete() below will keep
+ * showing the "finish setting up billing" screen instead of the dashboard
+ * — there's no silent free-trial fallback anymore, on purpose.
  */
 export async function startOrgCheckout(
   organizationId: string,
@@ -200,12 +206,40 @@ export async function startOrgCheckout(
     return { redirectUrl: data.url as string };
   } catch (err) {
     console.warn(
-      "[CredPulse] Real Stripe org checkout unavailable, continuing with demo trial instead. " +
-        "Deploy create-org-checkout-session and set your Stripe org price secrets to enable it — see DEPLOYMENT.md.",
+      "[CredPulse] Couldn't start Stripe checkout for this org — it stays 'incomplete' until this " +
+        "succeeds. Check that create-org-checkout-session is deployed and the Stripe org price " +
+        "secrets are set.",
       err
     );
     return { redirectUrl: null };
   }
+}
+
+/** True until a clinic has actually completed Stripe Checkout — the org
+ * exists (so an owner and members can be attached to it) but shouldn't get
+ * dashboard access, invite ability, or unlimited clinic-scoped certs yet.
+ * See the schema.sql comment on the 'incomplete' default for why. */
+export function orgBillingIncomplete(org: Organization): boolean {
+  return org.subscriptionStatus === "incomplete";
+}
+
+/**
+ * Changes an existing, already-paying org to a different seat tier by
+ * swapping the price on its live Stripe subscription in place (prorated),
+ * rather than starting a brand-new checkout session — see
+ * update-org-plan Edge Function. Owner/admin only; the function itself
+ * re-checks that server-side, this isn't just a client-side gate.
+ */
+export async function updateOrgPlan(
+  organizationId: string,
+  plan: OrgPlan,
+  billingCycle: BillingCycle
+): Promise<void> {
+  const { data, error } = await supabase.functions.invoke("update-org-plan", {
+    body: { organizationId, plan, billingCycle }
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error as string);
 }
 
 /**
@@ -332,9 +366,11 @@ export async function getCertificateFileUrl(filePath: string): Promise<string | 
 
 /**
  * Creates a brand-new team/clinic. Every org needs a seat-based plan from
- * the moment it exists — there's no "free" org tier, but new orgs start in
- * the 'trialing' status for ORG_TRIAL_DAYS (see the trial_ends_at column
- * default in organizations-schema.sql), so nothing gets billed immediately.
+ * the moment it exists — there's no "free" org tier. The row starts in
+ * 'incomplete' status with no trial yet (see organizations-schema.sql) —
+ * the caller MUST immediately follow this with startOrgCheckout() and send
+ * the admin to Stripe, since dashboard access stays blocked until Stripe
+ * confirms checkout.session.completed and flips the status to 'trialing'.
  */
 export async function createOrganization(
   userId: string,

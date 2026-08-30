@@ -7,8 +7,10 @@ import {
   inviteToOrganization,
   listOrgInvites,
   listOrgMembers,
+  orgBillingIncomplete,
   revokeInvite,
-  startOrgCheckout
+  startOrgCheckout,
+  updateOrgPlan
 } from "../lib/store";
 import { ORG_PLANS, nextOrgPlanAbove } from "../lib/orgPlans";
 import { BillingCycle, Organization, OrgInvite, OrgMember, OrgPlan } from "../lib/types";
@@ -49,6 +51,16 @@ export default function TeamSettings() {
   const [inviting, setInviting] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSent, setInviteSent] = useState(false);
+
+  const [resumingCheckout, setResumingCheckout] = useState(false);
+  const [resumeError, setResumeError] = useState<string | null>(null);
+
+  const [showChangePlan, setShowChangePlan] = useState(false);
+  const [changePlan, setChangePlan] = useState<OrgPlan | null>(null);
+  const [changeCycle, setChangeCycle] = useState<BillingCycle>("monthly");
+  const [changingPlan, setChangingPlan] = useState(false);
+  const [changePlanError, setChangePlanError] = useState<string | null>(null);
+  const [changePlanSuccess, setChangePlanSuccess] = useState(false);
 
   async function loadTeam(orgId: string) {
     setLoadingTeam(true);
@@ -113,6 +125,41 @@ export default function TeamSettings() {
     await loadTeam(organizationId);
   }
 
+  async function handleResumeCheckout() {
+    if (!organizationId || !org) return;
+    setResumingCheckout(true);
+    setResumeError(null);
+    try {
+      const { redirectUrl } = await startOrgCheckout(organizationId, org.plan, org.billingCycle);
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        setResumeError("Couldn't reach Stripe right now. Please try again in a moment.");
+      }
+    } catch (err) {
+      setResumeError(err instanceof Error ? err.message : "Couldn't start checkout.");
+    } finally {
+      setResumingCheckout(false);
+    }
+  }
+
+  async function handleChangePlan() {
+    if (!organizationId || !changePlan) return;
+    setChangingPlan(true);
+    setChangePlanError(null);
+    setChangePlanSuccess(false);
+    try {
+      await updateOrgPlan(organizationId, changePlan, changeCycle);
+      setChangePlanSuccess(true);
+      setShowChangePlan(false);
+      await loadTeam(organizationId);
+    } catch (err) {
+      setChangePlanError(err instanceof Error ? err.message : "Couldn't change plan.");
+    } finally {
+      setChangingPlan(false);
+    }
+  }
+
   // 1. No team yet.
   if (!organizationId) {
     return (
@@ -169,7 +216,32 @@ export default function TeamSettings() {
     );
   }
 
-  // 3. Owner/admin -> full management.
+  // 3. Owner/admin, but billing was never finished (abandoned Stripe
+  // Checkout, or it failed) -> block everything else behind resuming it.
+  // Without this, the org would otherwise be fully usable with no card on
+  // file and nothing would ever charge when the "trial" ends.
+  if (org && orgBillingIncomplete(org)) {
+    return (
+      <div className="bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-900 rounded-xl p-5 shadow-card">
+        <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Finish setting up {org.name}</h2>
+        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+          You created {org.name} on the {ORG_PLANS[org.plan].name} plan, but billing was never
+          completed — you'll need to finish that in Stripe before you can invite coworkers or use the
+          team dashboard.
+        </p>
+        <button
+          onClick={handleResumeCheckout}
+          disabled={resumingCheckout}
+          className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all whitespace-nowrap"
+        >
+          {resumingCheckout ? "Redirecting…" : "Finish billing setup"}
+        </button>
+        {resumeError && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{resumeError}</p>}
+      </div>
+    );
+  }
+
+  // 4. Owner/admin -> full management.
   const seatLimit = org ? ORG_PLANS[org.plan].seatLimit : 0;
   const seatLimitReached = seatsUsed >= seatLimit;
   const upgradeSuggestion = nextOrgPlanAbove(seatLimit);
@@ -179,15 +251,53 @@ export default function TeamSettings() {
       <div className="flex items-start justify-between gap-3 mb-1">
         <h2 className="font-medium text-slate-900 dark:text-slate-50">{org?.name ?? "Team"}</h2>
         {org && (
-          <span className="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
-            {ORG_PLANS[org.plan].name} plan · {seatsUsed}/{seatLimit} seats
-          </span>
+          <div className="text-right">
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
+              {ORG_PLANS[org.plan].name} plan · {seatsUsed}/{seatLimit} seats
+            </span>
+            <button
+              onClick={() => {
+                setChangePlan(org.plan);
+                setChangeCycle(org.billingCycle);
+                setShowChangePlan((v) => !v);
+              }}
+              className="block text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 whitespace-nowrap"
+            >
+              {showChangePlan ? "Cancel" : "Change plan"}
+            </button>
+          </div>
         )}
       </div>
       <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
         Invite coworkers by email. If they don't have a CredPulse account yet, they'll join your team
         automatically the moment they sign up.
       </p>
+
+      {changePlanSuccess && !showChangePlan && (
+        <div className="mb-3 rounded-lg border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
+          Plan change sent to Stripe — this usually updates here within a few seconds. Refresh if it
+          doesn't right away.
+        </div>
+      )}
+
+      {showChangePlan && org && (
+        <div className="mb-4 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+          <TierPicker
+            billingCycle={changeCycle}
+            onBillingCycleChange={setChangeCycle}
+            selectedPlan={changePlan}
+            onSelectPlan={setChangePlan}
+          />
+          <button
+            onClick={handleChangePlan}
+            disabled={changingPlan || !changePlan || (changePlan === org.plan && changeCycle === org.billingCycle)}
+            className="mt-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all whitespace-nowrap"
+          >
+            {changingPlan ? "Updating…" : "Confirm plan change"}
+          </button>
+          {changePlanError && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{changePlanError}</p>}
+        </div>
+      )}
 
       {seatLimitReached && (
         <div className="mb-3 rounded-lg border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">

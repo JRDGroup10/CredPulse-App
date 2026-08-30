@@ -8,6 +8,7 @@ import {
   getOrganization,
   listOrgMemberCertificates,
   listOrgMembers,
+  orgBillingIncomplete,
   statusFor
 } from "../lib/store";
 import { ORG_PLANS, nextOrgPlanAbove } from "../lib/orgPlans";
@@ -141,6 +142,14 @@ export default function Team() {
   }, [membersWithCerts]);
 
   if (!organizationId || !isAdmin) {
+    return <Navigate to="/settings" replace />;
+  }
+
+  // Billing was never completed (abandoned Stripe Checkout, or it failed) —
+  // send them to Settings, which shows the "finish setting up billing"
+  // prompt instead of this dashboard. Without this, an org could use the
+  // full compliance dashboard indefinitely with no card ever on file.
+  if (org && orgBillingIncomplete(org)) {
     return <Navigate to="/settings" replace />;
   }
 
