@@ -15,6 +15,7 @@ import {
   Region,
   UserProfile
 } from "./types";
+import { IndustryPref } from "./industryPref";
 import { PLANS } from "./plans";
 import { ORG_PLANS, nextOrgPlanAbove } from "./orgPlans";
 import { Extracted, enrichWithTemplate, mockExtractCertificate } from "./mockExtract";
@@ -33,7 +34,8 @@ function mapProfileRow(row: Record<string, unknown> | null, fallbackEmail: strin
     billingCycle: ((row?.billing_cycle as BillingCycle) ?? "monthly") as BillingCycle,
     region: ((row?.region as Region) ?? "CA") as Region,
     organizationId: (row?.organization_id as string) ?? null,
-    orgRole: ((row?.org_role as OrgRole) ?? "member") as OrgRole
+    orgRole: ((row?.org_role as OrgRole) ?? "member") as OrgRole,
+    industry: ((row?.industry as IndustryPref) ?? "healthcare") as IndustryPref
   };
 }
 
@@ -63,19 +65,41 @@ function mapCertRow(row: Record<string, unknown>): Certificate {
  * back immediately or whether email confirmation is required first (in
  * which case `session` is null and there's no auth.uid() yet for RLS).
  */
-export async function signUp(email: string, password: string, name: string, role: string, region: Region) {
+export async function signUp(
+  email: string,
+  password: string,
+  name: string,
+  role: string,
+  region: Region,
+  industry: IndustryPref
+) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { name, role, region } }
+    options: { data: { name, role, region, industry } }
   });
   if (error) throw error;
   return data;
 }
 
+/** Returns the signed-in user (or null, if this project requires MFA/other
+ * follow-up before a session exists) so callers can immediately check
+ * things like the account's industry — see getAccountIndustry() below and
+ * the login gate in Auth.tsx. */
 export async function signIn(email: string, password: string) {
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
+  return data;
+}
+
+/** Which side of the homepage split-screen chooser this account was created
+ * under — set once at signup, never user-editable. Used right after signIn()
+ * to gate a healthcare account out of the other-industries page and vice
+ * versa (see Auth.tsx). */
+export async function getAccountIndustry(userId: string): Promise<IndustryPref> {
+  const { data, error } = await supabase.from("profiles").select("industry").eq("id", userId).maybeSingle();
+  if (error) throw error;
+  return ((data?.industry as IndustryPref) ?? "healthcare") as IndustryPref;
 }
 
 export async function signOut() {
@@ -376,11 +400,12 @@ export async function createOrganization(
   userId: string,
   name: string,
   plan: OrgPlan,
-  billingCycle: BillingCycle
+  billingCycle: BillingCycle,
+  industry: IndustryPref
 ): Promise<string> {
   const { data, error } = await supabase
     .from("organizations")
-    .insert({ name: name.trim(), owner_id: userId, plan, billing_cycle: billingCycle })
+    .insert({ name: name.trim(), owner_id: userId, plan, billing_cycle: billingCycle, industry })
     .select("id")
     .single();
   if (error) throw error;
@@ -393,7 +418,7 @@ export async function createOrganization(
 export async function getOrganization(organizationId: string): Promise<Organization | null> {
   const { data, error } = await supabase
     .from("organizations")
-    .select("id, name, owner_id, plan, billing_cycle, subscription_status, trial_ends_at")
+    .select("id, name, owner_id, plan, billing_cycle, subscription_status, trial_ends_at, industry")
     .eq("id", organizationId)
     .maybeSingle();
   if (error) throw error;
@@ -405,7 +430,8 @@ export async function getOrganization(organizationId: string): Promise<Organizat
     plan: (data.plan as OrgPlan) ?? "starter",
     billingCycle: (data.billing_cycle as BillingCycle) ?? "monthly",
     subscriptionStatus: (data.subscription_status as OrgSubscriptionStatus) ?? "trialing",
-    trialEndsAt: (data.trial_ends_at as string) ?? null
+    trialEndsAt: (data.trial_ends_at as string) ?? null,
+    industry: ((data.industry as IndustryPref) ?? "healthcare") as IndustryPref
   };
 }
 

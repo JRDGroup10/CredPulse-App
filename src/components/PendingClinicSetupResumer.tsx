@@ -22,7 +22,13 @@ export default function PendingClinicSetupResumer() {
 
     (async () => {
       try {
-        const organizationId = await createOrganization(userId, pending.name, pending.plan, pending.billingCycle);
+        const organizationId = await createOrganization(
+          userId,
+          pending.name,
+          pending.plan,
+          pending.billingCycle,
+          pending.industry
+        );
         clearPendingClinicSetup();
         await refresh();
         const { redirectUrl } = await startOrgCheckout(organizationId, pending.plan, pending.billingCycle);

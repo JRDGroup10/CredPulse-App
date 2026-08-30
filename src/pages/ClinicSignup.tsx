@@ -6,7 +6,7 @@ import { savePendingClinicSetup } from "../lib/pendingClinicSetup";
 import { supabaseConfigured } from "../lib/supabaseClient";
 import { BillingCycle, OrgPlan, Region } from "../lib/types";
 import { orderedRoleGroups } from "../lib/roles";
-import { getIndustryPref, marketingHomePath } from "../lib/industryPref";
+import { getIndustryPref, marketingHomePath, IndustryPref } from "../lib/industryPref";
 import { LogoMark } from "../components/Logo";
 import TierPicker from "../components/TierPicker";
 
@@ -34,6 +34,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
   // lib/industryPref.ts), so a school board admin setting up a team doesn't
   // have to scroll past two dozen healthcare titles to find their own.
   const preferOther = useMemo(() => getIndustryPref() === "other", []);
+  const industry: IndustryPref = preferOther ? "other" : "healthcare";
   const roleGroups = useMemo(() => orderedRoleGroups(region, preferOther), [region, preferOther]);
   const [role, setRole] = useState(roleGroups[0].roles[0]);
   const [email, setEmail] = useState("");
@@ -76,19 +77,19 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
     setBusy(true);
     setError(null);
     try {
-      const { user, session } = await signUp(email, password, name, role, region);
+      const { user, session } = await signUp(email, password, name, role, region, industry);
       if (!user) throw new Error("Signup didn't return a user. Please try again.");
 
       if (!session) {
         // Email confirmation is required — no auth.uid() yet, so the org
         // can't be created until they confirm and log back in. Stash the
         // choice so PendingClinicSetupResumer can finish it then.
-        savePendingClinicSetup({ name: clinicName.trim(), plan, billingCycle });
+        savePendingClinicSetup({ name: clinicName.trim(), plan, billingCycle, industry });
         setStep("checkInbox");
         return;
       }
 
-      const organizationId = await createOrganization(user.id, clinicName.trim(), plan, billingCycle);
+      const organizationId = await createOrganization(user.id, clinicName.trim(), plan, billingCycle, industry);
       await refresh();
       const { redirectUrl } = await startOrgCheckout(organizationId, plan, billingCycle);
       // Either way the org already exists with a trial. Real Stripe sends

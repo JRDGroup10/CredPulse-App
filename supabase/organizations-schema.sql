@@ -269,3 +269,70 @@ where scope = 'personal'
 --   select p.email, count(*) filter (where c.scope = 'clinic') as clinic_certs
 --   from public.certificates c join public.profiles p on p.id = c.user_id
 --   where p.organization_id is not null group by p.email;
+
+-- ============================================================
+-- Industry gating: which side of the homepage split-screen chooser an
+-- account belongs to (see src/lib/industryPref.ts and
+-- src/pages/IndustryChooser.tsx) — 'healthcare' or 'other' (construction,
+-- education, policing). Enforced at login in Auth.tsx: a healthcare account
+-- can't sign in from the other-industries page and vice versa. Every
+-- existing row defaults to 'healthcare' since the whole product was
+-- healthcare-only before this feature existed.
+-- ============================================================
+alter table public.profiles add column if not exists industry text not null default 'healthcare';
+alter table public.profiles drop constraint if exists profiles_industry_check;
+alter table public.profiles add constraint profiles_industry_check check (industry in ('healthcare', 'other'));
+
+alter table public.organizations add column if not exists industry text not null default 'healthcare';
+alter table public.organizations drop constraint if exists organizations_industry_check;
+alter table public.organizations add constraint organizations_industry_check check (industry in ('healthcare', 'other'));
+
+-- Extend handle_new_user() again: capture industry from signup metadata
+-- (see signUp() in src/lib/store.ts), and when auto-linking a brand-new
+-- signup to a pending team invite, force their industry to match their
+-- organization's actual industry rather than whatever their own device
+-- happened to remember — a teammate can never end up mismatched from their
+-- own team just because they opened the invite link from a different page.
+create or replace function public.handle_new_user()
+returns trigger as $$
+declare
+  matched_invite record;
+begin
+  insert into public.profiles (id, email, name, role, region, industry)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', ''),
+    coalesce(new.raw_user_meta_data->>'role', ''),
+    coalesce(new.raw_user_meta_data->>'region', 'CA'),
+    coalesce(new.raw_user_meta_data->>'industry', 'healthcare')
+  );
+
+  select * into matched_invite
+  from public.organization_invites
+  where email = new.email and status = 'pending'
+  order by created_at asc
+  limit 1;
+
+  if found then
+    update public.profiles
+    set organization_id = matched_invite.organization_id,
+        org_role = 'member',
+        industry = coalesce(
+          (select industry from public.organizations where id = matched_invite.organization_id),
+          'healthcare'
+        )
+    where id = new.id;
+
+    update public.organization_invites
+    set status = 'accepted', accepted_at = now()
+    where id = matched_invite.id;
+  end if;
+
+  return new;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+-- To check it's working:
+--   select id, email, industry from public.profiles order by created_at desc;
+--   select id, name, industry from public.organizations order by created_at desc;

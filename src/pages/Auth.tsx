@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { signIn, signUp } from "../lib/store";
+import { getAccountIndustry, signIn, signOut, signUp } from "../lib/store";
 import { supabaseConfigured } from "../lib/supabaseClient";
 import { Region } from "../lib/types";
 import { orderedRoleGroups } from "../lib/roles";
-import { getIndustryPref } from "../lib/industryPref";
+import { getIndustryPref, setIndustryPref, IndustryPref } from "../lib/industryPref";
 import { LogoMark } from "../components/Logo";
 type Mode = "signup" | "login";
 
@@ -30,6 +30,7 @@ export default function Auth({
   // lib/industryPref.ts), so a construction worker signing up doesn't have
   // to scroll past two dozen healthcare titles to find their own.
   const preferOther = useMemo(() => getIndustryPref() === "other", []);
+  const industry: IndustryPref = preferOther ? "other" : "healthcare";
   const roleGroups = useMemo(() => orderedRoleGroups(region, preferOther), [region, preferOther]);
   const [role, setRole] = useState(roleGroups[0].roles[0]);
   const [email, setEmail] = useState("");
@@ -66,11 +67,32 @@ export default function Auth({
     setBusy(true);
     try {
       if (mode === "signup") {
-        await signUp(email, password, name, role, region);
+        await signUp(email, password, name, role, region, industry);
         // If email confirmation is required, Supabase won't return a session yet.
         setCheckInbox(true);
       } else {
-        await signIn(email, password);
+        const { user } = await signIn(email, password);
+        if (user) {
+          // This account was created on one specific side of the homepage
+          // split-screen chooser (see lib/industryPref.ts) and can only log
+          // in from that same side — otherwise a healthcare account could
+          // wander into the construction/education/policing page and vice
+          // versa, which is confusing and not what either side promises.
+          const accountIndustry = await getAccountIndustry(user.id);
+          if (accountIndustry !== industry) {
+            await signOut();
+            // Correct the device's remembered preference to match the real
+            // account, so "Back to homepage" below — and any future visit —
+            // lands them on the right page without having to choose again.
+            setIndustryPref(accountIndustry);
+            setError(
+              accountIndustry === "healthcare"
+                ? "This account was created on the healthcare page. Go back and switch industries to log in."
+                : "This account was created on the other-industries page. Go back and switch industries to log in."
+            );
+            return;
+          }
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

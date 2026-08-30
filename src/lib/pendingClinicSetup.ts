@@ -1,4 +1,5 @@
 import { BillingCycle, OrgPlan } from "./types";
+import { IndustryPref } from "./industryPref";
 
 // If a clinic admin signs up but their Supabase project requires email
 // confirmation, there's no session yet — and therefore no auth.uid() for
@@ -12,6 +13,7 @@ export interface PendingClinicSetup {
   name: string;
   plan: OrgPlan;
   billingCycle: BillingCycle;
+  industry: IndustryPref;
 }
 
 export function savePendingClinicSetup(setup: PendingClinicSetup): void {

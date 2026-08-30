@@ -90,7 +90,16 @@ export default function TeamSettings() {
     setCreating(true);
     setCreateError(null);
     try {
-      const organizationId = await createOrganization(userId, teamName.trim(), createPlan, createCycle);
+      // This person is already signed in — the org they create inherits
+      // their own account's industry (see lib/industryPref.ts), not
+      // whatever the device's marketing-page preference happens to be.
+      const organizationId = await createOrganization(
+        userId,
+        teamName.trim(),
+        createPlan,
+        createCycle,
+        state.profile.industry
+      );
       await startOrgCheckout(organizationId, createPlan, createCycle).then(({ redirectUrl }) => {
         if (redirectUrl) window.location.href = redirectUrl;
       });

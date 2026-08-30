@@ -1,3 +1,5 @@
+import { IndustryPref } from "./industryPref";
+
 export type CredStatus = "expired" | "urgent" | "upcoming" | "valid";
 
 export type Plan = "free" | "plus" | "pro";
@@ -40,6 +42,11 @@ export interface UserProfile {
   region: Region;
   organizationId: string | null; // set once this user creates or joins a team
   orgRole: OrgRole;
+  // Which side of the homepage split-screen chooser this account was created
+  // under (see lib/industryPref.ts) — set once at signup and enforced at
+  // login (see Auth.tsx) so a healthcare account can't sign in from the
+  // construction/education/policing side, or vice versa.
+  industry: IndustryPref;
 }
 
 export interface AppState {
@@ -59,6 +66,7 @@ export interface Organization {
   billingCycle: BillingCycle;
   subscriptionStatus: OrgSubscriptionStatus;
   trialEndsAt: string | null;
+  industry: IndustryPref;
 }
 
 export interface OrgMember {
