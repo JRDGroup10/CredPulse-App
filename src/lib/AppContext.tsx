@@ -43,16 +43,33 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return;
       setSession(data.session);
-      await loadFor(data.session);
-      if (mounted) setLoading(false);
+      try {
+        await loadFor(data.session);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+    // IMPORTANT: this callback must stay synchronous and must not directly
+    // await another Supabase call. Supabase's client holds an internal lock
+    // while processing an auth event (sign-in, token refresh, etc.); a
+    // Supabase query awaited straight inside this callback can end up
+    // waiting on that same lock and never resolve — which is exactly what
+    // caused sign-in to get stuck on the loading spinner until a manual
+    // page refresh. Deferring the follow-up work with setTimeout(0) moves
+    // it to a fresh macrotask, after Supabase has released the lock.
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       if (!mounted) return;
-      setLoading(true);
-      setSession(newSession);
-      await loadFor(newSession);
-      if (mounted) setLoading(false);
+      setTimeout(async () => {
+        if (!mounted) return;
+        setLoading(true);
+        setSession(newSession);
+        try {
+          await loadFor(newSession);
+        } finally {
+          if (mounted) setLoading(false);
+        }
+      }, 0);
     });
 
     return () => {
