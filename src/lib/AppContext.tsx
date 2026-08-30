@@ -10,6 +10,14 @@ interface Ctx {
   state: AppState | null;
   setState: React.Dispatch<React.SetStateAction<AppState | null>>;
   refresh: () => Promise<void>;
+  // True while Auth.tsx is mid-way through a login attempt, checking whether
+  // the account's industry (see lib/industryPref.ts) matches the page it
+  // logged in from. Supabase flips `session` truthy the instant signIn()
+  // succeeds — before that check can run — so without this flag, App.tsx
+  // would render the real dashboard for a flash even when the login is
+  // about to be rejected and signed back out. See Auth.tsx.
+  authGating: boolean;
+  setAuthGating: (v: boolean) => void;
 }
 
 const AppStateContext = createContext<Ctx | null>(null);
@@ -18,6 +26,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [state, setState] = useState<AppState | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authGating, setAuthGating] = useState(false);
 
   async function loadFor(s: Session | null) {
     if (!s) {
@@ -54,7 +63,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AppStateContext.Provider value={{ session, loading, state, setState, refresh: () => loadFor(session) }}>
+    <AppStateContext.Provider
+      value={{ session, loading, state, setState, refresh: () => loadFor(session), authGating, setAuthGating }}
+    >
       {children}
     </AppStateContext.Provider>
   );
@@ -67,7 +78,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const ctx = useContext(AppStateContext);
   if (!ctx) throw new Error("useAuth must be used within AppStateProvider");
-  return { session: ctx.session, loading: ctx.loading, refresh: ctx.refresh };
+  return {
+    session: ctx.session,
+    loading: ctx.loading,
+    refresh: ctx.refresh,
+    authGating: ctx.authGating,
+    setAuthGating: ctx.setAuthGating
+  };
 }
 
 /**

@@ -6,6 +6,53 @@ html, body, #root {
   height: 100%;
 }
 
+/* Theme tokens backing the "brand"/"accent" Tailwind colors and the "glow"
+   shadow (see tailwind.config.js). Values are space-separated R G B
+   components, not hex, so Tailwind's opacity-modifier classes (bg-brand-500/10
+   etc.) keep working. Defaults are the healthcare blue/green palette used on
+   the marketing site and throughout the app chrome.
+
+   Layout.tsx sets data-industry="other" on the authenticated app's root
+   element for accounts whose industry (see lib/industryPref.ts) is
+   construction/education/policing rather than healthcare — the override
+   block below retints every bg-brand-*/text-brand-*/shadow-glow usage
+   inside that subtree to amber/orange automatically, with no changes to
+   any individual component. Pages rendered outside that wrapper (Landing,
+   Industries, Auth, etc.) always see the :root defaults regardless of who's
+   viewing them — Landing.tsx in particular should always stay blue, since
+   its blue *is* the healthcare page's identity, not a per-viewer setting. */
+:root {
+  --color-brand-50: 239 246 255;
+  --color-brand-100: 219 234 254;
+  --color-brand-200: 191 219 254;
+  --color-brand-400: 59 130 246;
+  --color-brand-500: 37 99 235;
+  --color-brand-600: 29 78 216;
+  --color-brand-700: 30 64 175;
+  --color-brand-900: 30 42 94;
+  --color-accent-50: 236 253 245;
+  --color-accent-100: 209 250 229;
+  --color-accent-500: 16 185 129;
+  --color-accent-600: 5 150 105;
+  --color-glow-rgb: 37 99 235;
+}
+
+[data-industry="other"] {
+  --color-brand-50: 255 251 235;
+  --color-brand-100: 254 243 199;
+  --color-brand-200: 253 230 138;
+  --color-brand-400: 251 191 36;
+  --color-brand-500: 245 158 11;
+  --color-brand-600: 217 119 6;
+  --color-brand-700: 180 83 9;
+  --color-brand-900: 120 53 15;
+  --color-accent-50: 255 247 237;
+  --color-accent-100: 255 237 213;
+  --color-accent-500: 249 115 22;
+  --color-accent-600: 234 88 12;
+  --color-glow-rgb: 217 119 6;
+}
+
 /* Safety net: nothing on the page should ever be able to force horizontal
    scrolling on the whole document, even if a component overflows its own
    container. Individual scrollable regions (e.g. tables) opt in with their
@@ -40,7 +87,12 @@ html.dark body {
 
 @layer utilities {
   .text-gradient {
-    background-image: linear-gradient(90deg, #1d4ed8, #2563eb, #10b981);
+    background-image: linear-gradient(
+      90deg,
+      rgb(var(--color-brand-600)),
+      rgb(var(--color-brand-500)),
+      rgb(var(--color-accent-500))
+    );
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;

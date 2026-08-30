@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../lib/AppContext";
 import { getAccountIndustry, signIn, signOut, signUp } from "../lib/store";
 import { supabaseConfigured } from "../lib/supabaseClient";
 import { Region } from "../lib/types";
@@ -22,6 +23,7 @@ export default function Auth({
    * way without this. */
   joiningOrgName?: string;
 }) {
+  const { setAuthGating } = useAuth();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
   const [region, setRegion] = useState<Region>("CA");
@@ -65,6 +67,11 @@ export default function Auth({
     e.preventDefault();
     setError(null);
     setBusy(true);
+    // Covers the whole risky window: Supabase marks the session signed-in the
+    // instant signIn() resolves, before the industry check below can run —
+    // this flag tells App.tsx to hold on a spinner instead of rendering the
+    // (possibly wrong) dashboard in that gap. Cleared in `finally` either way.
+    setAuthGating(true);
     try {
       if (mode === "signup") {
         await signUp(email, password, name, role, region, industry);
@@ -98,6 +105,7 @@ export default function Auth({
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setBusy(false);
+      setAuthGating(false);
     }
   }
 

@@ -27,7 +27,7 @@ function Spinner() {
 }
 
 function Routed() {
-  const { session, loading } = useAuth();
+  const { session, loading, authGating } = useAuth();
   const [showAuth, setShowAuth] = useState<"signup" | "login" | null>(null);
   // Set when someone arrives via a team-invite link (see /join below) and
   // clicks "Create your account" — carried through to Auth.tsx so the
@@ -51,6 +51,16 @@ function Routed() {
   }
 
   if (loading) {
+    return <Spinner />;
+  }
+
+  // Mid-login industry check in flight (see Auth.tsx) — show a spinner
+  // instead of whatever `session` momentarily is. Supabase flips `session`
+  // truthy the instant signIn() succeeds, before Auth.tsx has had a chance
+  // to verify the account belongs on this side of the homepage chooser;
+  // without this, a rejected login could flash the real dashboard for a
+  // moment before being signed back out.
+  if (authGating) {
     return <Spinner />;
   }
 

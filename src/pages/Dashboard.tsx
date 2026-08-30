@@ -155,7 +155,17 @@ export default function Dashboard() {
       {!isUnlimited && (
         <div className="mb-5 flex items-center gap-3 bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-lg px-3 py-2.5">
           <div className="relative flex-shrink-0">
-            <ProgressRing pct={usagePct} color={usagePct >= 100 ? "#ef4444" : "#2563eb"} size={28} stroke={4} />
+            <ProgressRing
+              pct={usagePct}
+              // ProgressRing draws via inline SVG attributes, which don't
+              // resolve the app's CSS-variable color tokens (see
+              // index.css) — so this one spot needs an explicit hex per
+              // industry rather than a Tailwind class. Matches brand-600's
+              // amber value for other-industries accounts.
+              color={usagePct >= 100 ? "#ef4444" : state.profile.industry === "other" ? "#d97706" : "#2563eb"}
+              size={28}
+              stroke={4}
+            />
           </div>
           <div className="flex-1 text-xs text-slate-500 dark:text-slate-400">
             {relevantCount} of {limit} {isOrgMember ? "personal " : ""}certificates used on the {plan.name} plan

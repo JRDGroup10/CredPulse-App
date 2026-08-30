@@ -89,7 +89,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface dark:bg-slate-950 transition-colors">
+    // data-industry drives the amber/orange retint for other-industries
+    // accounts — see the CSS variable overrides in index.css and
+    // tailwind.config.js. Everything rendered inside this wrapper (the
+    // whole authenticated app) picks it up automatically through the color
+    // tokens; nothing else needs to change per-component.
+    <div
+      data-industry={state.profile.industry}
+      className="min-h-screen flex flex-col bg-surface dark:bg-slate-950 transition-colors"
+    >
       <header className="border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-1 min-w-0">
