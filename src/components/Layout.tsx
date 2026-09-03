@@ -98,7 +98,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       data-industry={state.profile.industry}
       className="min-h-screen flex flex-col bg-surface dark:bg-slate-950 transition-colors"
     >
-      <header className="border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
+      <header className="no-print border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-1 min-w-0">
             <HomeButton />
@@ -165,7 +165,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main key={pathname} className="flex-1 max-w-3xl w-full mx-auto px-4 py-6 animate-fade-in-up">
         {children}
       </main>
-      <footer className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <footer className="no-print border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="max-w-3xl mx-auto px-4 py-3 text-xs text-slate-400 dark:text-slate-500 flex justify-between items-center">
           <span>Signed in as {state.profile.name || state.profile.email}</span>
           <div className="flex items-center gap-3">

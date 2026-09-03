@@ -169,11 +169,19 @@ export default function Team() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">{org?.name ?? "Team"} compliance</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-          Grouped by certificate — expand one to see who holds it, soonest to expire first.
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">{org?.name ?? "Team"} compliance</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            Grouped by certificate — expand one to see who holds it, soonest to expire first.
+          </p>
+        </div>
+        <Link
+          to="/team/report"
+          className="flex-shrink-0 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap"
+        >
+          Export report
+        </Link>
       </div>
 
       {org && memberCount <= 1 && (

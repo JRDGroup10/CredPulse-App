@@ -125,3 +125,16 @@ html.dark body {
   background: #bfdbfe;
   color: #1e2a5e;
 }
+
+/* Used by the compliance report (ComplianceReport.tsx) and anything else
+   that wants to render a clean printable page without the app's own nav
+   chrome — apply to elements that should vanish only when printing/saving
+   as PDF, not on screen. Layout.tsx tags its <header>/<footer> with this. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+}

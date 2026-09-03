@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import AddCertificate from "./pages/AddCertificate";
 import Settings from "./pages/Settings";
 import Team from "./pages/Team";
+import ComplianceReport from "./pages/ComplianceReport";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
 import Industries from "./pages/Industries";
@@ -188,6 +189,7 @@ function Routed() {
         <Route path="/billing" element={<Billing />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/team" element={<Team />} />
+        <Route path="/team/report" element={<ComplianceReport />} />
       </Routes>
     </Layout>
   );
