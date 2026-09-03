@@ -336,3 +336,50 @@ $$ language plpgsql security definer set search_path = public;
 -- To check it's working:
 --   select id, email, industry from public.profiles order by created_at desc;
 --   select id, name, industry from public.organizations order by created_at desc;
+
+-- ============================================================
+-- Peer-benchmark: lets a clinic admin see "how does my clinic's
+-- compliance rate compare to a typical clinic in my industry" (Team.tsx)
+-- without ever exposing another organization's actual data. This view
+-- computes one number per industry — the average, across every
+-- billing-active organization in that industry, of "% of that org's
+-- clinic-scoped certificates that are not expired" — and nothing else.
+--
+-- Deliberately created as a plain view (NOT `with (security_invoker)`), so
+-- it runs with its owner's privileges rather than the querying admin's —
+-- the owner (whoever runs this in the SQL Editor, normally a superuser-ish
+-- role) can see across every organization's certificates/profiles rows
+-- even though each admin's own RLS policies would otherwise only let them
+-- see their own org. That cross-org read only ever happens inside this
+-- aggregation; the columns this view actually returns are just
+-- (industry, clinic_count, avg_compliance_pct) — no org names, no member
+-- names, no per-org numbers. getIndustryBenchmark() in src/lib/store.ts
+-- additionally refuses to show anything when clinic_count is too small
+-- (see its comment) so the "average" can never be reverse-engineered as
+-- one specific other clinic's real number.
+create or replace view public.industry_compliance_benchmarks as
+select
+  o.industry,
+  count(*)::int as clinic_count,
+  avg(org_rates.compliance_pct) as avg_compliance_pct
+from public.organizations o
+join lateral (
+  select
+    (count(*) filter (where c.expiry_date >= current_date))::numeric
+      / nullif(count(*), 0) * 100 as compliance_pct
+  from public.certificates c
+  join public.profiles p on p.id = c.user_id
+  where p.organization_id = o.id
+    and c.scope = 'clinic'
+) org_rates on org_rates.compliance_pct is not null
+where o.subscription_status != 'incomplete'
+group by o.industry;
+
+grant select on public.industry_compliance_benchmarks to authenticated;
+
+-- Nudge PostgREST to pick up the new view immediately instead of waiting
+-- for its next automatic schema-cache refresh.
+notify pgrst, 'reload schema';
+
+-- To check it's working:
+--   select * from public.industry_compliance_benchmarks;

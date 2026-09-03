@@ -435,6 +435,43 @@ export async function getOrganization(organizationId: string): Promise<Organizat
   };
 }
 
+export interface IndustryBenchmark {
+  /** Average, across every billing-active org in the industry, of "% of
+   * that org's clinic-scoped certificates that are currently not expired." */
+  avgCompliancePct: number;
+  /** How many organizations fed into that average — surfaced in the UI
+   * ("based on N clinics") so the number doesn't read as more authoritative
+   * than it is. */
+  clinicCount: number;
+}
+
+/** Below this many contributing organizations, the "average" is thin
+ * enough that an admin could functionally back out one or two other real
+ * clinics' numbers from it — so we just don't show it at all rather than
+ * risk that. See industry_compliance_benchmarks in
+ * organizations-schema.sql, which computes the aggregate this reads. */
+const MIN_BENCHMARK_SAMPLE = 4;
+
+/** Anonymized "how does my clinic compare" stat for Team.tsx — never
+ * returns anything below MIN_BENCHMARK_SAMPLE contributing organizations,
+ * and never exposes anything more granular than the industry-wide average. */
+export async function getIndustryBenchmark(industry: IndustryPref): Promise<IndustryBenchmark | null> {
+  const { data, error } = await supabase
+    .from("industry_compliance_benchmarks")
+    .select("clinic_count, avg_compliance_pct")
+    .eq("industry", industry)
+    .maybeSingle();
+  if (error) {
+    console.warn("[CredPulse] Couldn't load the industry benchmark — hiding that card.", error);
+    return null;
+  }
+  if (!data || (data.clinic_count as number) < MIN_BENCHMARK_SAMPLE) return null;
+  return {
+    clinicCount: data.clinic_count as number,
+    avgCompliancePct: Number(data.avg_compliance_pct)
+  };
+}
+
 /** How many of the org's seats are already spoken for — current members
  * plus pending (not-yet-accepted) invites, so you can't over-invite past
  * what you're paying for even before those invites are accepted. */

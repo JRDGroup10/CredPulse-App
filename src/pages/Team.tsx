@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAppState } from "../lib/AppContext";
 import {
+  IndustryBenchmark,
   STATUS_STYLES,
   countOrgSeatsUsed,
   daysUntil,
+  getIndustryBenchmark,
   getOrganization,
   listOrgMemberCertificates,
   listOrgMembers,
@@ -66,6 +68,9 @@ export default function Team() {
   const [org, setOrg] = useState<Organization | null>(null);
   const [membersWithCerts, setMembersWithCerts] = useState<MemberWithCerts[] | null>(null);
   const [seatsUsed, setSeatsUsed] = useState(0);
+  // undefined = still loading, null = no benchmark to show (not enough
+  // contributing clinics — see getIndustryBenchmark), object = show it.
+  const [benchmark, setBenchmark] = useState<IndustryBenchmark | null | undefined>(undefined);
 
   useEffect(() => {
     if (!organizationId || !isAdmin) return;
@@ -79,10 +84,12 @@ export default function Team() {
       const withCerts = await Promise.all(
         members.map(async (m) => ({ ...m, certificates: await listOrgMemberCertificates(m.id) }))
       );
+      const industryBenchmark = orgData ? await getIndustryBenchmark(orgData.industry) : null;
       if (!cancelled) {
         setOrg(orgData);
         setMembersWithCerts(withCerts);
         setSeatsUsed(seats);
+        setBenchmark(industryBenchmark);
       }
     })();
     return () => {
@@ -158,6 +165,8 @@ export default function Team() {
   const urgentCount = allCerts.filter((c) => statusFor(c.expiryDate) === "urgent").length;
   const notTrackedCount = membersWithCerts?.filter((m) => m.certificates.length === 0).length ?? 0;
   const memberCount = membersWithCerts?.length ?? 0;
+  const ownCompliancePct =
+    allCerts.length > 0 ? Math.round(((allCerts.length - expiredCount) / allCerts.length) * 100) : null;
 
   const seatLimit = org ? ORG_PLANS[org.plan].seatLimit : 0;
   const seatLimitReached = org !== null && seatsUsed >= seatLimit;
@@ -262,6 +271,39 @@ export default function Team() {
               <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Not tracked yet</div>
             </div>
           </div>
+
+          {benchmark && ownCompliancePct !== null && (
+            <div className="mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-card">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">How you compare</div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {ownCompliancePct >= Math.round(benchmark.avgCompliancePct)
+                      ? "You're ahead of similar clinics — nice work staying on top of renewals."
+                      : "A few renewals behind similar clinics — the list below shows exactly what's due."}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 flex-shrink-0 text-center">
+                  <div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-slate-50 tabular-nums">{ownCompliancePct}%</div>
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap">Your clinic</div>
+                  </div>
+                  <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
+                  <div>
+                    <div className="text-lg font-bold text-slate-400 dark:text-slate-500 tabular-nums">
+                      {Math.round(benchmark.avgCompliancePct)}%
+                    </div>
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap">Typical clinic</div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-3">
+                % of clinic-tracked certificates currently up to date, averaged anonymously across{" "}
+                {benchmark.clinicCount} clinics in your industry on CredPulse. No other clinic's individual
+                data is ever shown.
+              </p>
+            </div>
+          )}
 
           {memberCount === 0 ? (
             <div className="text-center py-16 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400">
