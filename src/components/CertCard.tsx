@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Certificate } from "../lib/types";
 import { getCertificateFileUrl } from "../lib/store";
+import { buildCertificateICS, downloadICS } from "../lib/ics";
 import StatusBadge from "./StatusBadge";
 
 export default function CertCard({
@@ -10,7 +11,8 @@ export default function CertCard({
   showScopeBadge = false,
   selectable = false,
   selected = false,
-  onToggleSelect
+  onToggleSelect,
+  reminderDays = [30, 7]
 }: {
   cert: Certificate;
   onRemove: (id: string) => void;
@@ -28,11 +30,22 @@ export default function CertCard({
   selectable?: boolean;
   selected?: boolean;
   onToggleSelect?: (id: string) => void;
+  /** Same days-before-expiry the account's email/push reminders use (see
+   * profile.reminderDays) — reused here so the downloaded calendar event's
+   * alarms match what the person already expects, instead of inventing a
+   * second, different reminder schedule. */
+  reminderDays?: number[];
 }) {
   async function handleViewFile() {
     if (!cert.filePath) return;
     const url = await getCertificateFileUrl(cert.filePath);
     if (url) window.open(url, "_blank", "noopener");
+  }
+
+  function handleAddToCalendar() {
+    const ics = buildCertificateICS(cert, reminderDays);
+    const safeName = cert.name.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "certificate";
+    downloadICS(`${safeName}-renewal.ics`, ics);
   }
   return (
     <div className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-start justify-between gap-4 shadow-card hover:shadow-glow hover:border-brand-200 dark:hover:border-brand-700 hover:-translate-y-0.5 transition-all duration-200">
@@ -102,8 +115,14 @@ export default function CertCard({
         <div className="text-sm font-medium text-slate-700 dark:text-slate-200">
           {new Date(cert.expiryDate).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric" })}
         </div>
+        <button
+          onClick={handleAddToCalendar}
+          className="mt-2 block text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+        >
+          Add to calendar
+        </button>
         {cert.filePath && (
-          <button onClick={handleViewFile} className="mt-2 block text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+          <button onClick={handleViewFile} className="mt-1 block text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
             View file
           </button>
         )}

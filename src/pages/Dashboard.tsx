@@ -321,6 +321,7 @@ export default function Dashboard() {
                     selectable={bulkMode}
                     selected={selectedIds.has(cert.id)}
                     onToggleSelect={toggleSelect}
+                    reminderDays={state.profile.reminderDays}
                   />
                 </div>
               ))}
