@@ -42,16 +42,12 @@ function utcStamp(): string {
   return new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 }
 
-/**
- * Builds a .ics calendar file for a single certificate's renewal — an
- * all-day event on the expiry date itself, with a reminder alarm for each
- * of the user's configured reminder-days-before-expiry (see
- * profile.reminderDays, the same numbers the email/push reminders use, so
- * "add to calendar" nudges on the same schedule someone already expects).
- * Uses the certificate's own id as the UID so re-downloading/re-importing
- * updates the same calendar event instead of creating a duplicate.
- */
-export function buildCertificateICS(cert: Certificate, reminderDays: number[]): string {
+/** Builds the lines for one VEVENT block (no VCALENDAR wrapper) — an
+ * all-day event on the certificate's expiry date, with a reminder VALARM
+ * for each of the given reminder-days-before-expiry. Shared by
+ * buildCertificateICS (one cert, one file) and buildCombinedICS (every
+ * cert, one file) so both stay in sync. */
+function buildVEventLines(cert: Certificate, reminderDays: number[]): string[] {
   const dtStart = toICSDate(cert.expiryDate);
   const dtEnd = toICSDate(addOneDay(cert.expiryDate));
   const summary = escapeText(`Renew: ${cert.name}`);
@@ -74,11 +70,7 @@ export function buildCertificateICS(cert: Certificate, reminderDays: number[]): 
       ].join("\r\n")
     );
 
-  const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//CredPulse//Certificate Reminder//EN",
-    "CALSCALE:GREGORIAN",
+  return [
     "BEGIN:VEVENT",
     `UID:${cert.id}@credpulse.app`,
     `DTSTAMP:${utcStamp()}`,
@@ -87,10 +79,46 @@ export function buildCertificateICS(cert: Certificate, reminderDays: number[]): 
     foldLine(`SUMMARY:${summary}`),
     foldLine(`DESCRIPTION:${description}`),
     ...alarms,
-    "END:VEVENT",
+    "END:VEVENT"
+  ];
+}
+
+/**
+ * Builds a .ics calendar file for a single certificate's renewal — an
+ * all-day event on the expiry date itself, with a reminder alarm for each
+ * of the user's configured reminder-days-before-expiry (see
+ * profile.reminderDays, the same numbers the email/push reminders use, so
+ * "add to calendar" nudges on the same schedule someone already expects).
+ * Uses the certificate's own id as the UID so re-downloading/re-importing
+ * updates the same calendar event instead of creating a duplicate.
+ */
+export function buildCertificateICS(cert: Certificate, reminderDays: number[]): string {
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//CredPulse//Certificate Reminder//EN",
+    "CALSCALE:GREGORIAN",
+    ...buildVEventLines(cert, reminderDays),
     "END:VCALENDAR"
   ];
+  return lines.join("\r\n") + "\r\n";
+}
 
+/**
+ * Builds one .ics file containing every certificate's renewal event at
+ * once — used by the "Download all as calendar" action on the Notifications
+ * page, for someone who'd rather import their whole list in one go instead
+ * of one file per certificate.
+ */
+export function buildCombinedICS(certs: Certificate[], reminderDays: number[]): string {
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//CredPulse//Certificate Reminder//EN",
+    "CALSCALE:GREGORIAN",
+    ...certs.flatMap((cert) => buildVEventLines(cert, reminderDays)),
+    "END:VCALENDAR"
+  ];
   return lines.join("\r\n") + "\r\n";
 }
 

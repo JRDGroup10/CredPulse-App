@@ -5,6 +5,7 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import AddCertificate from "./pages/AddCertificate";
 import Settings from "./pages/Settings";
+import Notifications from "./pages/Notifications";
 import Team from "./pages/Team";
 import ComplianceReport from "./pages/ComplianceReport";
 import Auth from "./pages/Auth";
@@ -188,6 +189,7 @@ function Routed() {
         <Route path="/add" element={<AddCertificate />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/team" element={<Team />} />
         <Route path="/team/report" element={<ComplianceReport />} />
       </Routes>

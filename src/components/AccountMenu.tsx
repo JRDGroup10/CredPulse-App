@@ -71,6 +71,13 @@ export default function AccountMenu({ profile, planName }: { profile: UserProfil
           Settings
         </Link>
         <Link
+          to="/notifications"
+          onClick={close}
+          className="block px-1 py-1.5 text-sm rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
+        >
+          Notifications
+        </Link>
+        <Link
           to={marketingHomePath()}
           onClick={close}
           className="block px-1 py-1.5 text-sm rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
