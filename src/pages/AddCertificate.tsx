@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppState } from "../lib/AppContext";
 import { addCertificate, canUseTipsAndLinks, certLimit, certLimitReached, extractCertificate } from "../lib/store";
+import { findLikelyDuplicate } from "../lib/certSimilarity";
 import { CertScope, Certificate } from "../lib/types";
 import { PLANS } from "../lib/plans";
 
@@ -40,9 +41,22 @@ export default function AddCertificate() {
   const limitReached = certLimitReached(state, scope);
   const showTipsAndLinks = canUseTipsAndLinks(state, scope);
 
+  // Redundant-cert detection: flags when the name being saved looks like a
+  // credential the person already has on file (typo'd re-entry, or a
+  // renewal that should probably replace the old record instead of piling
+  // up next to it). Purely a heads-up — doesn't block saving — so it's
+  // dismissible per add-attempt via dismissedDuplicate, reset whenever a
+  // fresh file/manual entry starts.
+  const [dismissedDuplicate, setDismissedDuplicate] = useState(false);
+  const duplicate = useMemo(
+    () => (dismissedDuplicate ? null : findLikelyDuplicate(draft.name, state.certificates)),
+    [draft.name, state.certificates, dismissedDuplicate]
+  );
+
   async function handleFile(file: File) {
     setFileName(file.name);
     setPendingFile(file);
+    setDismissedDuplicate(false);
     setStep("extracting");
     const result = await extractCertificate(file, state.profile.region);
     setDraft({
@@ -181,6 +195,23 @@ export default function AddCertificate() {
                   We weren't fully sure about this one — double-check the fields below before saving.
                 </div>
               )}
+
+              {duplicate && (
+                <div className="mb-4 text-xs bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900 rounded-lg px-3 py-2.5 flex items-start justify-between gap-3">
+                  <span>
+                    You already have <span className="font-semibold">{duplicate.name}</span> on file (expires{" "}
+                    {new Date(duplicate.expiryDate).toLocaleDateString()}). If this is the same certification, consider
+                    deleting the old record after saving instead of keeping both.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setDismissedDuplicate(true)}
+                    className="font-semibold whitespace-nowrap flex-shrink-0"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
               <div className="space-y-4">
                 <Field label="Certificate name" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })} />
                 <Field label="Issuing body" value={draft.issuer} onChange={(v) => setDraft({ ...draft, issuer: v })} />
@@ -241,6 +272,7 @@ export default function AddCertificate() {
                     setFileName("");
                     setPendingFile(null);
                     setError(null);
+                    setDismissedDuplicate(false);
                   }}
                   disabled={saving}
                   className="text-sm text-slate-500 dark:text-slate-400 px-4 py-2 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
