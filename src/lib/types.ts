@@ -88,3 +88,27 @@ export interface OrgInviteWithOrgName extends OrgInvite {
   organizationId: string;
   organizationName: string;
 }
+
+// ============================================================
+// Audit log — enterprise-readiness feature. See
+// supabase/organizations-schema.sql for the table/RLS and
+// src/lib/store.ts's logAudit()/listAuditLog() for how entries are
+// written and read.
+// ============================================================
+
+export type AuditAction =
+  | "certificate.created"
+  | "certificate.deleted"
+  | "invite.sent"
+  | "invite.revoked"
+  | "invite.accepted"
+  | "org.plan_changed";
+
+export interface AuditLogEntry {
+  id: string;
+  actorName: string; // falls back to actor's email if no name on file
+  action: AuditAction;
+  targetLabel: string | null; // human-readable snapshot, e.g. a cert name or invited email
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+}

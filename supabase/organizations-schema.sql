@@ -383,3 +383,73 @@ notify pgrst, 'reload schema';
 
 -- To check it's working:
 --   select * from public.industry_compliance_benchmarks;
+
+-- ============================================================
+-- Audit log — enterprise-readiness feature.
+--
+-- Append-only trail of who-did-what-when for the org-scoped actions that
+-- matter for a compliance review: certificate changes, team membership
+-- changes, and plan changes. Deliberately has NO update or delete policy —
+-- not even the org owner can edit or remove an entry via the client, which
+-- is exactly the point of an audit log (see src/lib/store.ts's logAudit()
+-- for how rows get written, and Team.tsx/AuditLog.tsx for how they're read).
+--
+-- Scope for this first version: certificate.created / certificate.deleted
+-- (clinic-scoped certs only — a member's personal certs are never an org
+-- concern, same boundary as everywhere else in this app), invite.sent /
+-- invite.revoked / invite.accepted, and org.plan_changed. Plan changes
+-- triggered server-side by Stripe webhooks (as opposed to the in-app
+-- "change plan" action) aren't logged yet — that would need the
+-- stripe-webhook Edge Function to write here too, which is a reasonable
+-- follow-up if it turns out to matter.
+-- ============================================================
+
+create table if not exists public.audit_log (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  actor_id uuid references auth.users(id) on delete set null,
+  actor_name text,
+  actor_email text,
+  action text not null,
+  target_type text,
+  target_id text,
+  target_label text,
+  metadata jsonb,
+  created_at timestamptz not null default now()
+);
+
+alter table public.audit_log enable row level security;
+
+-- Only the org's owner/admin can read its audit log — same bar as managing
+-- the team at all (see profiles.org_role).
+create policy "Org admins can read their audit log"
+  on public.audit_log for select
+  using (
+    organization_id in (
+      select organization_id from public.profiles
+      where id = auth.uid() and org_role in ('owner', 'admin')
+    )
+  );
+
+-- Any member can insert a row, but only ever attributed to themself
+-- (actor_id = auth.uid()) and only for the org they actually belong to —
+-- so nobody can forge an entry as someone else or write into another
+-- org's log. This is what lets logAudit() run as the signed-in user right
+-- after their own action succeeds, no service-role key needed.
+create policy "Members can log their own actions in their own org"
+  on public.audit_log for insert
+  with check (
+    actor_id = auth.uid()
+    and organization_id in (
+      select organization_id from public.profiles where id = auth.uid()
+    )
+  );
+
+create index if not exists audit_log_org_created_idx on public.audit_log (organization_id, created_at desc);
+
+grant select, insert on public.audit_log to authenticated;
+
+notify pgrst, 'reload schema';
+
+-- To check it's working (as an org owner/admin, after some activity):
+--   select action, target_label, actor_name, created_at from public.audit_log order by created_at desc;

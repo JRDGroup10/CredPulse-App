@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAppState } from "../lib/AppContext";
 import { canUseTipsAndLinks, certLimit, daysUntil, removeCertificate, statusFor } from "../lib/store";
 import { PLANS } from "../lib/plans";
-import { CertScope, CredStatus } from "../lib/types";
+import { CertScope, Certificate, CredStatus } from "../lib/types";
 import CertCard from "../components/CertCard";
 import CountUp from "../components/CountUp";
 import ProgressRing from "../components/ProgressRing";
@@ -17,8 +17,22 @@ type ScopeFilter = "all" | CertScope;
 type SortMode = "expiry-soonest" | "expiry-furthest" | "name";
 
 export default function Dashboard() {
-  const { state, refresh } = useAppState();
+  const { userId, state, refresh } = useAppState();
   const isOrgMember = !!state.profile.organizationId;
+
+  // Only clinic-scoped certs generate an audit-log entry when removed — a
+  // member's personal certs have no org to log against. See removeCertificate
+  // in store.ts.
+  function auditContextFor(cert: Certificate) {
+    if (cert.scope !== "clinic") return undefined;
+    return {
+      id: userId,
+      name: state.profile.name,
+      email: state.profile.email,
+      organizationId: state.profile.organizationId,
+      certName: cert.name
+    };
+  }
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("all");
@@ -71,7 +85,7 @@ export default function Dashboard() {
     setBulkDeleting(true);
     try {
       const targets = state.certificates.filter((c) => selectedIds.has(c.id));
-      await Promise.all(targets.map((c) => removeCertificate(c.id, c.filePath)));
+      await Promise.all(targets.map((c) => removeCertificate(c.id, c.filePath, auditContextFor(c))));
       await refresh();
       exitBulkMode();
     } finally {
@@ -97,7 +111,7 @@ export default function Dashboard() {
 
   async function handleRemove(id: string) {
     const cert = state.certificates.find((c) => c.id === id);
-    await removeCertificate(id, cert?.filePath);
+    await removeCertificate(id, cert?.filePath, cert ? auditContextFor(cert) : undefined);
     await refresh();
   }
 

@@ -18,6 +18,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Team = lazy(() => import("./pages/Team"));
 const ComplianceReport = lazy(() => import("./pages/ComplianceReport"));
+const AuditLog = lazy(() => import("./pages/AuditLog"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Industries = lazy(() => import("./pages/Industries"));
@@ -213,6 +214,7 @@ function Routed() {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/team" element={<Team />} />
           <Route path="/team/report" element={<ComplianceReport />} />
+          <Route path="/team/audit-log" element={<AuditLog />} />
         </Routes>
       </Suspense>
     </Layout>

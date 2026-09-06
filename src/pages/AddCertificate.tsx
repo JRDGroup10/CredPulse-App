@@ -82,7 +82,14 @@ export default function AddCertificate() {
     setSaving(true);
     setError(null);
     try {
-      await addCertificate(userId, payload, pendingFile);
+      await addCertificate(
+        userId,
+        payload,
+        pendingFile,
+        scope === "clinic"
+          ? { id: userId, name: state.profile.name, email: state.profile.email, organizationId: state.profile.organizationId }
+          : undefined
+      );
       await refresh();
       navigate("/");
     } catch (err) {

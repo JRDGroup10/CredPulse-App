@@ -32,7 +32,8 @@ import TierPicker from "./TierPicker";
  */
 export default function TeamSettings() {
   const { userId, state, refresh } = useAppState();
-  const { organizationId, orgRole } = state.profile;
+  const { organizationId, orgRole, name, email } = state.profile;
+  const auditActor = { id: userId, name, email };
   const isAdmin = orgRole === "owner" || orgRole === "admin";
 
   const [org, setOrg] = useState<Organization | null>(null);
@@ -130,7 +131,7 @@ export default function TeamSettings() {
 
   async function handleRevoke(inviteId: string) {
     if (!organizationId) return;
-    await revokeInvite(inviteId);
+    await revokeInvite(inviteId, auditActor);
     await loadTeam(organizationId);
   }
 
@@ -158,7 +159,7 @@ export default function TeamSettings() {
     setChangePlanError(null);
     setChangePlanSuccess(false);
     try {
-      await updateOrgPlan(organizationId, changePlan, changeCycle);
+      await updateOrgPlan(organizationId, changePlan, changeCycle, auditActor);
       setChangePlanSuccess(true);
       setShowChangePlan(false);
       await loadTeam(organizationId);

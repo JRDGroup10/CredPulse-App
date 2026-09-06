@@ -11,7 +11,7 @@ import { OrgInviteWithOrgName } from "../lib/types";
  */
 export default function TeamInviteBanner() {
   const { userId, state, refresh } = useAppState();
-  const { email, organizationId } = state.profile;
+  const { name, email, organizationId } = state.profile;
 
   const [invite, setInvite] = useState<OrgInviteWithOrgName | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -31,7 +31,7 @@ export default function TeamInviteBanner() {
     if (!invite) return;
     setAccepting(true);
     try {
-      await acceptOrganizationInvite(userId, { id: invite.id, organizationId: invite.organizationId });
+      await acceptOrganizationInvite(userId, { id: invite.id, organizationId: invite.organizationId }, { name, email });
       await refresh();
     } finally {
       setAccepting(false);

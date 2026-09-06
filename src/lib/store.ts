@@ -1,6 +1,8 @@
 import { supabase } from "./supabaseClient";
 import {
   AppState,
+  AuditAction,
+  AuditLogEntry,
   BillingCycle,
   CertScope,
   Certificate,
@@ -19,6 +21,7 @@ import { IndustryPref } from "./industryPref";
 import { PLANS } from "./plans";
 import { ORG_PLANS, nextOrgPlanAbove } from "./orgPlans";
 import { Extracted, enrichWithTemplate, mockExtractCertificate } from "./mockExtract";
+import { reportError } from "./errorMonitoring";
 
 // ============================================================
 // Row <-> app-type mapping (Postgres uses snake_case, the app uses camelCase)
@@ -296,13 +299,22 @@ export function orgBillingIncomplete(org: Organization): boolean {
 export async function updateOrgPlan(
   organizationId: string,
   plan: OrgPlan,
-  billingCycle: BillingCycle
+  billingCycle: BillingCycle,
+  actor?: AuditActor
 ): Promise<void> {
   const { data, error } = await supabase.functions.invoke("update-org-plan", {
     body: { organizationId, plan, billingCycle }
   });
   if (error) throw error;
   if (data?.error) throw new Error(data.error as string);
+
+  if (actor) {
+    await logAudit(organizationId, actor, "org.plan_changed", {
+      targetType: "organization",
+      targetId: organizationId,
+      targetLabel: `${plan} (${billingCycle})`
+    });
+  }
 }
 
 /**
@@ -376,7 +388,11 @@ export async function extractCertificate(file: File, region: Region): Promise<Ex
 export async function addCertificate(
   userId: string,
   cert: Omit<Certificate, "id">,
-  file?: File | null
+  file?: File | null,
+  // Only needed to write an audit-log entry when this is a clinic-scoped
+  // cert — omit it entirely for personal certs, which have no org to log
+  // against anyway (logAudit() no-ops without an organizationId).
+  auditActor?: AuditActor & { organizationId: string | null }
 ): Promise<void> {
   let filePath: string | null = null;
 
@@ -401,14 +417,35 @@ export async function addCertificate(
     scope: cert.scope
   });
   if (error) throw error;
+
+  if (cert.scope === "clinic" && auditActor) {
+    await logAudit(auditActor.organizationId, auditActor, "certificate.created", {
+      targetType: "certificate",
+      targetLabel: cert.name,
+      metadata: { expiryDate: cert.expiryDate, credentialType: cert.credentialType }
+    });
+  }
 }
 
-export async function removeCertificate(certId: string, filePath?: string): Promise<void> {
+export async function removeCertificate(
+  certId: string,
+  filePath?: string,
+  // Same deal as addCertificate — only pass this for a clinic-scoped cert.
+  auditContext?: AuditActor & { organizationId: string | null; certName: string }
+): Promise<void> {
   if (filePath) {
     await supabase.storage.from("certificates").remove([filePath]);
   }
   const { error } = await supabase.from("certificates").delete().eq("id", certId);
   if (error) throw error;
+
+  if (auditContext) {
+    await logAudit(auditContext.organizationId, auditContext, "certificate.deleted", {
+      targetType: "certificate",
+      targetId: certId,
+      targetLabel: auditContext.certName
+    });
+  }
 }
 
 /** Signed, time-limited URL for viewing/downloading an uploaded cert file. */
@@ -555,19 +592,26 @@ export async function inviteToOrganization(organizationId: string, invitedBy: st
   });
   if (error) throw error;
 
+  // Fetched once, used for both the audit-log entry below and the invite
+  // email's "so-and-so invited you" line.
+  const inviterProfileRes = await supabase.from("profiles").select("name, email").eq("id", invitedBy).maybeSingle();
+  const inviterName = (inviterProfileRes.data?.name as string) || "";
+  const inviterEmail = (inviterProfileRes.data?.email as string) || "";
+
+  await logAudit(organizationId, { id: invitedBy, name: inviterName, email: inviterEmail }, "invite.sent", {
+    targetType: "invite",
+    targetLabel: normalizedEmail
+  });
+
   // Best-effort: let the invited person know by email. If this fails (mail
   // service hiccup, secret not set yet, etc.) the invite row still exists —
   // they'll still auto-join on signup, or see the accept banner on login.
   try {
-    const [org, inviterProfile] = await Promise.all([
-      getOrganization(organizationId),
-      supabase.from("profiles").select("name").eq("id", invitedBy).maybeSingle()
-    ]);
     await supabase.functions.invoke("send-team-invite", {
       body: {
         email: normalizedEmail,
         organizationName: org?.name ?? "your team",
-        inviterName: (inviterProfile.data?.name as string) || "A CredPulse user"
+        inviterName: inviterName || "A CredPulse user"
       }
     });
   } catch (err) {
@@ -575,9 +619,25 @@ export async function inviteToOrganization(organizationId: string, invitedBy: st
   }
 }
 
-export async function revokeInvite(inviteId: string): Promise<void> {
+export async function revokeInvite(inviteId: string, actor?: AuditActor): Promise<void> {
+  // Fetched first so the audit-log entry below can say which org and which
+  // invited email this was, without a second round trip after the update.
+  const { data: inviteRow, error: fetchError } = await supabase
+    .from("organization_invites")
+    .select("organization_id, email")
+    .eq("id", inviteId)
+    .maybeSingle();
+  if (fetchError) throw fetchError;
+
   const { error } = await supabase.from("organization_invites").update({ status: "revoked" }).eq("id", inviteId);
   if (error) throw error;
+
+  if (actor && inviteRow) {
+    await logAudit(inviteRow.organization_id as string, actor, "invite.revoked", {
+      targetType: "invite",
+      targetLabel: inviteRow.email as string
+    });
+  }
 }
 
 export async function listOrgInvites(organizationId: string): Promise<OrgInvite[]> {
@@ -648,14 +708,25 @@ export async function getPendingInvitesForEmail(email: string): Promise<OrgInvit
 
 export async function acceptOrganizationInvite(
   userId: string,
-  invite: { id: string; organizationId: string }
+  invite: { id: string; organizationId: string },
+  actor?: { name: string; email: string }
 ): Promise<void> {
+  // Must happen before the audit-log insert below — the insert policy
+  // checks the accepting user's own profiles.organization_id, which this
+  // is what sets it.
   await updateProfile(userId, { organizationId: invite.organizationId, orgRole: "member" });
   const { error } = await supabase
     .from("organization_invites")
     .update({ status: "accepted", accepted_at: new Date().toISOString() })
     .eq("id", invite.id);
   if (error) throw error;
+
+  if (actor) {
+    await logAudit(invite.organizationId, { id: userId, name: actor.name, email: actor.email }, "invite.accepted", {
+      targetType: "invite",
+      targetLabel: actor.email
+    });
+  }
 }
 
 // ============================================================
@@ -734,4 +805,81 @@ export const STATUS_STYLES: Record<CredStatusLike, { label: string; bg: string; 
   urgent: { label: "Renew now", bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-700 dark:text-amber-400", dot: "bg-amber-500", ring: "#f59e0b" },
   upcoming: { label: "Upcoming", bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-700 dark:text-blue-400", dot: "bg-blue-500", ring: "#3b82f6" },
   valid: { label: "Valid", bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-700 dark:text-emerald-400", dot: "bg-emerald-500", ring: "#10b981" }
+};
+
+// ============================================================
+// Audit log — enterprise-readiness feature. See
+// supabase/organizations-schema.sql for the table/RLS.
+// ============================================================
+
+export interface AuditActor {
+  id: string;
+  name: string;
+  email: string;
+}
+
+/**
+ * Best-effort: writes one audit-log row for an org-scoped action. Never
+ * throws — the real action this is logging (a cert delete, an invite sent,
+ * etc.) has already succeeded by the time this runs, and a broken audit
+ * write should never roll that back or surface as an error to the person
+ * who just did something perfectly valid. It's still reported to Sentry,
+ * though, since a silent gap in the audit trail defeats the point of having
+ * one — better to know about it than not.
+ *
+ * No-ops (silently) if there's no organizationId, since only clinic/team
+ * actions get audited — an individual user's own data has no "org" to log
+ * against.
+ */
+async function logAudit(
+  organizationId: string | null | undefined,
+  actor: AuditActor,
+  action: AuditAction,
+  opts: { targetType?: string; targetId?: string; targetLabel?: string; metadata?: Record<string, unknown> } = {}
+): Promise<void> {
+  if (!organizationId) return;
+  const { error } = await supabase.from("audit_log").insert({
+    organization_id: organizationId,
+    actor_id: actor.id,
+    actor_name: actor.name || null,
+    actor_email: actor.email,
+    action,
+    target_type: opts.targetType ?? null,
+    target_id: opts.targetId ?? null,
+    target_label: opts.targetLabel ?? null,
+    metadata: opts.metadata ?? null
+  });
+  if (error) {
+    reportError(error, { context: "logAudit", action, organizationId });
+  }
+}
+
+/** Org admins/owners only (enforced by RLS — see organizations-schema.sql),
+ * most recent first. Used by the Audit Log page. */
+export async function listAuditLog(organizationId: string, limit = 200): Promise<AuditLogEntry[]> {
+  const { data, error } = await supabase
+    .from("audit_log")
+    .select("id, actor_name, actor_email, action, target_label, metadata, created_at")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    actorName: ((r.actor_name as string) || (r.actor_email as string) || "Unknown").trim(),
+    action: r.action as AuditAction,
+    targetLabel: (r.target_label as string) ?? null,
+    metadata: (r.metadata as Record<string, unknown>) ?? null,
+    createdAt: r.created_at as string
+  }));
+}
+
+/** Plain-language label for an audit action, for the UI. */
+export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
+  "certificate.created": "Added a certificate",
+  "certificate.deleted": "Deleted a certificate",
+  "invite.sent": "Invited a teammate",
+  "invite.revoked": "Revoked an invite",
+  "invite.accepted": "Joined the team",
+  "org.plan_changed": "Changed the plan"
 };
