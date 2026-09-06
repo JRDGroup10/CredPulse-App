@@ -111,19 +111,58 @@ export async function signOut() {
 // Loading state for the signed-in user
 // ============================================================
 
+/**
+ * Whether an error is Postgrest rejecting a request because the JWT's
+ * `iat` (issued-at) claim looks like it's in the future relative to the
+ * server that received it (Postgrest error code PGRST303, message "JWT
+ * issued at future"). This shows up right after a session is established —
+ * page load, or right after Supabase's client silently refreshes the
+ * access token — and is a transient clock-skew hazard between Supabase's
+ * auth service and whichever API node handles the very next request, not a
+ * real problem with the token itself: retrying a moment later, once clocks
+ * have settled, succeeds. Caught in production via Sentry (see
+ * errorMonitoring.ts) — without a retry, this surfaced as the entire app
+ * crashing to the ErrorBoundary's "Something went wrong" screen, since
+ * useAppState() throws synchronously when state never finished loading.
+ */
+function isTransientAuthClockSkew(error: unknown): boolean {
+  const err = error as { code?: string; message?: string } | null | undefined;
+  return err?.code === "PGRST303" || /issued at future/i.test(err?.message ?? "");
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function loadState(userId: string, fallbackEmail: string): Promise<AppState> {
-  const [profileRes, certRes] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
-    supabase.from("certificates").select("*").eq("user_id", userId).order("expiry_date", { ascending: true })
-  ]);
+  // No delay on the first attempt; two short backoffs after that, only for
+  // the transient clock-skew error above — any other error still throws
+  // immediately on the first try, same as before.
+  const backoffs = [0, 500, 1500];
+  let lastError: unknown;
 
-  if (profileRes.error) throw profileRes.error;
-  if (certRes.error) throw certRes.error;
+  for (const wait of backoffs) {
+    if (wait) await delay(wait);
 
-  return {
-    profile: mapProfileRow(profileRes.data, fallbackEmail),
-    certificates: (certRes.data ?? []).map(mapCertRow)
-  };
+    const [profileRes, certRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+      supabase.from("certificates").select("*").eq("user_id", userId).order("expiry_date", { ascending: true })
+    ]);
+
+    const error = profileRes.error ?? certRes.error;
+    if (!error) {
+      return {
+        profile: mapProfileRow(profileRes.data, fallbackEmail),
+        certificates: (certRes.data ?? []).map(mapCertRow)
+      };
+    }
+
+    lastError = error;
+    if (!isTransientAuthClockSkew(error)) throw error;
+    // else: fall through and retry after the next backoff
+  }
+
+  throw lastError;
 }
 
 // ============================================================

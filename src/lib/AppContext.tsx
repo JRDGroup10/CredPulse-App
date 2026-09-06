@@ -3,6 +3,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./supabaseClient";
 import { AppState } from "./types";
 import { loadState } from "./store";
+import { reportError } from "./errorMonitoring";
 
 interface Ctx {
   session: Session | null;
@@ -33,8 +34,20 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setState(null);
       return;
     }
-    const next = await loadState(s.user.id, s.user.email ?? "");
-    setState(next);
+    try {
+      const next = await loadState(s.user.id, s.user.email ?? "");
+      setState(next);
+    } catch (err) {
+      // loadState() already retries a couple of times internally for the
+      // transient auth-clock-skew error (see store.ts) — if it still throws
+      // here, either that didn't resolve in time or it's a real error.
+      // Report it instead of letting it vanish as an unhandled promise
+      // rejection, which is exactly what let this bug go unnoticed before
+      // Sentry was wired up. `state` stays whatever it was (usually null),
+      // so the authenticated routes' useAppState() will throw and the
+      // ErrorBoundary shows its friendly screen rather than a blank page.
+      reportError(err, { context: "AppContext.loadFor", userId: s.user.id });
+    }
   }
 
   useEffect(() => {
