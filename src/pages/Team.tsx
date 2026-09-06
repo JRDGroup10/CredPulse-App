@@ -187,6 +187,12 @@ export default function Team() {
         </div>
         <div className="flex-shrink-0 flex items-center gap-2">
           <Link
+            to="/team/api-keys"
+            className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap"
+          >
+            API keys
+          </Link>
+          <Link
             to="/team/audit-log"
             className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap"
           >

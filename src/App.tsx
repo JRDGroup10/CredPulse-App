@@ -19,6 +19,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const Team = lazy(() => import("./pages/Team"));
 const ComplianceReport = lazy(() => import("./pages/ComplianceReport"));
 const AuditLog = lazy(() => import("./pages/AuditLog"));
+const ApiKeys = lazy(() => import("./pages/ApiKeys"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Industries = lazy(() => import("./pages/Industries"));
@@ -215,6 +216,7 @@ function Routed() {
           <Route path="/team" element={<Team />} />
           <Route path="/team/report" element={<ComplianceReport />} />
           <Route path="/team/audit-log" element={<AuditLog />} />
+          <Route path="/team/api-keys" element={<ApiKeys />} />
         </Routes>
       </Suspense>
     </Layout>

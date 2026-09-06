@@ -453,3 +453,79 @@ notify pgrst, 'reload schema';
 
 -- To check it's working (as an org owner/admin, after some activity):
 --   select action, target_label, actor_name, created_at from public.audit_log order by created_at desc;
+
+-- ============================================================
+-- Public API — enterprise-readiness feature.
+--
+-- Lets an org's own systems (or a partner's) read/write its certification
+-- data programmatically, authenticated with a long-lived API key instead of
+-- a user login. Only the SHA-256 hash of each key is ever stored — same
+-- principle as a password, and for the same reason: even a full database
+-- dump can't be used to reconstruct a working key. The plaintext key is
+-- shown to the admin exactly once, at creation time, in the UI (see
+-- src/pages/ApiKeys.tsx) and never persisted anywhere after that.
+--
+-- The public-api Edge Function (supabase/functions/public-api) is what
+-- actually authenticates incoming requests against this table — it hashes
+-- the presented key and looks up the hash, running with the service-role
+-- key, since a request authenticated by API key has no Supabase JWT/
+-- auth.uid() at all for RLS to key off of. The RLS policies below instead
+-- govern the *management* UI: only an org's owner/admin, signed in
+-- normally, can create/view/revoke its own org's keys.
+-- ============================================================
+
+create table if not exists public.api_keys (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  label text not null,
+  key_hash text not null unique,
+  key_prefix text not null,
+  created_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  last_used_at timestamptz,
+  revoked_at timestamptz
+);
+
+alter table public.api_keys enable row level security;
+
+create policy "Org admins can view their org's api keys"
+  on public.api_keys for select
+  using (
+    organization_id in (
+      select organization_id from public.profiles
+      where id = auth.uid() and org_role in ('owner', 'admin')
+    )
+  );
+
+create policy "Org admins can create api keys for their org"
+  on public.api_keys for insert
+  with check (
+    created_by = auth.uid()
+    and organization_id in (
+      select organization_id from public.profiles
+      where id = auth.uid() and org_role in ('owner', 'admin')
+    )
+  );
+
+-- Revoking is the only update this app's UI ever performs (see
+-- revokeApiKey() in store.ts, which only ever sets revoked_at) — but note
+-- RLS itself doesn't further restrict *which* columns an update can touch,
+-- so this policy is scoped by org/role, not by column.
+create policy "Org admins can revoke their org's api keys"
+  on public.api_keys for update
+  using (
+    organization_id in (
+      select organization_id from public.profiles
+      where id = auth.uid() and org_role in ('owner', 'admin')
+    )
+  );
+
+create index if not exists api_keys_org_idx on public.api_keys (organization_id);
+create index if not exists api_keys_hash_idx on public.api_keys (key_hash) where revoked_at is null;
+
+grant select, insert, update on public.api_keys to authenticated;
+
+notify pgrst, 'reload schema';
+
+-- To check it's working:
+--   select label, key_prefix, created_at, last_used_at, revoked_at from public.api_keys;

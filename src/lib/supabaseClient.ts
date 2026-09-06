@@ -21,6 +21,12 @@ function isValidSupabaseUrl(u: string): boolean {
 
 export const supabaseConfigured = isValidSupabaseUrl(url) && Boolean(anonKey) && anonKey !== "your-anon-public-key";
 
+/** The cleaned project URL, exported so anything that needs to build a raw
+ * Edge Function URL (e.g. ApiKeys.tsx's docs snippet, which links to
+ * supabase/functions/public-api) doesn't have to re-read and re-clean the
+ * env var itself. */
+export const supabaseUrl = url;
+
 if (!supabaseConfigured) {
   // Doesn't throw — the app still boots and shows a clear setup message
   // instead of a blank white screen if .env.local is missing or malformed.

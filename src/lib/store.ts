@@ -1,5 +1,6 @@
 import { supabase } from "./supabaseClient";
 import {
+  ApiKey,
   AppState,
   AuditAction,
   AuditLogEntry,
@@ -881,5 +882,135 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   "invite.sent": "Invited a teammate",
   "invite.revoked": "Revoked an invite",
   "invite.accepted": "Joined the team",
-  "org.plan_changed": "Changed the plan"
+  "org.plan_changed": "Changed the plan",
+  "api_key.created": "Created an API key",
+  "api_key.revoked": "Revoked an API key"
 };
+
+// ============================================================
+// Public API — enterprise-readiness feature. See
+// supabase/organizations-schema.sql for the api_keys table/RLS and
+// supabase/functions/public-api for how these keys actually authenticate
+// requests.
+// ============================================================
+
+function toHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/** 24 random bytes, base64url-encoded (URL/header-safe, no padding) — the
+ * "body" of a new API key, appended to a fixed prefix below. */
+function randomKeyBody(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(24));
+  const base64 = btoa(String.fromCharCode(...bytes));
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+  return toHex(digest);
+}
+
+export interface GeneratedApiKey {
+  key: ApiKey;
+  /** The actual, usable key — only ever available here, once, right after
+   * creation. Only its SHA-256 hash is stored (see the table comment in
+   * organizations-schema.sql), so there's no "reveal it again later"
+   * feature anywhere in this app because there's nothing left to reveal. */
+  plaintext: string;
+}
+
+/**
+ * Creates a new API key for an org, scoped by the public-api Edge Function
+ * to that org and nothing else. Owner/admin only (enforced by RLS on the
+ * insert — see organizations-schema.sql).
+ */
+export async function generateApiKey(
+  organizationId: string,
+  createdBy: string,
+  label: string,
+  actor?: { name: string; email: string }
+): Promise<GeneratedApiKey> {
+  const plaintext = `cp_live_${randomKeyBody()}`;
+  const keyHash = await sha256Hex(plaintext);
+  // "cp_live_" (8 chars) + 6 more — enough for an admin to tell two keys
+  // apart in a list, nowhere near enough to help guess the rest.
+  const keyPrefix = plaintext.slice(0, 14);
+
+  const { data, error } = await supabase
+    .from("api_keys")
+    .insert({
+      organization_id: organizationId,
+      created_by: createdBy,
+      label: label.trim() || "Untitled key",
+      key_hash: keyHash,
+      key_prefix: keyPrefix
+    })
+    .select("id, label, key_prefix, created_at, last_used_at, revoked_at")
+    .single();
+  if (error) throw error;
+
+  const key: ApiKey = {
+    id: data.id as string,
+    label: data.label as string,
+    keyPrefix: data.key_prefix as string,
+    createdAt: data.created_at as string,
+    lastUsedAt: (data.last_used_at as string) ?? null,
+    revokedAt: (data.revoked_at as string) ?? null
+  };
+
+  if (actor) {
+    await logAudit(organizationId, { id: createdBy, name: actor.name, email: actor.email }, "api_key.created", {
+      targetType: "api_key",
+      targetId: key.id,
+      targetLabel: key.label
+    });
+  }
+
+  return { key, plaintext };
+}
+
+/** Owner/admin only (enforced by RLS — see organizations-schema.sql). Never
+ * returns anything that could reconstruct a working key — just metadata. */
+export async function listApiKeys(organizationId: string): Promise<ApiKey[]> {
+  const { data, error } = await supabase
+    .from("api_keys")
+    .select("id, label, key_prefix, created_at, last_used_at, revoked_at")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    label: r.label as string,
+    keyPrefix: r.key_prefix as string,
+    createdAt: r.created_at as string,
+    lastUsedAt: (r.last_used_at as string) ?? null,
+    revokedAt: (r.revoked_at as string) ?? null
+  }));
+}
+
+/** Sets revoked_at rather than deleting the row, so the audit trail (both
+ * this app's own audit_log and the key's own created/last-used history)
+ * stays intact. public-api checks revoked_at is null before honoring a key,
+ * so this takes effect immediately on the next request. */
+export async function revokeApiKey(keyId: string, actor?: AuditActor): Promise<void> {
+  const { data: keyRow, error: fetchError } = await supabase
+    .from("api_keys")
+    .select("organization_id, label")
+    .eq("id", keyId)
+    .maybeSingle();
+  if (fetchError) throw fetchError;
+
+  const { error } = await supabase.from("api_keys").update({ revoked_at: new Date().toISOString() }).eq("id", keyId);
+  if (error) throw error;
+
+  if (actor && keyRow) {
+    await logAudit(keyRow.organization_id as string, actor, "api_key.revoked", {
+      targetType: "api_key",
+      targetId: keyId,
+      targetLabel: keyRow.label as string
+    });
+  }
+}

@@ -102,7 +102,9 @@ export type AuditAction =
   | "invite.sent"
   | "invite.revoked"
   | "invite.accepted"
-  | "org.plan_changed";
+  | "org.plan_changed"
+  | "api_key.created"
+  | "api_key.revoked";
 
 export interface AuditLogEntry {
   id: string;
@@ -111,4 +113,20 @@ export interface AuditLogEntry {
   targetLabel: string | null; // human-readable snapshot, e.g. a cert name or invited email
   metadata: Record<string, unknown> | null;
   createdAt: string;
+}
+
+// ============================================================
+// Public API — enterprise-readiness feature. See
+// supabase/organizations-schema.sql for the api_keys table/RLS,
+// supabase/functions/public-api for the actual API, and
+// src/lib/store.ts's generateApiKey()/listApiKeys()/revokeApiKey().
+// ============================================================
+
+export interface ApiKey {
+  id: string;
+  label: string;
+  keyPrefix: string; // e.g. "cp_live_ab12" — enough to recognize which key is which, never the whole thing
+  createdAt: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
 }
