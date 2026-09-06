@@ -168,7 +168,10 @@ export default function ComplianceReport() {
                               <tr key={c.id}>
                                 <td className="px-3 py-2 font-medium text-slate-700">{c.name}</td>
                                 <td className="px-3 py-2 text-slate-500 whitespace-nowrap">
-                                  {new Date(c.expiryDate).toLocaleDateString()}
+                                  {/* timeZone: "UTC" — expiryDate is a bare date string, which
+                                      Date parses as UTC midnight; without this the displayed day
+                                      shifts back by one for any viewer west of UTC. */}
+                                  {new Date(c.expiryDate).toLocaleDateString(undefined, { timeZone: "UTC" })}
                                 </td>
                                 <td className="px-3 py-2 text-right">
                                   <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${style.bg} ${style.text}`}>

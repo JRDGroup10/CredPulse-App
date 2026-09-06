@@ -656,11 +656,27 @@ export function canUseTipsAndLinks(state: AppState, scope: CertScope = "personal
   return PLANS[state.profile.plan].includesTipsAndLinks;
 }
 
+/**
+ * Whole calendar days between today and a "YYYY-MM-DD" date string.
+ *
+ * BUG FIX (caught by the automated test suite, see store.test.ts): the
+ * previous version built `target` via `new Date(dateStr)`, which parses a
+ * bare date-only string as UTC midnight, then called `.setHours(0,0,0,0)`
+ * on it — which re-normalizes to LOCAL midnight of whatever calendar day
+ * that UTC instant falls on. For anyone west of UTC (all of Canada and the
+ * US — this app's entire market), UTC midnight on a given date is still
+ * the *previous* evening in local time, so that re-normalization silently
+ * rolled every expiry date back by one day. That made every "Xd left"/
+ * overdue count, status badge, and the Team.tsx compliance rollup off by
+ * one for effectively every real user. Fixed by building `target` directly
+ * from its year/month/day components via the local-time Date constructor,
+ * so there's no UTC-parsing detour to go wrong in the first place.
+ */
 export function daysUntil(dateStr: string): number {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const target = new Date(year, month - 1, day);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr);
-  target.setHours(0, 0, 0, 0);
   return Math.round((target.getTime() - today.getTime()) / 86400000);
 }
 

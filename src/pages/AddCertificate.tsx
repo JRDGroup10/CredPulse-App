@@ -200,7 +200,7 @@ export default function AddCertificate() {
                 <div className="mb-4 text-xs bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900 rounded-lg px-3 py-2.5 flex items-start justify-between gap-3">
                   <span>
                     You already have <span className="font-semibold">{duplicate.name}</span> on file (expires{" "}
-                    {new Date(duplicate.expiryDate).toLocaleDateString()}). If this is the same certification, consider
+                    {new Date(duplicate.expiryDate).toLocaleDateString(undefined, { timeZone: "UTC" })}). If this is the same certification, consider
                     deleting the old record after saving instead of keeping both.
                   </span>
                   <button

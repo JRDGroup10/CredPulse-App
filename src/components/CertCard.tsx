@@ -113,7 +113,17 @@ export default function CertCard({
       <div className="text-right flex-shrink-0">
         <div className="text-xs text-slate-400 dark:text-slate-500">Expires</div>
         <div className="text-sm font-medium text-slate-700 dark:text-slate-200">
-          {new Date(cert.expiryDate).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric" })}
+          {/* expiryDate is a bare "YYYY-MM-DD" string, which Date parses as
+              UTC midnight — without timeZone: "UTC" here, toLocaleDateString
+              renders it in the viewer's local zone, showing the day before
+              for anyone west of UTC (i.e. basically every real user). See
+              daysUntil()'s comment in store.ts for the same bug class. */}
+          {new Date(cert.expiryDate).toLocaleDateString("en-CA", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            timeZone: "UTC"
+          })}
         </div>
         <button
           onClick={handleAddToCalendar}

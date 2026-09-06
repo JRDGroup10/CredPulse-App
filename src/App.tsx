@@ -1,28 +1,48 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { AppStateProvider, useAuth } from "./lib/AppContext";
 import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
-import AddCertificate from "./pages/AddCertificate";
-import Settings from "./pages/Settings";
-import Notifications from "./pages/Notifications";
-import Team from "./pages/Team";
-import ComplianceReport from "./pages/ComplianceReport";
-import Auth from "./pages/Auth";
-import Landing from "./pages/Landing";
-import Industries from "./pages/Industries";
-import IndustryChooser from "./pages/IndustryChooser";
 import { getIndustryPref, marketingHomePath } from "./lib/industryPref";
-import JoinTeam from "./pages/JoinTeam";
-import ClinicSignup from "./pages/ClinicSignup";
-import Billing from "./pages/Billing";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
 import PendingClinicSetupResumer from "./components/PendingClinicSetupResumer";
+
+// Every page is its own lazy-loaded chunk instead of one monolithic bundle —
+// a first-time visitor to the marketing site never downloads the
+// authenticated app's pages, and a returning logged-in user never downloads
+// the marketing/signup pages. See the <Suspense> boundary in App() below,
+// which covers every branch Routed() can return (both the pre-auth
+// pathname checks and the authenticated <Routes>), so this is safe
+// regardless of which one loads first.
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const AddCertificate = lazy(() => import("./pages/AddCertificate"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Team = lazy(() => import("./pages/Team"));
+const ComplianceReport = lazy(() => import("./pages/ComplianceReport"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Landing = lazy(() => import("./pages/Landing"));
+const Industries = lazy(() => import("./pages/Industries"));
+const IndustryChooser = lazy(() => import("./pages/IndustryChooser"));
+const JoinTeam = lazy(() => import("./pages/JoinTeam"));
+const ClinicSignup = lazy(() => import("./pages/ClinicSignup"));
+const Billing = lazy(() => import("./pages/Billing"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
 
 function Spinner() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-slate-950">
+      <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
+
+// Used inside <Layout> (see the inner <Suspense> below) instead of Spinner —
+// Spinner's min-h-screen would blow away the header/nav every time someone
+// navigates to a page whose lazy chunk hasn't loaded yet; this only fills
+// the content area so the app's chrome stays put during in-app navigation.
+function PageSpinner() {
+  return (
+    <div className="py-24 flex items-center justify-center">
       <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
@@ -184,15 +204,17 @@ function Routed() {
   return (
     <Layout>
       <PendingClinicSetupResumer />
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/add" element={<AddCertificate />} />
-        <Route path="/billing" element={<Billing />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/team" element={<Team />} />
-        <Route path="/team/report" element={<ComplianceReport />} />
-      </Routes>
+      <Suspense fallback={<PageSpinner />}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/add" element={<AddCertificate />} />
+          <Route path="/billing" element={<Billing />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/team/report" element={<ComplianceReport />} />
+        </Routes>
+      </Suspense>
     </Layout>
   );
 }
@@ -200,7 +222,9 @@ function Routed() {
 export default function App() {
   return (
     <AppStateProvider>
-      <Routed />
+      <Suspense fallback={<Spinner />}>
+        <Routed />
+      </Suspense>
     </AppStateProvider>
   );
 }
