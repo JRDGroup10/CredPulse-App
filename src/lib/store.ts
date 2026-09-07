@@ -884,7 +884,8 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   "invite.accepted": "Joined the team",
   "org.plan_changed": "Changed the plan",
   "api_key.created": "Created an API key",
-  "api_key.revoked": "Revoked an API key"
+  "api_key.revoked": "Revoked an API key",
+  "member.updated": "Updated a team member"
 };
 
 // ============================================================

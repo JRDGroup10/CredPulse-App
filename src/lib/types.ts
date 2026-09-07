@@ -104,7 +104,8 @@ export type AuditAction =
   | "invite.accepted"
   | "org.plan_changed"
   | "api_key.created"
-  | "api_key.revoked";
+  | "api_key.revoked"
+  | "member.updated";
 
 export interface AuditLogEntry {
   id: string;

@@ -192,10 +192,11 @@ export default function ApiKeys() {
         </div>
       )}
 
-      <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+      <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl p-4 mb-6">
         <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Using your key</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-          Send it as a Bearer token. Every request is scoped to {org?.name ?? "your"} organization only.
+          Send it as a Bearer token. Every request is scoped to {org?.name ?? "your"} organization only. Run one
+          command at a time — pasting several together can confuse some terminals.
         </p>
         <pre className="text-xs bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto">
 {`# List clinic-scoped certificates (optionally ?status= or ?email=)
@@ -211,6 +212,22 @@ curl -X POST "${apiBase}/certificates" \\
   -H "Authorization: Bearer cp_live_..." \\
   -H "Content-Type: application/json" \\
   -d '{"memberEmail":"jane@example.com","name":"BLS","expiryDate":"2027-06-01"}'`}
+        </pre>
+      </div>
+
+      <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">HRIS / roster sync</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+          Point your HR system's outbound webhook — or a Zapier/Make automation watching Rippling, Gusto, BambooHR,
+          etc. for new-hire or role-change events — at this route. It invites a new hire automatically if they
+          aren't already a member or already invited, or updates their name/job title if they are. It never
+          touches admin access, plan, or billing.
+        </p>
+        <pre className="text-xs bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto">
+{`curl -X POST "${apiBase}/employees" \\
+  -H "Authorization: Bearer cp_live_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"email":"jane@example.com","name":"Jane Doe","role":"Registered Nurse"}'`}
         </pre>
       </div>
     </div>

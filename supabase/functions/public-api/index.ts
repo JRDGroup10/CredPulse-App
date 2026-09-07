@@ -26,6 +26,16 @@
 //        { "memberEmail": "...", "name": "...", "issuer": "...",
 //          "credentialType": "certification" | "license" | "training",
 //          "issuedDate": "YYYY-MM-DD" (optional), "expiryDate": "YYYY-MM-DD" }
+//   POST /public-api/employees               HRIS sync, upsert by email —
+//                                             invites a new hire if the email
+//                                             isn't already a member/invited,
+//                                             or updates name/role if they
+//                                             already are. Never touches
+//                                             org_role/plan/billing. Body:
+//        { "email": "...", "name": "..." (optional), "role": "..." (optional) }
+//        Point any HRIS's outbound webhook (or a Zapier/Make automation
+//        watching for new-hire/role-change events) at this route — no
+//        native OAuth partnership with a specific HRIS provider needed.
 //
 // Every write through this API is also recorded in the org's audit log
 // (public.audit_log), attributed to "API: <key label>" rather than a
@@ -44,6 +54,17 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+
+// Mirrors ORG_PLANS[...].seatLimit in src/lib/orgPlans.ts — duplicated here
+// (same tradeoff update-org-plan's PRICE_IDS map makes) since this Deno
+// Edge Function can't import from the Vite app's src/lib.
+const ORG_SEAT_LIMITS: Record<string, number> = {
+  starter: 5,
+  team: 10,
+  clinic: 25,
+  business: 50,
+  enterprise: 100
+};
 
 const API_CORS_HEADERS = {
   ...corsHeaders,
@@ -72,6 +93,10 @@ interface AuthResult {
   organizationId: string;
   keyId: string;
   keyLabel: string;
+  // The admin who created this key — used as the invited_by on any invite
+  // the /employees sync route creates, since organization_invites.invited_by
+  // requires a real user id and an automated sync has no "person" doing it.
+  createdBy: string | null;
 }
 
 async function authenticate(req: Request): Promise<AuthResult | null> {
@@ -84,7 +109,7 @@ async function authenticate(req: Request): Promise<AuthResult | null> {
   const hash = await sha256Hex(presented);
   const { data, error } = await supabase
     .from("api_keys")
-    .select("id, organization_id, label, revoked_at")
+    .select("id, organization_id, label, created_by, revoked_at")
     .eq("key_hash", hash)
     .maybeSingle();
   if (error || !data || data.revoked_at) return null;
@@ -99,7 +124,12 @@ async function authenticate(req: Request): Promise<AuthResult | null> {
       () => {}
     );
 
-  return { organizationId: data.organization_id as string, keyId: data.id as string, keyLabel: data.label as string };
+  return {
+    organizationId: data.organization_id as string,
+    keyId: data.id as string,
+    keyLabel: data.label as string,
+    createdBy: (data.created_by as string) ?? null
+  };
 }
 
 // Mirrors statusFor()/daysUntil() in src/lib/store.ts, computed in UTC
@@ -117,11 +147,13 @@ function statusFor(dateStr: string): "expired" | "urgent" | "upcoming" | "valid"
   return "valid";
 }
 
+type ApiAuditAction = "certificate.created" | "invite.sent" | "member.updated";
+
 async function logApiAudit(
   organizationId: string,
   keyId: string,
   keyLabel: string,
-  action: "certificate.created",
+  action: ApiAuditAction,
   opts: { targetType: string; targetId?: string; targetLabel?: string; metadata?: Record<string, unknown> }
 ): Promise<void> {
   const { error } = await supabase.from("audit_log").insert({
@@ -244,6 +276,133 @@ async function handleCreateCertificate(auth: AuthResult, body: Record<string, un
   return json({ id: inserted.id }, 201);
 }
 
+/**
+ * Upsert-by-email for HRIS sync — designed to be called from any HR system
+ * via a native webhook or a Zapier/Make automation, without needing an
+ * official native integration with any specific provider. Deliberately
+ * never touches org_role, plan, or billing: an automated sync can invite
+ * someone or update their job title, never grant admin access.
+ */
+async function handleSyncEmployee(auth: AuthResult, body: Record<string, unknown>): Promise<Response> {
+  const email = (body.email as string | undefined)?.trim().toLowerCase();
+  const name = (body.name as string | undefined)?.trim();
+  const role = (body.role as string | undefined)?.trim();
+
+  if (!email) {
+    return json({ error: "email is required." }, 400);
+  }
+
+  const { data: existingMember, error: memberLookupError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("organization_id", auth.organizationId)
+    .eq("email", email)
+    .maybeSingle();
+  if (memberLookupError) throw memberLookupError;
+
+  if (existingMember) {
+    const patch: Record<string, unknown> = {};
+    if (name) patch.name = name;
+    if (role) patch.role = role;
+
+    if (Object.keys(patch).length === 0) {
+      return json({ action: "unchanged", memberId: existingMember.id });
+    }
+
+    const { error: updateError } = await supabase.from("profiles").update(patch).eq("id", existingMember.id);
+    if (updateError) throw updateError;
+
+    await logApiAudit(auth.organizationId, auth.keyId, auth.keyLabel, "member.updated", {
+      targetType: "member",
+      targetId: existingMember.id as string,
+      targetLabel: email,
+      metadata: patch
+    });
+
+    return json({ action: "updated", memberId: existingMember.id });
+  }
+
+  const { data: existingInvite, error: inviteLookupError } = await supabase
+    .from("organization_invites")
+    .select("id")
+    .eq("organization_id", auth.organizationId)
+    .eq("email", email)
+    .eq("status", "pending")
+    .maybeSingle();
+  if (inviteLookupError) throw inviteLookupError;
+
+  if (existingInvite) {
+    return json({ action: "already_invited", inviteId: existingInvite.id });
+  }
+
+  // Same seat-limit enforcement as the in-app invite flow (see
+  // inviteToOrganization in src/lib/store.ts) — a sync shouldn't be able to
+  // invite past what the org is actually paying for.
+  const { data: org, error: orgError } = await supabase
+    .from("organizations")
+    .select("plan, name")
+    .eq("id", auth.organizationId)
+    .maybeSingle();
+  if (orgError) throw orgError;
+
+  const seatLimit = ORG_SEAT_LIMITS[(org?.plan as string) ?? "starter"] ?? 5;
+  const [membersCountRes, invitesCountRes] = await Promise.all([
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("organization_id", auth.organizationId),
+    supabase
+      .from("organization_invites")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", auth.organizationId)
+      .eq("status", "pending")
+  ]);
+  if (membersCountRes.error) throw membersCountRes.error;
+  if (invitesCountRes.error) throw invitesCountRes.error;
+  const seatsUsed = (membersCountRes.count ?? 0) + (invitesCountRes.count ?? 0);
+
+  if (seatsUsed >= seatLimit) {
+    return json({ error: `This organization has used all ${seatLimit} seats on its current plan.` }, 409);
+  }
+
+  if (!auth.createdBy) {
+    // Extremely unlikely (the key's creator's account was deleted), but
+    // organization_invites.invited_by is NOT NULL, so there's genuinely
+    // nothing valid to insert here.
+    return json({ error: "Can't create an invite — this API key's creator's account no longer exists." }, 500);
+  }
+
+  const { data: invite, error: insertError } = await supabase
+    .from("organization_invites")
+    .insert({ organization_id: auth.organizationId, invited_by: auth.createdBy, email })
+    .select("id")
+    .single();
+  if (insertError) throw insertError;
+
+  await logApiAudit(auth.organizationId, auth.keyId, auth.keyLabel, "invite.sent", {
+    targetType: "invite",
+    targetId: invite.id as string,
+    targetLabel: email
+  });
+
+  // Best-effort: send the same "you've been invited" email the in-app flow
+  // sends — same tradeoff inviteToOrganization makes: a failure here
+  // doesn't undo the invite, since the invited person will still see the
+  // accept banner on next login regardless.
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/send-team-invite`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${SERVICE_ROLE_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        organizationName: (org?.name as string) ?? "your team",
+        inviterName: `${auth.keyLabel} (via API)`
+      })
+    });
+  } catch (err) {
+    console.error("public-api: couldn't send invite email (invite was still created):", err);
+  }
+
+  return json({ action: "invited", inviteId: invite.id }, 201);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: API_CORS_HEADERS });
@@ -268,6 +427,10 @@ Deno.serve(async (req) => {
     if (route === "certificates" && req.method === "POST") {
       const body = await req.json().catch(() => ({}));
       return await handleCreateCertificate(auth, body);
+    }
+    if (route === "employees" && req.method === "POST") {
+      const body = await req.json().catch(() => ({}));
+      return await handleSyncEmployee(auth, body);
     }
     return json({ error: "Not found. See the API docs for available routes." }, 404);
   } catch (err) {
