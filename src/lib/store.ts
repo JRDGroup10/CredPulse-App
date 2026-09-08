@@ -60,7 +60,9 @@ function mapCertRow(row: Record<string, unknown>): Certificate {
     tip: (row.tip as string) ?? undefined,
     renewalUrl: (row.renewal_url as string) ?? undefined,
     scope: ((row.scope as CertScope) ?? "personal") as CertScope,
-    ceuRequired: row.ceu_required != null ? Number(row.ceu_required) : undefined
+    ceuRequired: row.ceu_required != null ? Number(row.ceu_required) : undefined,
+    verifiedAt: (row.verified_at as string) ?? null,
+    verifiedBy: (row.verified_by as string) ?? null
   };
 }
 
@@ -713,6 +715,59 @@ export async function listOrgMemberCertificates(memberUserId: string): Promise<C
   return (data ?? []).map(mapCertRow);
 }
 
+// ============================================================
+// Regulatory-body verification (see supabase/regulatory-verification-schema.sql).
+// Deepen-the-product feature: a link to the issuing body's verification tool
+// (see verificationProviders.ts) only gets someone *to* the check — these
+// two functions record that an org admin actually did it, which is the part
+// that's actually useful for a compliance audit. Enforced admin-only by RLS
+// ("Org admins can verify member certificates" — only fires for scope =
+// 'clinic' rows belonging to a member of an org this caller admins), so
+// there's no separate permission check needed here client-side.
+// ============================================================
+
+/** Marks a clinic-scoped certificate as independently checked against the
+ * issuing body's registry. Always logs to audit_log — verification without
+ * a durable record of who attested to it and when defeats the point. */
+export async function verifyCertificate(
+  certId: string,
+  certName: string,
+  actor: AuditActor & { organizationId: string | null }
+): Promise<void> {
+  const { error } = await supabase
+    .from("certificates")
+    .update({ verified_at: new Date().toISOString(), verified_by: actor.id })
+    .eq("id", certId);
+  if (error) throw error;
+
+  await logAudit(actor.organizationId, actor, "certificate.verified", {
+    targetType: "certificate",
+    targetId: certId,
+    targetLabel: certName
+  });
+}
+
+/** Un-does a verification (e.g. the admin realizes they checked the wrong
+ * record) — also logged, so the audit trail shows a verification was later
+ * retracted rather than just quietly disappearing. */
+export async function clearCertificateVerification(
+  certId: string,
+  certName: string,
+  actor: AuditActor & { organizationId: string | null }
+): Promise<void> {
+  const { error } = await supabase
+    .from("certificates")
+    .update({ verified_at: null, verified_by: null })
+    .eq("id", certId);
+  if (error) throw error;
+
+  await logAudit(actor.organizationId, actor, "certificate.verification_cleared", {
+    targetType: "certificate",
+    targetId: certId,
+    targetLabel: certName
+  });
+}
+
 /** Pending invites addressed to this email — surfaced to an existing user as
  * an "accept your team invite" prompt (see App.tsx). */
 export async function getPendingInvitesForEmail(email: string): Promise<OrgInviteWithOrgName[]> {
@@ -909,6 +964,8 @@ export async function listAuditLog(organizationId: string, limit = 200): Promise
 export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   "certificate.created": "Added a certificate",
   "certificate.deleted": "Deleted a certificate",
+  "certificate.verified": "Verified a certificate",
+  "certificate.verification_cleared": "Cleared a certificate's verification",
   "invite.sent": "Invited a teammate",
   "invite.revoked": "Revoked an invite",
   "invite.accepted": "Joined the team",

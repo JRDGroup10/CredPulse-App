@@ -4,6 +4,7 @@ import { useAppState } from "../lib/AppContext";
 import {
   IndustryBenchmark,
   STATUS_STYLES,
+  clearCertificateVerification,
   countOrgSeatsUsed,
   daysUntil,
   getIndustryBenchmark,
@@ -11,9 +12,11 @@ import {
   listOrgMemberCertificates,
   listOrgMembers,
   orgBillingIncomplete,
-  statusFor
+  statusFor,
+  verifyCertificate
 } from "../lib/store";
 import { ORG_PLANS, nextOrgPlanAbove } from "../lib/orgPlans";
+import { getVerificationLink } from "../lib/verificationProviders";
 import { Certificate, CredStatus, Organization, OrgMember } from "../lib/types";
 import CountUp from "../components/CountUp";
 
@@ -27,11 +30,14 @@ type GroupStatus = CredStatus | "none";
  * only meaningful for real certificate groups — the synthetic "not tracked"
  * group (people with zero certificates) leaves them null/"none". */
 interface CertHolder {
+  certId: string;
   memberId: string;
   memberName: string;
   memberRole: string;
   expiryDate: string | null;
   status: GroupStatus;
+  verifiedAt: string | null;
+  verifiedBy: string | null;
 }
 
 interface CertGroup {
@@ -61,7 +67,7 @@ const NOT_TRACKED_STYLE = {
  * bounces to Settings (the nav link is hidden for them too, see Layout.tsx).
  */
 export default function Team() {
-  const { state } = useAppState();
+  const { state, userId } = useAppState();
   const { organizationId, orgRole } = state.profile;
   const isAdmin = orgRole === "owner" || orgRole === "admin";
 
@@ -106,16 +112,28 @@ export default function Team() {
     for (const m of membersWithCerts) {
       const memberName = m.name || m.email;
       if (m.certificates.length === 0) {
-        notTracked.push({ memberId: m.id, memberName, memberRole: m.role, expiryDate: null, status: "none" });
+        notTracked.push({
+          certId: "",
+          memberId: m.id,
+          memberName,
+          memberRole: m.role,
+          expiryDate: null,
+          status: "none",
+          verifiedAt: null,
+          verifiedBy: null
+        });
         continue;
       }
       for (const c of m.certificates) {
         const holder: CertHolder = {
+          certId: c.id,
           memberId: m.id,
           memberName,
           memberRole: m.role,
           expiryDate: c.expiryDate,
-          status: statusFor(c.expiryDate)
+          status: statusFor(c.expiryDate),
+          verifiedAt: c.verifiedAt ?? null,
+          verifiedBy: c.verifiedBy ?? null
         };
         const list = byCert.get(c.name) ?? [];
         list.push(holder);
@@ -147,6 +165,41 @@ export default function Team() {
       return a.certName.localeCompare(b.certName);
     });
   }, [membersWithCerts]);
+
+  // Resolves a verifying admin's profile id to a display name for the
+  // "Verified by X" badge — every admin is also a member, so this list
+  // already loaded for the page always has the name we need without a
+  // separate lookup.
+  const memberNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const m of membersWithCerts ?? []) map.set(m.id, m.name || m.email);
+    return map;
+  }, [membersWithCerts]);
+
+  function applyVerification(memberId: string, certId: string, verifiedAt: string | null, verifiedBy: string | null) {
+    setMembersWithCerts(
+      (prev) =>
+        prev?.map((m) =>
+          m.id !== memberId
+            ? m
+            : { ...m, certificates: m.certificates.map((c) => (c.id === certId ? { ...c, verifiedAt, verifiedBy } : c)) }
+        ) ?? prev
+    );
+  }
+
+  async function handleVerify(h: CertHolder, certName: string) {
+    if (!organizationId) return;
+    const actor = { id: userId, name: state.profile.name, email: state.profile.email, organizationId };
+    await verifyCertificate(h.certId, certName, actor);
+    applyVerification(h.memberId, h.certId, new Date().toISOString(), userId);
+  }
+
+  async function handleClearVerification(h: CertHolder, certName: string) {
+    if (!organizationId) return;
+    const actor = { id: userId, name: state.profile.name, email: state.profile.email, organizationId };
+    await clearCertificateVerification(h.certId, certName, actor);
+    applyVerification(h.memberId, h.certId, null, null);
+  }
 
   if (!organizationId || !isAdmin) {
     return <Navigate to="/settings" replace />;
@@ -352,13 +405,15 @@ export default function Team() {
                             <th className="px-4 pl-9 py-2">Name</th>
                             <th className="px-4 py-2">Role</th>
                             {!isNotTracked && <th className="px-4 py-2">Expires</th>}
-                            {!isNotTracked && <th className="px-4 py-2 text-right">Status</th>}
+                            {!isNotTracked && <th className="px-4 py-2">Status</th>}
+                            {!isNotTracked && <th className="px-4 py-2 text-right">Verification</th>}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                           {g.holders.map((h) => {
                             const hStyle = h.status === "none" ? NOT_TRACKED_STYLE : STATUS_STYLES[h.status];
                             const days = h.expiryDate ? daysUntil(h.expiryDate) : null;
+                            const verificationLink = isNotTracked ? null : getVerificationLink(g.certName);
                             return (
                               <tr key={h.memberId} className="hover:bg-white dark:hover:bg-slate-900 transition-colors">
                                 <td className="px-4 pl-9 py-2.5 font-medium text-slate-700 dark:text-slate-200">{h.memberName}</td>
@@ -369,10 +424,49 @@ export default function Team() {
                                   </td>
                                 )}
                                 {!isNotTracked && (
-                                  <td className="px-4 py-2.5 text-right">
+                                  <td className="px-4 py-2.5">
                                     <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${hStyle.bg} ${hStyle.text}`}>
                                       {hStyle.label}
                                     </span>
+                                  </td>
+                                )}
+                                {!isNotTracked && (
+                                  <td className="px-4 py-2.5 text-right">
+                                    {h.verifiedAt ? (
+                                      <div className="flex items-center justify-end gap-2">
+                                        <span
+                                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 whitespace-nowrap"
+                                          title={`Verified by ${memberNameById.get(h.verifiedBy ?? "") ?? "a team admin"} on ${new Date(h.verifiedAt).toLocaleDateString()}`}
+                                        >
+                                          ✓ Verified
+                                        </span>
+                                        <button
+                                          onClick={() => handleClearVerification(h, g.certName)}
+                                          className="text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 whitespace-nowrap"
+                                        >
+                                          Undo
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center justify-end gap-2">
+                                        {verificationLink && (
+                                          <a
+                                            href={verificationLink.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap"
+                                          >
+                                            {verificationLink.isOfficial ? "Check registry ↗" : "Search ↗"}
+                                          </a>
+                                        )}
+                                        <button
+                                          onClick={() => handleVerify(h, g.certName)}
+                                          className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 whitespace-nowrap"
+                                        >
+                                          Mark verified
+                                        </button>
+                                      </div>
+                                    )}
                                   </td>
                                 )}
                               </tr>

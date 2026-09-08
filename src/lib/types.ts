@@ -36,6 +36,14 @@ export interface Certificate {
   // course/exam. undefined/null means this cert doesn't use the CEU model
   // and CeuTracker.tsx never shows for it.
   ceuRequired?: number;
+  // Regulatory-body verification (see supabase/regulatory-verification-schema.sql).
+  // Set only when a clinic/team admin has independently checked this
+  // certificate against the issuing body's own registry and attested to it
+  // via the Team.tsx manager dashboard — never by the certificate's own
+  // owner. null/undefined on both means nobody has verified it (or it's a
+  // personal cert, which never goes through this workflow at all).
+  verifiedAt?: string | null;
+  verifiedBy?: string | null; // the verifying admin's profile id
 }
 
 // One logged credit-earning activity toward a certificate's ceuRequired
@@ -124,6 +132,8 @@ export interface OrgInviteWithOrgName extends OrgInvite {
 export type AuditAction =
   | "certificate.created"
   | "certificate.deleted"
+  | "certificate.verified"
+  | "certificate.verification_cleared"
   | "invite.sent"
   | "invite.revoked"
   | "invite.accepted"
