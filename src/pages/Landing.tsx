@@ -345,6 +345,7 @@ export default function Landing({
             <Logo markClassName="w-6 h-6" textClassName="text-sm" themeAware={false} />
             <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
               <Link to="/industries" className="hover:text-slate-900">Other industries</Link>
+              <Link to="/guides" className="hover:text-slate-900">Guides</Link>
               <Link to="/terms" className="hover:text-slate-900">Terms</Link>
               <Link to="/privacy" className="hover:text-slate-900">Privacy</Link>
             </div>

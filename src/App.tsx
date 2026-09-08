@@ -25,6 +25,8 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Industries = lazy(() => import("./pages/Industries"));
 const IndustryVertical = lazy(() => import("./pages/IndustryVertical"));
+const GuidesHub = lazy(() => import("./pages/GuidesHub"));
+const Guide = lazy(() => import("./pages/Guide"));
 const IndustryChooser = lazy(() => import("./pages/IndustryChooser"));
 const JoinTeam = lazy(() => import("./pages/JoinTeam"));
 const ClinicSignup = lazy(() => import("./pages/ClinicSignup"));
@@ -127,6 +129,42 @@ function Routed() {
   if (pathname === "/industries") {
     return (
       <Industries
+        onGetStarted={() => {
+          setShowAuth("signup");
+          navigate("/");
+        }}
+        onLogin={() => {
+          setShowAuth("login");
+          navigate("/");
+        }}
+      />
+    );
+  }
+
+  // Content-marketing guides (see src/content/guides.ts) — public, but still
+  // need onGetStarted/onLogin for their CTAs, so checked here alongside
+  // Industries/IndustryVertical rather than with the plain informational
+  // pages (Terms/Privacy) at the very top of this function.
+  if (pathname === "/guides") {
+    return (
+      <GuidesHub
+        onGetStarted={() => {
+          setShowAuth("signup");
+          navigate("/");
+        }}
+        onLogin={() => {
+          setShowAuth("login");
+          navigate("/");
+        }}
+      />
+    );
+  }
+
+  const guideMatch = /^\/guides\/([a-z0-9-]+)$/.exec(pathname);
+  if (guideMatch) {
+    return (
+      <Guide
+        slug={guideMatch[1]}
         onGetStarted={() => {
           setShowAuth("signup");
           navigate("/");

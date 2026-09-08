@@ -233,6 +233,7 @@ export default function Industries({
           <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
             <Logo markClassName="w-6 h-6" textClassName="text-sm" themeAware={false} />
             <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
+              <Link to="/guides" className="hover:text-slate-900">Guides</Link>
               <Link to="/terms" className="hover:text-slate-900">Terms</Link>
               <Link to="/privacy" className="hover:text-slate-900">Privacy</Link>
             </div>
