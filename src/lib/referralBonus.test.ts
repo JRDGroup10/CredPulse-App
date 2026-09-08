@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { certLimit, certLimitReached } from "./store";
-import { AppState, Certificate, UserProfile } from "./types";
+import { AppState, Certificate, MAX_BONUS_CERT_SLOTS, UserProfile } from "./types";
 
 // certLimit()/certLimitReached() are the two places a referral's reward
 // (profiles.bonus_cert_slots — see supabase/referrals-schema.sql) actually
@@ -58,8 +58,16 @@ describe("certLimit with referral bonus slots", () => {
   });
 
   it("pro plan (Infinity) is unaffected by bonus slots — stays Infinity, not Infinity+n behavior weirdness", () => {
-    const state: AppState = { profile: makeProfile({ plan: "pro", bonusCertSlots: 10 }), certificates: [] };
+    const state: AppState = { profile: makeProfile({ plan: "pro", bonusCertSlots: MAX_BONUS_CERT_SLOTS }), certificates: [] };
     expect(certLimit(state)).toBe(Infinity);
+  });
+
+  it("MAX_BONUS_CERT_SLOTS is 4 — referrer-only reward, capped lower than the old both-sides/10 design", () => {
+    // This constant is display-only on the client (the real cap is enforced
+    // in the handle_new_user() trigger — see referrals-schema.sql), but a
+    // silent drift here would show the wrong "max reached" state in
+    // ReferralCard.tsx even while the database enforces the real cap correctly.
+    expect(MAX_BONUS_CERT_SLOTS).toBe(4);
   });
 
   it("certLimitReached respects the raised limit — not reached until the bonus-adjusted count", () => {

@@ -96,8 +96,9 @@ export async function signUp(
   // Optional — a code captured from a "?ref=<code>" link (see
   // lib/referralCapture.ts). Passed through as signup metadata so
   // handle_new_user() (see supabase/referrals-schema.sql) can link this new
-  // account to the referrer and award both sides their bonus cert slot,
-  // entirely inside the same trigger that creates the profile row.
+  // account to the referrer and award the referrer their bonus cert slot
+  // (the new signup gets no bonus themselves), entirely inside the same
+  // trigger that creates the profile row.
   referralCode?: string | null
 ) {
   const { data, error } = await supabase.auth.signUp({

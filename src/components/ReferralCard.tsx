@@ -45,7 +45,7 @@ export default function ReferralCard() {
         <div>
           <h2 className="font-medium text-slate-900 dark:text-slate-50">Invite a friend</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Share your link — when someone signs up through it, you both get a bonus certificate slot.
+            Share your link — when someone signs up through it, you get a bonus certificate slot.
           </p>
         </div>
         <span className="flex-shrink-0 text-2xl">🎁</span>

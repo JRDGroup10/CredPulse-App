@@ -5,13 +5,13 @@
 -- How it works: every user gets a short, permanent referral_code the moment
 -- their profile is created. Sharing a link like
 -- https://credpulse.app/?ref=<code> and having someone sign up through it
--- links the two accounts and grants BOTH sides a small permanent reward —
+-- grants the REFERRER (only — not the new signup) a small permanent reward —
 -- +1 tracked-certificate slot on top of whatever their plan already allows
 -- (see PLANS in src/lib/plans.ts and certLimit() in src/lib/store.ts, which
--- adds bonus_cert_slots on top of the plan's base limit). Capped at 10 each
--- so it can't be farmed into a free unlimited plan. No money changes hands —
--- this is deliberately a product reward, not a Stripe credit, so there's
--- nothing to reconcile or refund if someone signs up and never converts.
+-- adds bonus_cert_slots on top of the plan's base limit). Capped at 4 so it
+-- can't be farmed into a free unlimited plan. No money changes hands — this
+-- is deliberately a product reward, not a Stripe credit, so there's nothing
+-- to reconcile or refund if someone signs up and never converts.
 
 alter table public.profiles add column if not exists referral_code text;
 alter table public.profiles add column if not exists referred_by uuid references public.profiles(id) on delete set null;
@@ -67,8 +67,9 @@ create index if not exists referrals_referrer_id_idx on public.referrals (referr
 -- generate this new user's own referral_code, and if they signed up via
 -- someone else's link (raw_user_meta_data->>'referral_code', set in
 -- signUp() in src/lib/store.ts and captured from ?ref= in Auth.tsx), link
--- the two accounts, log the referral, and grant both sides their bonus
--- slot — capped at 10 so the reward can't be farmed past a fixed ceiling.
+-- the two accounts, log the referral, and grant the REFERRER (only — the new
+-- signup gets no bonus of their own for having been referred) their bonus
+-- slot — capped at 4 so the reward can't be farmed past a fixed ceiling.
 create or replace function public.handle_new_user()
 returns trigger as $$
 declare
@@ -91,13 +92,13 @@ begin
     coalesce(new.raw_user_meta_data->>'industry', 'healthcare'),
     public.generate_referral_code(),
     referrer_row.id,
-    case when referrer_row.id is not null then 1 else 0 end
+    0
   );
 
   if referrer_row.id is not null then
     insert into public.referrals (referrer_id, referred_id) values (referrer_row.id, new.id);
     update public.profiles
-      set bonus_cert_slots = least(bonus_cert_slots + 1, 10)
+      set bonus_cert_slots = least(bonus_cert_slots + 1, 4)
       where id = referrer_row.id;
   end if;
 
@@ -125,6 +126,18 @@ begin
   return new;
 end;
 $$ language plpgsql security definer set search_path = public;
+
+-- One-time correction for anyone who ran an earlier version of this file:
+-- that version (a) gave the new signup +1 bonus_cert_slots just for being
+-- referred, and (b) capped the referrer's reward at 10 instead of 4. Since
+-- bonus_cert_slots has no other source (nothing else in the app writes to
+-- it), the correct value for every profile is simply how many people they've
+-- actually referred, capped at the new limit — recomputing it from the
+-- referrals table below fixes both issues at once and is safe to re-run.
+update public.profiles p
+set bonus_cert_slots = least(4, (
+  select count(*) from public.referrals r where r.referrer_id = p.id
+));
 
 -- To check it's working:
 --   select id, email, referral_code, referred_by, bonus_cert_slots from public.profiles order by created_at desc;

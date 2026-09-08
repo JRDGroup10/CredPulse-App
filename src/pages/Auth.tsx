@@ -183,7 +183,7 @@ export default function Auth({
 
         {!joiningOrgName && referralCode && mode === "signup" && (
           <div className="mb-4 rounded-xl border border-emerald-100 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
-            🎁 You were invited by a friend — sign up now and you'll both get a bonus certificate slot.
+            🎁 You were invited by a friend to try CredPulse.
           </div>
         )}
 

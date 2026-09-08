@@ -67,8 +67,9 @@ export interface UserProfile {
   // Referral/viral-loop feature (see supabase/referrals-schema.sql).
   // referralCode is this user's own shareable code (e.g. "?ref=AB12CD3");
   // bonusCertSlots is added on top of the plan's base cert limit in
-  // certLimit() below, +1 per successful referral on either side of the
-  // link, capped at 10 by the database trigger that awards it.
+  // certLimit() below, +1 per person this user has successfully referred
+  // (the new signup themselves gets no bonus), capped at 4 by the database
+  // trigger that awards it.
   referralCode: string;
   bonusCertSlots: number;
 }
@@ -162,7 +163,7 @@ export interface ApiKey {
 // src/lib/store.ts's getReferralSummary().
 // ============================================================
 
-export const MAX_BONUS_CERT_SLOTS = 10;
+export const MAX_BONUS_CERT_SLOTS = 4;
 
 export interface ReferralSummary {
   referralCode: string;
