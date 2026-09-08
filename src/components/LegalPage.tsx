@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ReactNode } from "react";
+import { useSEO } from "../lib/useSEO";
 
 export default function LegalPage({
   title,
@@ -10,6 +11,18 @@ export default function LegalPage({
   updated: string;
   children: ReactNode;
 }) {
+  const { pathname } = useLocation();
+
+  // Shared by Terms and Privacy — without this they'd both silently
+  // inherit index.html's homepage title/description/canonical (all three
+  // pointing at "/"), which is wrong for two pages that are both listed in
+  // sitemap.xml as their own distinct URLs. See lib/useSEO.ts.
+  useSEO({
+    title: `${title} — CredPulse`,
+    description: `${title} for CredPulse, the certification and credential tracking tool for healthcare, construction, education, and public safety teams. Last updated ${updated}.`,
+    path: pathname
+  });
+
   return (
     <div className="min-h-screen bg-surface dark:bg-slate-950">
       <header className="border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">

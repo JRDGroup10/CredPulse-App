@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BillingCycle, Plan } from "../lib/types";
 import { setIndustryPref } from "../lib/industryPref";
+import { useSEO } from "../lib/useSEO";
 import PricingCards from "../components/PricingCards";
 import MedicalIllustration from "../components/MedicalIllustration";
 import Logo from "../components/Logo";
@@ -45,6 +46,17 @@ export default function Landing({
 }) {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const navigate = useNavigate();
+
+  // Explicit rather than relying on index.html's defaults, even though they
+  // currently match — this is the canonical/authoritative page for these
+  // tags, and every other public page (Industries, legal pages) now sets
+  // its own via the same hook. See lib/useSEO.ts.
+  useSEO({
+    title: "CredPulse — Never miss a certification renewal",
+    description:
+      "CredPulse tracks BLS, ACLS, N95 fit tests, and every other credential healthcare workers need to renew — with reminders before anything lapses. Built for healthcare workers across Canada and the US.",
+    path: "/"
+  });
 
   // Landing here (via the chooser, a direct link, or a bookmark) means this
   // visitor is a healthcare one — remember it so their next visit to "/"

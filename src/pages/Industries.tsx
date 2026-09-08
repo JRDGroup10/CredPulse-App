@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { setIndustryPref } from "../lib/industryPref";
+import { useSEO } from "../lib/useSEO";
 import Logo from "../components/Logo";
 
 // Same backend as the healthcare product (see Landing.tsx) — organizations,
@@ -37,6 +38,17 @@ export default function Industries({
   onLogin: () => void;
 }) {
   const navigate = useNavigate();
+
+  // Its own title/description/canonical, not index.html's healthcare-
+  // focused defaults — this page's whole audience is construction/
+  // education/policing teams, and Google needs to see it as a distinct
+  // page, not a duplicate of the homepage. See lib/useSEO.ts.
+  useSEO({
+    title: "CredPulse — Certification & Compliance Tracking for Construction, Schools & Public Safety",
+    description:
+      "Track Working at Heights, vulnerable sector checks, use-of-force recertification, and every other hard-expiry credential your crew needs — with reminders before anything lapses. Built for construction, education, and public safety teams across Canada and the US.",
+    path: "/industries"
+  });
 
   // Landing here (via the chooser, a direct link, or a bookmark) means this
   // visitor isn't a healthcare one — remember it so their next visit to "/"
