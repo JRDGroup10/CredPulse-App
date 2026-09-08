@@ -16,7 +16,15 @@ function initials(profile: UserProfile): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export default function AccountMenu({ profile, planName }: { profile: UserProfile; planName: string }) {
+export default function AccountMenu({
+  profile,
+  planName,
+  userId
+}: {
+  profile: UserProfile;
+  planName: string;
+  userId: string;
+}) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
   // Close the dropdown on any click outside it — <details> doesn't do this
@@ -87,7 +95,7 @@ export default function AccountMenu({ profile, planName }: { profile: UserProfil
         <button
           onClick={() => {
             close();
-            signOut();
+            signOut(userId);
           }}
           className="w-full text-left px-1 py-1.5 text-sm rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
         >

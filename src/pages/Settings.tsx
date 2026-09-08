@@ -6,6 +6,7 @@ import { PLANS } from "../lib/plans";
 import { Region } from "../lib/types";
 import TeamSettings from "../components/TeamSettings";
 import ReferralCard from "../components/ReferralCard";
+import InstallAppCard from "../components/InstallAppCard";
 
 export default function Settings() {
   const { userId, state, refresh } = useAppState();
@@ -84,6 +85,8 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      <InstallAppCard />
 
       <ReferralCard />
 

@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient";
+import { clearOfflineSnapshot } from "./offlineCache";
 import {
   ApiKey,
   AppState,
@@ -132,7 +133,17 @@ export async function getAccountIndustry(userId: string): Promise<IndustryPref> 
   return ((data?.industry as IndustryPref) ?? "healthcare") as IndustryPref;
 }
 
-export async function signOut() {
+/**
+ * @param userId - Pass the signing-out user's id when known so their
+ * offline snapshot (see lib/offlineCache.ts) is wiped from localStorage on
+ * sign-out. This matters on a shared/kiosk device: without it, a second
+ * person signing in afterwards could briefly see the first person's cached
+ * certificates if their own network call hasn't resolved yet. Optional
+ * because one call site (Auth.tsx's industry-mismatch rejection) signs out
+ * an account that never reached a live load, so there's nothing to clear.
+ */
+export async function signOut(userId?: string) {
+  if (userId) clearOfflineSnapshot(userId);
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }

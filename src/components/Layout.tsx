@@ -8,6 +8,7 @@ import { marketingHomePath } from "../lib/industryPref";
 import Logo from "./Logo";
 import AccountMenu from "./AccountMenu";
 import TeamInviteBanner from "./TeamInviteBanner";
+import OfflineBanner from "./OfflineBanner";
 const BASE_NAV = [
   { to: "/", label: "Dashboard" },
   { to: "/add", label: "Add Certificate" },
@@ -68,7 +69,7 @@ function MenuToggleIcon({ open }: { open: boolean }) {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
-  const { state } = useAppState();
+  const { state, userId } = useAppState();
   const plan = PLANS[state.profile.plan];
   const isOrgAdmin =
     !!state.profile.organizationId && (state.profile.orgRole === "owner" || state.profile.orgRole === "admin");
@@ -124,14 +125,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             ))}
             <div className="ml-1 pl-1 border-l border-slate-200 dark:border-slate-700 flex items-center gap-1">
               <ThemeToggle />
-              <AccountMenu profile={state.profile} planName={plan.name} />
+              <AccountMenu profile={state.profile} planName={plan.name} userId={userId} />
             </div>
           </nav>
 
           {/* Compact controls + hamburger — below sm only. */}
           <div className="flex sm:hidden items-center gap-1 flex-shrink-0">
             <ThemeToggle />
-            <AccountMenu profile={state.profile} planName={plan.name} />
+            <AccountMenu profile={state.profile} planName={plan.name} userId={userId} />
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
@@ -161,6 +162,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         )}
       </header>
+      <OfflineBanner />
       <TeamInviteBanner />
       <main key={pathname} className="flex-1 max-w-3xl w-full mx-auto px-4 py-6 animate-fade-in-up">
         {children}
@@ -171,7 +173,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <Link to="/terms" className="hover:text-slate-600 dark:hover:text-slate-300">Terms</Link>
             <Link to="/privacy" className="hover:text-slate-600 dark:hover:text-slate-300">Privacy</Link>
-            <button onClick={() => signOut()} className="font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
+            <button onClick={() => signOut(userId)} className="font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
               Sign out
             </button>
           </div>

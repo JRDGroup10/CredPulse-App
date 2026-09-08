@@ -4,6 +4,7 @@ import { supabase } from "./supabaseClient";
 import { AppState } from "./types";
 import { loadState } from "./store";
 import { reportError } from "./errorMonitoring";
+import { clearOfflineSnapshot, loadOfflineSnapshot, saveOfflineSnapshot } from "./offlineCache";
 
 interface Ctx {
   session: Session | null;
@@ -19,6 +20,12 @@ interface Ctx {
   // about to be rejected and signed back out. See Auth.tsx.
   authGating: boolean;
   setAuthGating: (v: boolean) => void;
+  // Set only when the current `state` came from offlineCache.ts instead of
+  // a live load (see loadFor()'s catch block below) — the ISO timestamp of
+  // when that data was last actually synced. null means `state` is live.
+  // Layout.tsx/Dashboard.tsx use this to show a "you're offline" banner
+  // instead of silently passing off stale data as current.
+  offlineSyncedAt: string | null;
 }
 
 const AppStateContext = createContext<Ctx | null>(null);
@@ -28,25 +35,39 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState | null>(null);
   const [loading, setLoading] = useState(true);
   const [authGating, setAuthGating] = useState(false);
+  const [offlineSyncedAt, setOfflineSyncedAt] = useState<string | null>(null);
 
   async function loadFor(s: Session | null) {
     if (!s) {
       setState(null);
+      setOfflineSyncedAt(null);
       return;
     }
     try {
       const next = await loadState(s.user.id, s.user.email ?? "");
       setState(next);
+      setOfflineSyncedAt(null);
+      // Snapshot every successful load so a later failure (no connection)
+      // has something recent to fall back to instead of an error screen.
+      saveOfflineSnapshot(s.user.id, next);
     } catch (err) {
       // loadState() already retries a couple of times internally for the
       // transient auth-clock-skew error (see store.ts) — if it still throws
-      // here, either that didn't resolve in time or it's a real error.
-      // Report it instead of letting it vanish as an unhandled promise
-      // rejection, which is exactly what let this bug go unnoticed before
-      // Sentry was wired up. `state` stays whatever it was (usually null),
-      // so the authenticated routes' useAppState() will throw and the
-      // ErrorBoundary shows its friendly screen rather than a blank page.
+      // here, either that didn't resolve in time or it's a real error (most
+      // commonly: no network connection). Report it either way so real,
+      // persistent failures stay visible in Sentry, then fall back to the
+      // last successful snapshot for this same user if one exists — seeing
+      // slightly stale certs beats seeing the ErrorBoundary's generic
+      // "something went wrong" screen when the actual cause is just "you're
+      // offline right now." If there's no cached snapshot (first-ever load
+      // with no connection), `state` stays whatever it was — usually null —
+      // and the existing ErrorBoundary behavior is unchanged.
       reportError(err, { context: "AppContext.loadFor", userId: s.user.id });
+      const cached = loadOfflineSnapshot(s.user.id);
+      if (cached) {
+        setState(cached.state);
+        setOfflineSyncedAt(cached.syncedAt);
+      }
     }
   }
 
@@ -94,7 +115,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AppStateContext.Provider
-      value={{ session, loading, state, setState, refresh: () => loadFor(session), authGating, setAuthGating }}
+      value={{
+        session,
+        loading,
+        state,
+        setState,
+        refresh: () => loadFor(session),
+        authGating,
+        setAuthGating,
+        offlineSyncedAt
+      }}
     >
       {children}
     </AppStateContext.Provider>
@@ -133,6 +163,7 @@ export function useAppState() {
     userId: session.user.id,
     state,
     setState: ctx.setState as React.Dispatch<React.SetStateAction<AppState>>,
-    refresh: ctx.refresh
+    refresh: ctx.refresh,
+    offlineSyncedAt: ctx.offlineSyncedAt
   };
 }

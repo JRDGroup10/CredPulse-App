@@ -103,7 +103,7 @@ export default function Auth({
             // promises.
             const accountIndustry = await getAccountIndustry(user.id);
             if (accountIndustry !== industry) {
-              await signOut();
+              await signOut(user.id);
               // Correct the device's remembered preference to match the
               // real account, so "Back to homepage" below — and any future
               // visit — lands them on the right page without choosing again.
