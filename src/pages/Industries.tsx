@@ -11,18 +11,21 @@ import Logo from "../components/Logo";
 // individual signup, /signup/clinic for a team/organization.
 const INDUSTRIES = [
   {
+    slug: "construction",
     icon: "🏗️",
     title: "Construction",
     body: "Working at Heights, confined space entry, forklift and crane operator certifications — the ones that keep a crew legally allowed on site.",
     examples: ["Working at Heights / Fall Protection", "Confined Space Entry", "Forklift Operator", "Crane Operator (NCCCO)"]
   },
   {
+    slug: "education",
     icon: "🏫",
     title: "School boards & education",
     body: "Vulnerable sector checks, first aid, food handler certifications for cafeteria staff — every credential a school board has to keep current across a whole staff.",
     examples: ["Vulnerable Sector Check", "First Aid / CPR", "Food Handler Certification", "Mental Health First Aid"]
   },
   {
+    slug: "policing",
     icon: "🚓",
     title: "Policing & public safety",
     body: "Use-of-force recertification, firearms qualification, crisis intervention training — time-sensitive requalifications that can't quietly lapse.",
@@ -136,16 +139,17 @@ export default function Industries({
           </p>
           <div className="grid md:grid-cols-3 gap-6">
             {INDUSTRIES.map((ind) => (
-              <div
+              <Link
                 key={ind.title}
-                className="border border-slate-200 rounded-2xl p-6 bg-white hover:shadow-glow-amber hover:border-amber-300 hover:-translate-y-1 transition-all duration-300"
+                to={`/industries/${ind.slug}`}
+                className="block border border-slate-200 rounded-2xl p-6 bg-white hover:shadow-glow-amber hover:border-amber-300 hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center text-2xl mb-4">
                   {ind.icon}
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 mb-2">{ind.title}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed mb-4">{ind.body}</p>
-                <ul className="space-y-1.5 text-xs text-slate-500">
+                <ul className="space-y-1.5 text-xs text-slate-500 mb-4">
                   {ind.examples.map((ex) => (
                     <li key={ex} className="flex items-center gap-1.5">
                       <span className="w-1 h-1 rounded-full bg-amber-500 flex-shrink-0" />
@@ -153,7 +157,8 @@ export default function Industries({
                     </li>
                   ))}
                 </ul>
-              </div>
+                <span className="text-xs font-semibold text-amber-700">See details for {ind.title.split(" ")[0]} →</span>
+              </Link>
             ))}
           </div>
         </div>

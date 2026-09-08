@@ -23,6 +23,7 @@ const ApiKeys = lazy(() => import("./pages/ApiKeys"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Industries = lazy(() => import("./pages/Industries"));
+const IndustryVertical = lazy(() => import("./pages/IndustryVertical"));
 const IndustryChooser = lazy(() => import("./pages/IndustryChooser"));
 const JoinTeam = lazy(() => import("./pages/JoinTeam"));
 const ClinicSignup = lazy(() => import("./pages/ClinicSignup"));
@@ -86,6 +87,29 @@ function Routed() {
   // moment before being signed back out.
   if (authGating) {
     return <Spinner />;
+  }
+
+  // Dedicated per-vertical marketing pages — same signup flows and backend
+  // as Industries.tsx, but genuinely distinct copy/certs/FAQs per audience
+  // so each targets its own real search terms instead of one page diluted
+  // across three. Checked before the "/industries" hub below since it's
+  // the more specific match. See IndustryVertical.tsx.
+  const verticalMatch = /^\/industries\/(construction|education|policing)$/.exec(pathname);
+  if (verticalMatch) {
+    const vertical = verticalMatch[1] as "construction" | "education" | "policing";
+    return (
+      <IndustryVertical
+        vertical={vertical}
+        onGetStarted={() => {
+          setShowAuth("signup");
+          navigate("/");
+        }}
+        onLogin={() => {
+          setShowAuth("login");
+          navigate("/");
+        }}
+      />
+    );
   }
 
   // Public marketing page for non-healthcare industries (construction,
