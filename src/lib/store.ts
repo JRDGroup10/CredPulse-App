@@ -7,6 +7,7 @@ import {
   BillingCycle,
   CertScope,
   Certificate,
+  MAX_BONUS_CERT_SLOTS,
   OrgInvite,
   OrgInviteWithOrgName,
   OrgMember,
@@ -16,6 +17,7 @@ import {
   Organization,
   Plan,
   Region,
+  ReferralSummary,
   UserProfile
 } from "./types";
 import { IndustryPref } from "./industryPref";
@@ -39,7 +41,9 @@ function mapProfileRow(row: Record<string, unknown> | null, fallbackEmail: strin
     region: ((row?.region as Region) ?? "CA") as Region,
     organizationId: (row?.organization_id as string) ?? null,
     orgRole: ((row?.org_role as OrgRole) ?? "member") as OrgRole,
-    industry: ((row?.industry as IndustryPref) ?? "healthcare") as IndustryPref
+    industry: ((row?.industry as IndustryPref) ?? "healthcare") as IndustryPref,
+    referralCode: (row?.referral_code as string) ?? "",
+    bonusCertSlots: (row?.bonus_cert_slots as number) ?? 0
   };
 }
 
@@ -75,12 +79,18 @@ export async function signUp(
   name: string,
   role: string,
   region: Region,
-  industry: IndustryPref
+  industry: IndustryPref,
+  // Optional — a code captured from a "?ref=<code>" link (see
+  // lib/referralCapture.ts). Passed through as signup metadata so
+  // handle_new_user() (see supabase/referrals-schema.sql) can link this new
+  // account to the referrer and award both sides their bonus cert slot,
+  // entirely inside the same trigger that creates the profile row.
+  referralCode?: string | null
 ) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { name, role, region, industry } }
+    options: { data: { name, role, region, industry, referral_code: referralCode ?? undefined } }
   });
   if (error) throw error;
   return data;
@@ -743,7 +753,12 @@ export async function acceptOrganizationInvite(
 // certLimitReached()/canUseTipsAndLinks() are the two places that need to
 // know which bucket (clinic vs personal) a given certificate falls into.
 export function certLimit(state: AppState): number {
-  return PLANS[state.profile.plan].certLimit;
+  const base = PLANS[state.profile.plan].certLimit;
+  // Pro is already unlimited — adding a finite bonus on top of Infinity is a
+  // no-op anyway, but this keeps the intent explicit rather than relying on
+  // Infinity + n === Infinity.
+  if (base === Infinity) return base;
+  return base + state.profile.bonusCertSlots;
 }
 
 /** Whether adding one more certificate of the given scope would be blocked.
@@ -1014,4 +1029,29 @@ export async function revokeApiKey(keyId: string, actor?: AuditActor): Promise<v
       targetLabel: keyRow.label as string
     });
   }
+}
+
+// ============================================================
+// Referral / viral loop. See supabase/referrals-schema.sql — the actual
+// linking and reward-granting happens entirely inside handle_new_user() at
+// signup time; this is just a read for the Settings UI to show what the
+// user has earned so far.
+// ============================================================
+
+/** referralCode/bonusCertSlots already live on the profile row (loaded via
+ * loadState() into AppState), so this only needs one extra query — how many
+ * people this user has successfully referred. */
+export async function getReferralSummary(state: AppState, userId: string): Promise<ReferralSummary> {
+  const { count, error } = await supabase
+    .from("referrals")
+    .select("id", { count: "exact", head: true })
+    .eq("referrer_id", userId);
+  if (error) throw error;
+
+  return {
+    referralCode: state.profile.referralCode,
+    referralCount: count ?? 0,
+    bonusCertSlots: state.profile.bonusCertSlots,
+    maxBonusCertSlots: MAX_BONUS_CERT_SLOTS
+  };
 }

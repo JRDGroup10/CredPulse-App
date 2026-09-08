@@ -6,6 +6,7 @@ import { supabaseConfigured } from "../lib/supabaseClient";
 import { Region } from "../lib/types";
 import { orderedRoleGroups } from "../lib/roles";
 import { getIndustryPref, setIndustryPref, IndustryPref } from "../lib/industryPref";
+import { peekReferralCode, consumeReferralCode } from "../lib/referralCapture";
 import { LogoMark } from "../components/Logo";
 type Mode = "signup" | "login";
 
@@ -35,6 +36,11 @@ export default function Auth({
   const industry: IndustryPref = preferOther ? "other" : "healthcare";
   const roleGroups = useMemo(() => orderedRoleGroups(region, preferOther), [region, preferOther]);
   const [role, setRole] = useState(roleGroups[0].roles[0]);
+  // Captured earlier from a "?ref=<code>" link (see App.tsx calling
+  // captureReferralFromUrl() on boot) — shown here just as a friendly hint;
+  // the actual linking/reward happens server-side in handle_new_user() once
+  // signUp() passes the code through.
+  const referralCode = useMemo(() => peekReferralCode(), []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -69,7 +75,11 @@ export default function Auth({
     setBusy(true);
     try {
       if (mode === "signup") {
-        await signUp(email, password, name, role, region, industry);
+        await signUp(email, password, name, role, region, industry, referralCode);
+        // Only clear the stored code once signUp() has actually succeeded —
+        // if it throws (weak password, email taken, etc.) the code should
+        // still be there for the retry.
+        consumeReferralCode();
         // If email confirmation is required, Supabase won't return a session yet.
         setCheckInbox(true);
       } else {
@@ -168,6 +178,12 @@ export default function Auth({
           <div className="mb-4 rounded-xl border border-brand-100 dark:border-brand-900 bg-brand-50 dark:bg-brand-500/10 px-4 py-3 text-sm text-brand-800 dark:text-brand-300">
             🏥 You're setting up your account to join <strong>{joiningOrgName}</strong>. Your clinic's plan
             already covers your certifications — no separate subscription needed.
+          </div>
+        )}
+
+        {!joiningOrgName && referralCode && mode === "signup" && (
+          <div className="mb-4 rounded-xl border border-emerald-100 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
+            🎁 You were invited by a friend — sign up now and you'll both get a bonus certificate slot.
           </div>
         )}
 

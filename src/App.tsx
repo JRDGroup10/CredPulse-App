@@ -1,8 +1,9 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { AppStateProvider, useAuth } from "./lib/AppContext";
 import Layout from "./components/Layout";
 import { getIndustryPref, marketingHomePath } from "./lib/industryPref";
+import { captureReferralFromUrl } from "./lib/referralCapture";
 import PendingClinicSetupResumer from "./components/PendingClinicSetupResumer";
 
 // Every page is its own lazy-loaded chunk instead of one monolithic bundle —
@@ -63,6 +64,14 @@ function Routed() {
   const [joiningOrgName, setJoiningOrgName] = useState<string | null>(null);
   const { pathname } = useLocation();
   const navigate = useNavigate();
+
+  // Runs once per app load, on whatever page a shared referral link
+  // ("https://credpulse.app/?ref=CODE") landed on — parks the code in
+  // localStorage before anything else here has a chance to navigate away
+  // and drop the query string. See lib/referralCapture.ts.
+  useEffect(() => {
+    captureReferralFromUrl();
+  }, []);
 
   // Legal pages are public and don't depend on auth state.
   if (pathname === "/terms") return <Terms />;

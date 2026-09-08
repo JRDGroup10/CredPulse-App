@@ -47,6 +47,13 @@ export interface UserProfile {
   // login (see Auth.tsx) so a healthcare account can't sign in from the
   // construction/education/policing side, or vice versa.
   industry: IndustryPref;
+  // Referral/viral-loop feature (see supabase/referrals-schema.sql).
+  // referralCode is this user's own shareable code (e.g. "?ref=AB12CD3");
+  // bonusCertSlots is added on top of the plan's base cert limit in
+  // certLimit() below, +1 per successful referral on either side of the
+  // link, capped at 10 by the database trigger that awards it.
+  referralCode: string;
+  bonusCertSlots: number;
 }
 
 export interface AppState {
@@ -130,4 +137,19 @@ export interface ApiKey {
   createdAt: string;
   lastUsedAt: string | null;
   revokedAt: string | null;
+}
+
+// ============================================================
+// Referral / viral loop. See supabase/referrals-schema.sql for the
+// referrals table + handle_new_user() reward logic, and
+// src/lib/store.ts's getReferralSummary().
+// ============================================================
+
+export const MAX_BONUS_CERT_SLOTS = 10;
+
+export interface ReferralSummary {
+  referralCode: string;
+  referralCount: number;
+  bonusCertSlots: number;
+  maxBonusCertSlots: number;
 }

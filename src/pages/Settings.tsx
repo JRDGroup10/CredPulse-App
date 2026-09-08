@@ -5,6 +5,7 @@ import { updateProfile } from "../lib/store";
 import { PLANS } from "../lib/plans";
 import { Region } from "../lib/types";
 import TeamSettings from "../components/TeamSettings";
+import ReferralCard from "../components/ReferralCard";
 
 export default function Settings() {
   const { userId, state, refresh } = useAppState();
@@ -83,6 +84,8 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      <ReferralCard />
 
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card flex items-center justify-between gap-3">
         <div>
