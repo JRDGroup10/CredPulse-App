@@ -3,6 +3,7 @@ import { Certificate } from "../lib/types";
 import { getCertificateFileUrl } from "../lib/store";
 import { buildCertificateICS, downloadICS } from "../lib/ics";
 import StatusBadge from "./StatusBadge";
+import CeuTracker from "./CeuTracker";
 
 export default function CertCard({
   cert,
@@ -108,6 +109,7 @@ export default function CertCard({
             </div>
           )
         )}
+        {cert.ceuRequired != null && <CeuTracker certificateId={cert.id} ceuRequired={cert.ceuRequired} />}
         </div>
       </div>
       <div className="text-right flex-shrink-0">

@@ -18,6 +18,11 @@ const EMPTY_DRAFT = {
   renewalUrl: ""
 };
 
+// Separate from the main draft state deliberately — CEU tracking is opt-in
+// and orthogonal to the extracted fields above (AI extraction has no way to
+// know whether a given cert uses the CEU renewal model), so it gets its own
+// toggle + input rather than being folded into EMPTY_DRAFT.
+
 export default function AddCertificate() {
   const { userId, state, refresh } = useAppState();
   const navigate = useNavigate();
@@ -29,6 +34,8 @@ export default function AddCertificate() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [confidence, setConfidence] = useState<number | null>(null);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
+  const [tracksCeu, setTracksCeu] = useState(false);
+  const [ceuRequired, setCeuRequired] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Team members default to 'clinic' — that's the reason most people join a
@@ -78,7 +85,12 @@ export default function AddCertificate() {
     // them instead of hiding them outright, so the upgrade prompt stays
     // visible every time this certificate is viewed, not just once at
     // add-time.
-    const payload = { ...draft, fileName, scope };
+    const payload = {
+      ...draft,
+      fileName,
+      scope,
+      ceuRequired: tracksCeu && Number(ceuRequired) > 0 ? Number(ceuRequired) : undefined
+    };
     setSaving(true);
     setError(null);
     try {
@@ -256,6 +268,37 @@ export default function AddCertificate() {
                     </div>
                   )
                 )}
+
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={tracksCeu}
+                      onChange={(e) => setTracksCeu(e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-brand-600 focus:ring-brand-400"
+                    />
+                    This renews by earning continuing-education credits (CEUs)
+                  </label>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 ml-6">
+                    For certs like CPC, CRCST, or PANCE that renew by accumulating credits over the cycle, not a single course.
+                  </p>
+                  {tracksCeu && (
+                    <div className="mt-2 ml-6 max-w-[10rem]">
+                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                        Credits required
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={ceuRequired}
+                        onChange={(e) => setCeuRequired(e.target.value)}
+                        placeholder="e.g. 36"
+                        className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
               {error && (
@@ -280,6 +323,8 @@ export default function AddCertificate() {
                     setPendingFile(null);
                     setError(null);
                     setDismissedDuplicate(false);
+                    setTracksCeu(false);
+                    setCeuRequired("");
                   }}
                   disabled={saving}
                   className="text-sm text-slate-500 dark:text-slate-400 px-4 py-2 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"

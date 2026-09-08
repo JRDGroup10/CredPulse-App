@@ -30,6 +30,23 @@ export interface Certificate {
   tip?: string; // e.g. "Renew in person, book ahead — slots fill up." (Plus/Pro only)
   renewalUrl?: string; // direct link to the renewal/booking site (Plus/Pro only)
   scope: CertScope;
+  // CE-credit tracking (see supabase/ceu-tracking-schema.sql) — opt-in per
+  // certificate at add-time, for certs that renew via accumulated
+  // continuing-education credits (CPC, CRCST, PANCE) rather than a single
+  // course/exam. undefined/null means this cert doesn't use the CEU model
+  // and CeuTracker.tsx never shows for it.
+  ceuRequired?: number;
+}
+
+// One logged credit-earning activity toward a certificate's ceuRequired
+// total. See CeuTracker.tsx and store.ts's listCeuCredits()/addCeuCredit().
+export interface CeuCreditLog {
+  id: string;
+  certificateId: string;
+  credits: number;
+  activityName: string;
+  completedDate: string; // ISO date
+  createdAt: string;
 }
 
 export interface UserProfile {

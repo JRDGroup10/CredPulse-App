@@ -7,6 +7,7 @@ import {
   BillingCycle,
   CertScope,
   Certificate,
+  CeuCreditLog,
   MAX_BONUS_CERT_SLOTS,
   OrgInvite,
   OrgInviteWithOrgName,
@@ -58,7 +59,19 @@ function mapCertRow(row: Record<string, unknown>): Certificate {
     filePath: (row.file_path as string) ?? undefined,
     tip: (row.tip as string) ?? undefined,
     renewalUrl: (row.renewal_url as string) ?? undefined,
-    scope: ((row.scope as CertScope) ?? "personal") as CertScope
+    scope: ((row.scope as CertScope) ?? "personal") as CertScope,
+    ceuRequired: row.ceu_required != null ? Number(row.ceu_required) : undefined
+  };
+}
+
+function mapCeuCreditLogRow(row: Record<string, unknown>): CeuCreditLog {
+  return {
+    id: row.id as string,
+    certificateId: row.certificate_id as string,
+    credits: Number(row.credits),
+    activityName: (row.activity_name as string) ?? "",
+    completedDate: row.completed_date as string,
+    createdAt: row.created_at as string
   };
 }
 
@@ -425,7 +438,8 @@ export async function addCertificate(
     tip: cert.tip || null,
     renewal_url: cert.renewalUrl || null,
     file_path: filePath,
-    scope: cert.scope
+    scope: cert.scope,
+    ceu_required: cert.ceuRequired ?? null
   });
   if (error) throw error;
 
@@ -1054,4 +1068,57 @@ export async function getReferralSummary(state: AppState, userId: string): Promi
     bonusCertSlots: state.profile.bonusCertSlots,
     maxBonusCertSlots: MAX_BONUS_CERT_SLOTS
   };
+}
+
+// ============================================================
+// CE-credit tracking (see supabase/ceu-tracking-schema.sql). Deepen-the-
+// product feature: some certifications (CPC, CRCST, PANCE — see the content
+// guides for these) renew by accumulating a required number of continuing-
+// education credits across the cycle rather than via a single course/exam.
+// CeuTracker.tsx is the UI; these are the reads/writes it calls.
+// ============================================================
+
+/** Sets or changes a certificate's CEU requirement. Passing null turns off
+ * CEU tracking for this certificate (CeuTracker.tsx stops showing for it) —
+ * it does NOT delete any already-logged credits, so re-enabling it later
+ * picks up right where the logged history left off. */
+export async function updateCertificateCeuRequirement(certificateId: string, ceuRequired: number | null): Promise<void> {
+  const { error } = await supabase.from("certificates").update({ ceu_required: ceuRequired }).eq("id", certificateId);
+  if (error) throw error;
+}
+
+export async function listCeuCredits(certificateId: string): Promise<CeuCreditLog[]> {
+  const { data, error } = await supabase
+    .from("ceu_credit_logs")
+    .select("id, certificate_id, credits, activity_name, completed_date, created_at")
+    .eq("certificate_id", certificateId)
+    .order("completed_date", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(mapCeuCreditLogRow);
+}
+
+export async function addCeuCredit(
+  certificateId: string,
+  userId: string,
+  entry: { credits: number; activityName: string; completedDate: string }
+): Promise<void> {
+  const { error } = await supabase.from("ceu_credit_logs").insert({
+    certificate_id: certificateId,
+    user_id: userId,
+    credits: entry.credits,
+    activity_name: entry.activityName || null,
+    completed_date: entry.completedDate
+  });
+  if (error) throw error;
+}
+
+export async function deleteCeuCredit(id: string): Promise<void> {
+  const { error } = await supabase.from("ceu_credit_logs").delete().eq("id", id);
+  if (error) throw error;
+}
+
+/** Pure helper — total credits earned across a set of logs. Kept separate
+ * from the fetch so it's independently testable without a Supabase client. */
+export function sumCeuCredits(logs: CeuCreditLog[]): number {
+  return logs.reduce((sum, l) => sum + l.credits, 0);
 }
