@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Certificate } from "../lib/types";
 import { getCertificateFileUrl } from "../lib/store";
 import { buildCertificateICS, downloadICS } from "../lib/ics";
+import { buildRenewalSearchUrl } from "../lib/renewalSearch";
 import StatusBadge from "./StatusBadge";
 import CeuTracker from "./CeuTracker";
 
@@ -87,16 +88,30 @@ export default function CertCard({
                 <span>{cert.tip}</span>
               </div>
             )}
-            {cert.renewalUrl && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+              {cert.renewalUrl && (
+                <a
+                  href={cert.renewalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-transform hover:translate-x-0.5"
+                >
+                  Renew here →
+                </a>
+              )}
+              {/* Always shown, even when we don't have (or trust) a specific
+                  official link — a plain search query is zero-risk since it
+                  never hardcodes an organization's URL that could go stale
+                  or be wrong for this user's exact situation. */}
               <a
-                href={cert.renewalUrl}
+                href={buildRenewalSearchUrl(cert.name)}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-transform hover:translate-x-0.5"
+                className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
-                Renew here →
+                🔍 Find courses near me
               </a>
-            )}
+            </div>
           </>
         ) : (
           (cert.tip || cert.renewalUrl) && (

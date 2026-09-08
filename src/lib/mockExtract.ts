@@ -42,7 +42,7 @@ export const KNOWN_TEMPLATES: Template[] = [
       issuer: "American Heart Association",
       credentialType: "certification",
       tip: "Renew in person, book ahead — slots fill up.",
-      renewalUrl: "https://cpr.heart.org/en/cpr-courses-and-kits/healthcare-professional/bls"
+      renewalUrl: "https://cpr.heart.org/en/cpr-courses-and-kits/healthcare-professional/basic-life-support-bls-training"
     }
   },
   {
@@ -159,10 +159,10 @@ export const KNOWN_TEMPLATES: Template[] = [
     },
     us: {
       name: "Neonatal Resuscitation Program (NRP)",
-      issuer: "American Heart Association",
+      issuer: "American Academy of Pediatrics",
       credentialType: "certification",
       tip: "Required for most L&D/NICU roles — book through your hospital's education department.",
-      renewalUrl: "https://www.heart.org/en/cpr/nrp"
+      renewalUrl: "https://www.aap.org/en/pedialink/neonatal-resuscitation-program/"
     }
   },
   {
@@ -172,14 +172,14 @@ export const KNOWN_TEMPLATES: Template[] = [
       issuer: "NAEMT",
       credentialType: "certification",
       tip: "Valid for 4 years — the refresher course is shorter than the full provider course, book that instead.",
-      renewalUrl: "https://www.naemt.org/education/phtls"
+      renewalUrl: "https://www.naemt.org/education/trauma-education/phtls"
     },
     us: {
       name: "Prehospital Trauma Life Support (PHTLS)",
       issuer: "NAEMT",
       credentialType: "certification",
       tip: "Valid for 4 years — the refresher course is shorter than the full provider course, book that instead.",
-      renewalUrl: "https://www.naemt.org/education/phtls"
+      renewalUrl: "https://www.naemt.org/education/trauma-education/phtls"
     }
   },
   {
@@ -308,14 +308,14 @@ export const KNOWN_TEMPLATES: Template[] = [
       issuer: "AAPC",
       credentialType: "certification",
       tip: "Renews annually — log your CEUs throughout the year so you're not scrambling at renewal time.",
-      renewalUrl: "https://www.aapc.com/certification/"
+      renewalUrl: "https://www.aapc.com/certification/cpc"
     },
     us: {
       name: "Medical Coding Certification",
       issuer: "AAPC",
       credentialType: "certification",
       tip: "Renews annually — log your CEUs throughout the year so you're not scrambling at renewal time.",
-      renewalUrl: "https://www.aapc.com/certification/"
+      renewalUrl: "https://www.aapc.com/certification/cpc"
     }
   },
   {
@@ -325,14 +325,14 @@ export const KNOWN_TEMPLATES: Template[] = [
       issuer: "HSPA",
       credentialType: "certification",
       tip: "Renews annually — requires logged continuing education credits.",
-      renewalUrl: "https://myhspa.org/certification/"
+      renewalUrl: "https://myhspa.org/certification/stay-certified/crcst-renewal/"
     },
     us: {
       name: "Sterile Processing Certification (CRCST)",
       issuer: "HSPA",
       credentialType: "certification",
       tip: "Renews annually — requires logged continuing education credits.",
-      renewalUrl: "https://myhspa.org/certification/"
+      renewalUrl: "https://myhspa.org/certification/stay-certified/crcst-renewal/"
     }
   },
   {
@@ -421,7 +421,7 @@ export const KNOWN_TEMPLATES: Template[] = [
       issuer: "NCCCO",
       credentialType: "certification",
       tip: "Valid for 5 years — start the renewal exam process a few months ahead of expiry.",
-      renewalUrl: "https://www.nccco.org/nccco/certification-programs/recertification"
+      renewalUrl: "https://www.nccco.org"
     }
   },
   {
