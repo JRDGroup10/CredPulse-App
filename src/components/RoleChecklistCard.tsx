@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppState } from "../lib/AppContext";
-import { getRecommendedCertifications } from "../lib/roleChecklist";
+import { getOnboardingProgress } from "../lib/onboardingChecklist";
 
 /**
  * The "instant relevance" onboarding moment: the second someone tells us
@@ -9,14 +9,19 @@ import { getRecommendedCertifications } from "../lib/roleChecklist";
  * so instead of a blank dashboard, they see a checklist of exactly which
  * certifications to add. Disappears item-by-item as matching certificates
  * are added, and disappears entirely once nothing's left (or if dismissed
- * for this session).
+ * for this session). The diff itself (recommended vs. actual) lives in
+ * onboardingChecklist.ts, shared with Team.tsx's admin-facing view of the
+ * same check run across every team member.
  */
 export default function RoleChecklistCard() {
   const { state } = useAppState();
   const [dismissed, setDismissed] = useState(false);
 
-  const recommended = getRecommendedCertifications(state.profile.role, state.profile.region);
-  const missing = recommended.filter((item) => !state.certificates.some((c) => item.match.test(c.name)));
+  const { missing, completedCount, totalCount } = getOnboardingProgress(
+    state.profile.role,
+    state.profile.region,
+    state.certificates
+  );
 
   if (dismissed || missing.length === 0) return null;
 
@@ -29,6 +34,9 @@ export default function RoleChecklistCard() {
           </div>
           <p className="text-xs text-brand-700/80 dark:text-brand-300/80 mt-0.5">
             Based on your role, here's what most people in it track. Add what applies to you.
+          </p>
+          <p className="text-[11px] font-semibold text-brand-700/70 dark:text-brand-300/70 mt-1.5">
+            {completedCount} of {totalCount} added
           </p>
         </div>
         <button

@@ -17,6 +17,7 @@ import {
 } from "../lib/store";
 import { ORG_PLANS, nextOrgPlanAbove } from "../lib/orgPlans";
 import { getVerificationLink } from "../lib/verificationProviders";
+import { getOnboardingProgress } from "../lib/onboardingChecklist";
 import { Certificate, CredStatus, Organization, OrgMember } from "../lib/types";
 import CountUp from "../components/CountUp";
 
@@ -164,6 +165,27 @@ export default function Team() {
       if (byUrgency !== 0) return byUrgency;
       return a.certName.localeCompare(b.certName);
     });
+  }, [membersWithCerts]);
+
+  // New-hire onboarding kit: which role-recommended certifications (see
+  // roleChecklist.ts) is each member still missing? Necessarily runs only
+  // against clinic-scoped certs (listOrgMemberCertificates()'s contract —
+  // a member's personal certs stay private from the org admin, same
+  // boundary as everywhere else in this dashboard), so someone who already
+  // has a role-recommended cert tracked as "personal" will still show up
+  // here as missing it from the clinic's point of view. Not limited to
+  // brand-new hires by design — a role change surfaces the same way, and it
+  // clears itself the moment the gap is actually closed, so there's no
+  // separate "onboarding complete" state to track or expire.
+  const onboardingGaps = useMemo(() => {
+    if (!membersWithCerts) return [];
+    return membersWithCerts
+      .map((m) => {
+        const progress = getOnboardingProgress(m.role, m.region, m.certificates);
+        return { memberId: m.id, memberName: m.name || m.email, memberRole: m.role, missing: progress.missing };
+      })
+      .filter((g) => g.missing.length > 0)
+      .sort((a, b) => b.missing.length - a.missing.length);
   }, [membersWithCerts]);
 
   // Resolves a verifying admin's profile id to a display name for the
@@ -338,6 +360,38 @@ export default function Team() {
               <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Not tracked yet</div>
             </div>
           </div>
+
+          {onboardingGaps.length > 0 && (
+            <div className="mb-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-card p-4">
+              <div className="mb-3">
+                <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Onboarding &amp; role coverage</div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Based on each person's role, here's what's still missing — new hires and role changes both
+                  show up here until it's resolved.
+                </p>
+              </div>
+              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                {onboardingGaps.map((g) => (
+                  <li key={g.memberId} className="py-2.5 flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-shrink-0">
+                      <div className="text-sm font-medium text-slate-700 dark:text-slate-200">{g.memberName}</div>
+                      <div className="text-xs text-slate-400 dark:text-slate-500">{g.memberRole || "—"}</div>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      {g.missing.map((item) => (
+                        <span
+                          key={item.name}
+                          className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 whitespace-nowrap"
+                        >
+                          {item.name}
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {benchmark && ownCompliancePct !== null && (
             <div className="mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-card">

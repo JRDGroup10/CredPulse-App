@@ -108,6 +108,12 @@ export interface OrgMember {
   email: string;
   role: string; // their healthcare role, e.g. "Registered Nurse"
   orgRole: OrgRole;
+  // Needed to run the role-based onboarding checklist (see
+  // onboardingChecklist.ts) against a member other than the signed-in
+  // user — recommended certification names/issuers are region-specific
+  // (see mockExtract.ts's KNOWN_TEMPLATES), so Team.tsx can't reuse the
+  // signed-in admin's own region for this.
+  region: Region;
 }
 
 export interface OrgInvite {

@@ -686,7 +686,7 @@ export async function listOrgInvites(organizationId: string): Promise<OrgInvite[
 export async function listOrgMembers(organizationId: string): Promise<OrgMember[]> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, name, email, role, org_role")
+    .select("id, name, email, role, org_role, region")
     .eq("organization_id", organizationId);
   if (error) throw error;
   return (data ?? []).map((r) => ({
@@ -694,7 +694,8 @@ export async function listOrgMembers(organizationId: string): Promise<OrgMember[
     name: (r.name as string) ?? "",
     email: r.email as string,
     role: (r.role as string) ?? "",
-    orgRole: (r.org_role as OrgRole) ?? "member"
+    orgRole: (r.org_role as OrgRole) ?? "member",
+    region: (r.region as Region) ?? "CA"
   }));
 }
 
