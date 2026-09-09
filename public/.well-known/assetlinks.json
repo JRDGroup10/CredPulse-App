@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.credpulse.twa",
+        "sha256_cert_fingerprints": ["A6:47:2C:9E:A9:1F:A1:69:81:61:60:53:27:9E:11:C7:E6:CA:10:24:9F:3F:E3:27:A1:89:E9:26:9B:D9:CD:49"]
+      }
+    }]

@@ -3,13 +3,18 @@
 -- notify-signup Edge Function and setting its secrets.
 --
 -- Before running: replace the two placeholders below —
---   YOUR_PROJECT_REF      -> from Project Settings -> General -> Reference ID
---   YOUR_SERVICE_ROLE_KEY -> from Project Settings -> API -> service_role key (SECRET)
+--   YOUR_PROJECT_REF -> from Project Settings -> General -> Reference ID
+--   YOUR_PUBLIC_KEY  -> from Project Settings -> API -> anon/publishable key (NOT secret)
 --
--- This only ever lives inside your Supabase project's Postgres — it's fine
--- for it to reference the service role key here, same as cron.sql. Just
--- don't commit the filled-in version to git (this file should always show
--- placeholders, not the real key).
+-- Use the anon/publishable key here, not the service_role key. The
+-- notify-signup Edge Function is deployed with --no-verify-jwt and doesn't
+-- check the incoming Authorization header for anything, so this call
+-- doesn't need — and shouldn't carry — a key that can bypass RLS. An
+-- earlier version of this file called for the service_role key out of
+-- habit (copying cron.sql, which genuinely needs it), which left a
+-- full-privilege secret sitting in plaintext inside this Postgres function
+-- for no functional reason. The anon/publishable key is safe to have here
+-- since it's already public in the shipped frontend bundle.
 
 create extension if not exists pg_net with schema extensions;
 
@@ -21,7 +26,7 @@ begin
       url := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/notify-signup',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'Authorization', 'Bearer YOUR_SERVICE_ROLE_KEY'
+        'Authorization', 'Bearer YOUR_PUBLIC_KEY'
       ),
       body := jsonb_build_object(
         'name', new.name,

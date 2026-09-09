@@ -7,6 +7,17 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      // We register the service worker ourselves in main.tsx (via
+      // virtual:pwa-register) instead of letting the plugin auto-inject its
+      // own registration script. The auto-injected version doesn't expose
+      // an error hook, so a registration failure (e.g. Safari private
+      // browsing, or a browser with SW disabled) surfaced as an unhandled
+      // promise rejection straight to Sentry as a bare "Error: Rejected"
+      // with no context — every real occurrence was harmless, but each one
+      // was a case where the app already knew SW registration failed for
+      // an ordinary, non-actionable reason and could have degraded quietly
+      // instead of throwing.
+      injectRegister: false,
       // Switched from the default generated service worker to a custom one
       // (src/sw.ts) so we can add push-notification handling for
       // certificate-expiry reminders. See src/sw.ts for details.
