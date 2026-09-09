@@ -5,10 +5,14 @@ type Theme = "light" | "dark";
 const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void } | null>(null);
 
 function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   const stored = window.localStorage.getItem("credpulse-theme");
   if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  // Dark is the app's default/primary look as of the Dimension-system redesign
+  // (CRE-12+) — a first-time visitor sees dark regardless of OS preference.
+  // Anyone who explicitly toggles to light keeps that choice via the stored
+  // value above; this fallback only applies before any choice has been made.
+  return "dark";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

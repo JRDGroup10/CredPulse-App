@@ -9,29 +9,37 @@ html, body, #root {
 /* Theme tokens backing the "brand"/"accent" Tailwind colors and the "glow"
    shadow (see tailwind.config.js). Values are space-separated R G B
    components, not hex, so Tailwind's opacity-modifier classes (bg-brand-500/10
-   etc.) keep working. Defaults are the healthcare blue/green palette used on
-   the marketing site and throughout the app chrome.
+   etc.) keep working.
+
+   As of the Dimension-system redesign (CRE-12), "brand" is CredPulse's single
+   chromatic identity color — dusk violet (#6b62f2) for healthcare — used only
+   in glows, gradients, links, and CTA moments, never as a large solid fill,
+   per the source system's own rule. "accent" stays a separate green ramp: it
+   carries semantic meaning (valid/success states on CertCard etc.) that's
+   independent of brand identity, so it isn't collapsed into violet — a design
+   system can be "one brand accent" while still using red/amber/green for
+   status, the same way the app already hardcodes red/amber for
+   over-limit/warning states outside this token system entirely.
 
    Layout.tsx sets data-industry="other" on the authenticated app's root
    element for accounts whose industry (see lib/industryPref.ts) is
    construction/education/policing rather than healthcare — the override
    block below retints every bg-brand-*, text-brand-*, and shadow-glow usage
-   inside that subtree to amber/orange automatically, with no changes to
-   any individual component. Pages rendered outside that wrapper (Landing,
+   inside that subtree to amber automatically, with no changes to any
+   individual component. Pages rendered outside that wrapper (Landing,
    Industries, Auth, etc.) always see the :root defaults regardless of who's
-   viewing them — Landing.tsx in particular should always stay blue, since
-   its blue *is* the healthcare page's identity, not a per-viewer setting. */
+   viewing them. */
 :root {
-  --color-brand-50: 239 246 255;
-  --color-brand-100: 219 234 254;
-  --color-brand-200: 191 219 254;
-  --color-brand-300: 96 165 250;
-  --color-brand-400: 59 130 246;
-  --color-brand-500: 37 99 235;
-  --color-brand-600: 29 78 216;
-  --color-brand-700: 30 64 175;
-  --color-brand-800: 30 58 138;
-  --color-brand-900: 30 42 94;
+  --color-brand-50: 242 241 254;
+  --color-brand-100: 230 228 253;
+  --color-brand-200: 205 201 251;
+  --color-brand-300: 168 155 255;
+  --color-brand-400: 139 127 245;
+  --color-brand-500: 107 98 242;
+  --color-brand-600: 86 75 217;
+  --color-brand-700: 66 56 176;
+  --color-brand-800: 51 44 135;
+  --color-brand-900: 36 31 94;
   --color-accent-50: 236 253 245;
   --color-accent-100: 209 250 229;
   --color-accent-200: 167 243 208;
@@ -42,7 +50,32 @@ html, body, #root {
   --color-accent-700: 4 120 87;
   --color-accent-800: 6 95 70;
   --color-accent-900: 6 78 59;
-  --color-glow-rgb: 37 99 235;
+  --color-glow-rgb: 107 98 242;
+
+  /* Dimension neutral surface/text scale — theme-aware (see html.dark below),
+     industry-independent (every industry shares the same near-monochrome
+     shell; only --color-brand-* above changes per industry). Named after
+     role rather than Dimension's literal token names so component code reads
+     naturally: bg-canvas / bg-panel / text-ink / text-ink-muted /
+     text-ink-faint / border-hairline (see tailwind.config.js). Light-mode
+     values below are a neutral placeholder pending the dedicated light-mode
+     restyle (CRE-21) — dark values are the primary/default look as of this
+     redesign (see ThemeContext.tsx's dark-by-default change). */
+  --color-canvas: 255 255 255;
+  --color-panel: 255 255 255;
+  --color-ink: 23 23 23;
+  --color-ink-muted: 82 82 82;
+  --color-ink-faint: 140 140 140;
+  --color-hairline: 229 229 229;
+}
+
+html.dark {
+  --color-canvas: 10 10 10;
+  --color-panel: 22 22 22;
+  --color-ink: 237 237 237;
+  --color-ink-muted: 194 194 194;
+  --color-ink-faint: 104 104 104;
+  --color-hairline: 229 229 229;
 }
 
 [data-industry="other"] {
@@ -86,7 +119,7 @@ body {
 }
 
 html.dark body {
-  background-color: #0b1220;
+  background-color: #0a0a0a;
 }
 
 /* Smooth color/background transitions app-wide when toggling theme,
@@ -101,13 +134,62 @@ html.dark body {
   transition: none !important;
 }
 
+/* Shared Dimension-system primitives (CRE-14). CredPulse has no Button/Card
+   React components — every page writes its own Tailwind classes inline — so
+   these are opt-in utility classes pages can adopt one at a time (starting
+   with Layout.tsx in CRE-15) rather than a new component abstraction layer,
+   consistent with how the rest of the app is built.
+
+   Buttons "invert" the canvas per Dimension's component spec: a dark-ink
+   fill with light text in light mode, a literal white fill with literal
+   dark text in dark mode (not theme-variable ink, since dark mode's --ink is
+   bone/near-white and would be illegible on a white button — the button spec
+   calls for #161616 text specifically, regardless of theme). Ghost/secondary
+   buttons stay transparent with a hairline border in both themes. */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-5 py-2.5 font-sans text-body font-normal transition-colors;
+  }
+
+  .btn-primary {
+    @apply btn bg-ink text-white hover:opacity-90 dark:bg-white dark:text-[#161616] dark:hover:opacity-90;
+  }
+
+  .btn-secondary {
+    @apply btn bg-transparent text-ink border border-hairline hover:bg-ink/5 dark:border-hairline/15 dark:hover:bg-white/5;
+  }
+
+  /* Standard card/panel surface: graphite in dark mode, white in light mode,
+     hairline border instead of a shadow (Dimension has no card box-shadow —
+     see shadow-subtle in tailwind.config.js for the one exception, an inset
+     highlight for dark surfaces only). Existing shadow-card usages migrate
+     to this class page-by-page in the Core Experience issues rather than
+     all at once here. */
+  .card {
+    @apply bg-panel rounded-panel border border-hairline dark:border-hairline/10;
+  }
+
+  /* Generic status/label pill — pages set their own background and text
+     color for the specific status (valid/expired/warning/etc.); this just
+     standardizes shape and type. */
+  .badge-pill {
+    @apply inline-flex items-center gap-1 rounded-pill px-3 py-1 text-caption font-medium;
+  }
+}
+
 @layer utilities {
+  /* Dimension's system explicitly forbids putting its violet accent into a
+     text gradient (accents are glow/wash-only, never a fill) — so this no
+     longer blends brand into accent. It's now a subtle ink-to-ink-muted
+     shimmer that stays legible and on-token in both themes; the violet
+     accent gets its moment as a background glow instead (see the radial
+     glow treatment used behind hero headlines, CRE-16). */
   .text-gradient {
     background-image: linear-gradient(
       90deg,
-      rgb(var(--color-brand-600)),
-      rgb(var(--color-brand-500)),
-      rgb(var(--color-accent-500))
+      rgb(var(--color-ink)),
+      rgb(var(--color-ink-muted)),
+      rgb(var(--color-ink))
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -122,8 +204,8 @@ html.dark body {
 }
 
 ::selection {
-  background: #bfdbfe;
-  color: #1e2a5e;
+  background: rgb(var(--color-brand-500) / 0.35);
+  color: rgb(var(--color-ink));
 }
 
 /* Used by the compliance report (ComplianceReport.tsx) and anything else

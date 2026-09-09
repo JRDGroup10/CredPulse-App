@@ -3,7 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#eaf4fb" />
+
+    <!-- Applies the dark class before first paint. ThemeContext.tsx only
+         adds/removes it in a useEffect, which runs after React mounts and
+         after the initial paint — fine when light was the default (only
+         users who'd already opted into dark saw anything), but now that
+         dark is the default for everyone (see getInitialTheme's fallback),
+         every new visitor would otherwise see a flash of the light canvas
+         before it switches. This mirrors getInitialTheme's exact logic:
+         explicit stored choice wins, otherwise default to dark. -->
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem("credpulse-theme") !== "light") {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+    <!-- Matches the dark-by-default canvas (void canvas #0a0a0a) so mobile
+         browser chrome/status bar doesn't flash light before React mounts. -->
+    <meta name="theme-color" content="#0a0a0a" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -57,11 +79,17 @@
       }
     </script>
 
+    <!-- DM Sans is the Dimension-system display/body face (weight 500 only —
+         see index.css/.tailwind.config.js comments for why never bolder).
+         Geist isn't on Google Fonts, and the source design doc itself lists
+         Inter as Geist's documented substitute, so Inter (already loaded
+         below for legacy/fallback text) does double duty as the heading
+         face too rather than pulling in a second font CDN. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
-  <body class="bg-surface">
+  <body class="bg-canvas">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

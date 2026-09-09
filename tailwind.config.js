@@ -4,8 +4,30 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      // Dimension's system pairs DM Sans (weight 500 only — never bolder,
+      // it's the signature restraint of this look) for display/body copy
+      // with Geist for section headings 24px+. Geist isn't on Google Fonts;
+      // the source design doc's own substitute for it is Inter, which the
+      // app already loads, so `heading` reuses Inter rather than adding a
+      // second font CDN dependency. `sans` stays the default body face used
+      // everywhere text-sans isn't explicitly overridden.
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"]
+        sans: ["DM Sans", "Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
+        heading: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"]
+      },
+      // Dimension's named type scale (CRE-13). Use text-display for hero
+      // headlines, text-heading-lg/heading/heading-sm for section titles,
+      // text-subheading/body for copy, text-caption for labels/metadata.
+      // Tailwind's own text-sm/base/lg/xl/etc. remain available for anything
+      // not yet migrated to the named scale.
+      fontSize: {
+        caption: ["13px", { lineHeight: "1.5", letterSpacing: "0.025em" }],
+        body: ["16px", { lineHeight: "1.5" }],
+        subheading: ["18px", { lineHeight: "1.5" }],
+        "heading-sm": ["24px", { lineHeight: "1.33" }],
+        heading: ["36px", { lineHeight: "1.11" }],
+        "heading-lg": ["48px", { lineHeight: "1" }],
+        display: ["72px", { lineHeight: "1", letterSpacing: "-0.035em" }]
       },
       colors: {
         // Defined as CSS variables (see :root / [data-industry="other"] in
@@ -44,14 +66,44 @@ export default {
         surface: {
           DEFAULT: "#eaf4fb",
           soft: "#f3f9fd"
-        }
+        },
+        // Dimension-system neutral scale (CRE-12) — theme-aware via
+        // html.dark in index.css, industry-independent (see the comment
+        // above --color-canvas in index.css). Use these for new/updated
+        // component styling instead of fixed slate-* classes going forward:
+        // bg-canvas (page background), bg-panel (card/nav surface),
+        // text-ink / text-ink-muted / text-ink-faint (primary/secondary/
+        // tertiary text), border-hairline (1px borders, typically at low
+        // opacity via border-hairline/10 on dark surfaces).
+        canvas: "rgb(var(--color-canvas) / <alpha-value>)",
+        panel: "rgb(var(--color-panel) / <alpha-value>)",
+        ink: {
+          DEFAULT: "rgb(var(--color-ink) / <alpha-value>)",
+          muted: "rgb(var(--color-ink-muted) / <alpha-value>)",
+          faint: "rgb(var(--color-ink-faint) / <alpha-value>)"
+        },
+        hairline: "rgb(var(--color-hairline) / <alpha-value>)"
+      },
+      // Dimension border radii (CRE-12): pill for all buttons/nav/tags, panel
+      // for standard cards, panel-lg for large feature cards/hero panels, ui
+      // for form controls. Existing rounded-* Tailwind defaults stay
+      // available for anything not yet migrated.
+      borderRadius: {
+        pill: "9999px",
+        ui: "10px",
+        panel: "24px",
+        "panel-lg": "40px"
       },
       boxShadow: {
         card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12)",
         glow: "0 0 0 1px rgba(var(--color-glow-rgb) / 0.08), 0 20px 40px -12px rgba(var(--color-glow-rgb) / 0.35)",
         // Amber/orange equivalent of "glow", used on the /industries page so
         // its accent color doesn't come out blue-tinted in the shadows.
-        "glow-amber": "0 0 0 1px rgba(217, 119, 6, 0.08), 0 20px 40px -12px rgba(217, 119, 6, 0.35)"
+        "glow-amber": "0 0 0 1px rgba(217, 119, 6, 0.08), 0 20px 40px -12px rgba(217, 119, 6, 0.35)",
+        // Dimension's only "elevation" device — a faint inset highlight
+        // instead of a drop shadow, meant for dark surfaces (graphite/void
+        // canvas). Prefer border-hairline for definition on light surfaces.
+        subtle: "rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset"
       },
       keyframes: {
         fadeInUp: {

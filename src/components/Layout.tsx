@@ -23,7 +23,7 @@ function ThemeToggle() {
       onClick={toggleTheme}
       aria-label="Toggle dark mode"
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="relative w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition"
+      className="relative w-9 h-9 rounded-full flex items-center justify-center text-ink-faint hover:text-ink hover:bg-ink/5 dark:hover:bg-white/5 transition"
     >
       <svg
         className={`w-[18px] h-[18px] absolute transition-all duration-300 ${isDark ? "opacity-0 -rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"}`}
@@ -48,7 +48,7 @@ function HomeButton() {
       to={marketingHomePath()}
       title="Visit homepage"
       aria-label="Visit homepage"
-      className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition"
+      className="w-9 h-9 rounded-full flex items-center justify-center text-ink-faint hover:text-ink hover:bg-ink/5 dark:hover:bg-white/5 transition"
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
         <path d="M3 10.5L12 3l9 7.5" />
@@ -97,83 +97,93 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     // tokens; nothing else needs to change per-component.
     <div
       data-industry={state.profile.industry}
-      className="min-h-screen flex flex-col bg-surface dark:bg-slate-950 transition-colors"
+      className="min-h-screen flex flex-col bg-canvas transition-colors"
     >
-      <header className="no-print border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-1 min-w-0">
-            <HomeButton />
-            <Link to="/" className="inline-flex items-center pl-1 min-w-0 transition-transform hover:scale-105">
-              <Logo markClassName="w-8 h-8" textClassName="text-base" />
-            </Link>
-          </div>
-
-          {/* Full nav — sm and up only. */}
-          <nav className="hidden sm:flex items-center gap-1">
-            {nav.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all ${
-                  pathname === item.to
-                    ? "bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-300"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                }`}
-              >
-                {item.label}
+      {/* Dimension's "floating frosted nav" — a rounded panel with visible
+          margin from the viewport edge and a hairline border, rather than a
+          flat bar flush to the top. Wrapper carries the sticky positioning
+          and edge margin; the inner div is the actual panel surface so the
+          rounded corners + border + blur read as one detached element. */}
+      {/* pt-4/top-4 give the panel real breathing room from the viewport
+          edge at rest and while stuck, per the source system's "never
+          flush to the edge" rule for this component. */}
+      <header className="no-print sticky top-4 z-10 px-3 pt-4">
+        <div className="max-w-3xl mx-auto rounded-[19px] border border-hairline/70 dark:border-hairline/10 bg-panel/80 backdrop-blur-md shadow-subtle">
+          <div className="px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-1 min-w-0">
+              <HomeButton />
+              <Link to="/" className="inline-flex items-center pl-1 min-w-0 transition-transform hover:scale-105">
+                <Logo markClassName="w-8 h-8" textClassName="text-base" />
               </Link>
-            ))}
-            <div className="ml-1 pl-1 border-l border-slate-200 dark:border-slate-700 flex items-center gap-1">
+            </div>
+
+            {/* Full nav — sm and up only. */}
+            <nav className="hidden sm:flex items-center gap-1">
+              {nav.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`px-3 py-1.5 rounded-pill text-caption font-normal whitespace-nowrap transition-all ${
+                    pathname === item.to
+                      ? "bg-brand-500/10 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300"
+                      : "text-ink/85 hover:bg-ink/5 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <div className="ml-1 pl-1 border-l border-hairline/70 dark:border-hairline/15 flex items-center gap-1">
+                <ThemeToggle />
+                <AccountMenu profile={state.profile} planName={plan.name} userId={userId} />
+              </div>
+            </nav>
+
+            {/* Compact controls + hamburger — below sm only. */}
+            <div className="flex sm:hidden items-center gap-1 flex-shrink-0">
               <ThemeToggle />
               <AccountMenu profile={state.profile} planName={plan.name} userId={userId} />
-            </div>
-          </nav>
-
-          {/* Compact controls + hamburger — below sm only. */}
-          <div className="flex sm:hidden items-center gap-1 flex-shrink-0">
-            <ThemeToggle />
-            <AccountMenu profile={state.profile} planName={plan.name} userId={userId} />
-            <button
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={mobileMenuOpen}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <MenuToggleIcon open={mobileMenuOpen} />
-            </button>
-          </div>
-        </div>
-
-        {mobileMenuOpen && (
-          <nav className="sm:hidden border-t border-slate-100 dark:border-slate-800 px-4 py-2 flex flex-col gap-0.5 animate-fade-in-up">
-            {nav.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`px-3 py-2.5 rounded-md text-sm font-medium transition-all ${
-                  pathname === item.to
-                    ? "bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-300"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                }`}
+              <button
+                onClick={() => setMobileMenuOpen((v) => !v)}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileMenuOpen}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-ink-faint hover:text-ink hover:bg-ink/5 dark:hover:bg-white/5 transition"
               >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        )}
+                <MenuToggleIcon open={mobileMenuOpen} />
+              </button>
+            </div>
+          </div>
+
+          {mobileMenuOpen && (
+            <nav className="sm:hidden border-t border-hairline/70 dark:border-hairline/10 px-4 py-2 flex flex-col gap-0.5 animate-fade-in-up">
+              {nav.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`px-3 py-2.5 rounded-pill text-caption font-normal transition-all ${
+                    pathname === item.to
+                      ? "bg-brand-500/10 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300"
+                      : "text-ink/85 hover:bg-ink/5 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          )}
+        </div>
       </header>
       <OfflineBanner />
       <TeamInviteBanner />
       <main key={pathname} className="flex-1 max-w-3xl w-full mx-auto px-4 py-6 animate-fade-in-up">
         {children}
       </main>
-      <footer className="no-print border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <div className="max-w-3xl mx-auto px-4 py-3 text-xs text-slate-400 dark:text-slate-500 flex justify-between items-center">
+      <footer className="no-print border-t border-hairline/70 dark:border-hairline/10 bg-canvas">
+        <div className="max-w-3xl mx-auto px-4 py-3 text-caption text-ink-faint flex justify-between items-center">
           <span>Signed in as {state.profile.name || state.profile.email}</span>
           <div className="flex items-center gap-3">
-            <Link to="/terms" className="hover:text-slate-600 dark:hover:text-slate-300">Terms</Link>
-            <Link to="/privacy" className="hover:text-slate-600 dark:hover:text-slate-300">Privacy</Link>
-            <button onClick={() => signOut(userId)} className="font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
+            <Link to="/terms" className="hover:text-ink transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:text-ink transition-colors">Privacy</Link>
+            <button onClick={() => signOut(userId)} className="font-medium text-ink-muted hover:text-ink transition-colors">
               Sign out
             </button>
           </div>
