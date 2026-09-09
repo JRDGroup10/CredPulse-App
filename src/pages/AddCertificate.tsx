@@ -235,8 +235,9 @@ export default function AddCertificate() {
                 <Field label="Certificate name" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })} />
                 <Field label="Issuing body" value={draft.issuer} onChange={(v) => setDraft({ ...draft, issuer: v })} />
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Type</label>
+                  <label htmlFor="cert-credential-type" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Type</label>
                   <select
+                    id="cert-credential-type"
                     value={draft.credentialType}
                     onChange={(e) => setDraft({ ...draft, credentialType: e.target.value as Certificate["credentialType"] })}
                     className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
@@ -284,10 +285,11 @@ export default function AddCertificate() {
                   </p>
                   {tracksCeu && (
                     <div className="mt-2 ml-6 max-w-[10rem]">
-                      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                      <label htmlFor="cert-ceu-required" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                         Credits required
                       </label>
                       <input
+                        id="cert-ceu-required"
                         type="number"
                         min="1"
                         step="1"
@@ -351,10 +353,15 @@ function Field({
   onChange: (v: string) => void;
   type?: string;
 }) {
+  // Derived from the label rather than a passed-in prop — every call site on
+  // this page uses a distinct label, so this stays unique without having to
+  // thread an id through every <Field> usage.
+  const id = `cert-field-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{label}</label>
+      <label htmlFor={id} className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{label}</label>
       <input
+        id={id}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}

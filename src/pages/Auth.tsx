@@ -195,8 +195,9 @@ export default function Auth({
           {mode === "signup" && (
             <>
               <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your name</label>
+                <label htmlFor="auth-name" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your name</label>
                 <input
+                  id="auth-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -227,8 +228,9 @@ export default function Auth({
                 </p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your role</label>
+                <label htmlFor="auth-role" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your role</label>
                 <select
+                  id="auth-role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
@@ -246,8 +248,9 @@ export default function Auth({
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email</label>
+            <label htmlFor="auth-email" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email</label>
             <input
+              id="auth-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -257,8 +260,9 @@ export default function Auth({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Password</label>
+            <label htmlFor="auth-password" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Password</label>
             <input
+              id="auth-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

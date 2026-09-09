@@ -155,8 +155,9 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
             className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-card"
           >
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Organization/team name</label>
+              <label htmlFor="clinic-name" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Organization/team name</label>
               <input
+                id="clinic-name"
                 value={clinicName}
                 onChange={(e) => setClinicName(e.target.value)}
                 required
@@ -165,8 +166,9 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your name</label>
+              <label htmlFor="clinic-your-name" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your name</label>
               <input
+                id="clinic-your-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -194,8 +196,9 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your role</label>
+              <label htmlFor="clinic-role" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your role</label>
               <select
+                id="clinic-role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
@@ -213,8 +216,9 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
               </p>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email</label>
+              <label htmlFor="clinic-email" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email</label>
               <input
+                id="clinic-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -224,8 +228,9 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Password</label>
+              <label htmlFor="clinic-password" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Password</label>
               <input
+                id="clinic-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

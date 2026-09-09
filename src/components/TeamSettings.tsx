@@ -199,8 +199,9 @@ export default function TeamSettings() {
             private to them.
           </p>
 
-          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Team/clinic name</label>
+          <label htmlFor="team-name" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Team/clinic name</label>
           <input
+            id="team-name"
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
             placeholder="e.g. Maple Street Clinic"

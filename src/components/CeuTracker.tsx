@@ -106,8 +106,9 @@ export default function CeuTracker({ certificateId, ceuRequired }: { certificate
 
           <form onSubmit={handleAdd} className="flex flex-wrap items-end gap-2">
             <div className="flex-1 min-w-[8rem]">
-              <label className="block text-[10px] text-slate-400 dark:text-slate-500 mb-1">Activity</label>
+              <label htmlFor={`ceu-activity-${certificateId}`} className="block text-[10px] text-slate-400 dark:text-slate-500 mb-1">Activity</label>
               <input
+                id={`ceu-activity-${certificateId}`}
                 value={activityName}
                 onChange={(e) => setActivityName(e.target.value)}
                 placeholder="e.g. Online module"
@@ -115,8 +116,9 @@ export default function CeuTracker({ certificateId, ceuRequired }: { certificate
               />
             </div>
             <div className="w-16">
-              <label className="block text-[10px] text-slate-400 dark:text-slate-500 mb-1">Credits</label>
+              <label htmlFor={`ceu-credits-${certificateId}`} className="block text-[10px] text-slate-400 dark:text-slate-500 mb-1">Credits</label>
               <input
+                id={`ceu-credits-${certificateId}`}
                 type="number"
                 step="0.5"
                 min="0"
@@ -126,8 +128,9 @@ export default function CeuTracker({ certificateId, ceuRequired }: { certificate
               />
             </div>
             <div className="w-32">
-              <label className="block text-[10px] text-slate-400 dark:text-slate-500 mb-1">Date completed</label>
+              <label htmlFor={`ceu-date-${certificateId}`} className="block text-[10px] text-slate-400 dark:text-slate-500 mb-1">Date completed</label>
               <input
+                id={`ceu-date-${certificateId}`}
                 type="date"
                 value={completedDate}
                 onChange={(e) => setCompletedDate(e.target.value)}
