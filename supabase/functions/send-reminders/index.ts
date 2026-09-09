@@ -23,6 +23,15 @@
 // Set the secrets once with:
 //   supabase secrets set RESEND_API_KEY=re_...
 //   supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=mailto:you@example.com
+//   supabase secrets set CRON_SECRET=<a long random string>
+//
+// CRON_SECRET note: --no-verify-jwt means Supabase's gateway does NOT check
+// who calls this URL — anyone who finds it could trigger a real email/push
+// blast to every user, repeatedly. If CRON_SECRET is set, this function
+// requires the caller to send it back as `x-cron-secret`, and cron.sql's
+// net.http_post call is the only thing that knows it. If CRON_SECRET is
+// unset (e.g. not migrated yet), the check is skipped so this keeps working
+// during rollout — but set it as soon as practical.
 
 import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3";
@@ -34,6 +43,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY");
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY");
 const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "mailto:support@credpulse.app";
+const CRON_SECRET = Deno.env.get("CRON_SECRET");
 
 const FROM_EMAIL = "CredPulse <reminders@credpulse.app>";
 
@@ -166,6 +176,13 @@ async function sendPush(sub: PushSubRow, dueCerts: CertRow[], supabase: Supabase
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (CRON_SECRET && req.headers.get("x-cron-secret") !== CRON_SECRET) {
+    return new Response(JSON.stringify({ error: "Unauthorized." }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
 
   if (!RESEND_API_KEY) {

@@ -18,6 +18,14 @@
 // (--no-verify-jwt because this is called by a cron job, not a logged-in
 // user — see supabase/cron-monthly-digest.sql for how the call is
 // authenticated instead.)
+//
+// CRON_SECRET note: --no-verify-jwt means Supabase's gateway does NOT check
+// who calls this URL — anyone who finds it could trigger a real email blast
+// to every user, repeatedly. If CRON_SECRET is set, this function requires
+// the caller to send it back as `x-cron-secret`, and cron-monthly-digest.sql's
+// net.http_post call is the only thing that knows it. If CRON_SECRET is
+// unset, the check is skipped so this keeps working during rollout — but
+// set it as soon as practical (same secret as send-reminders is fine).
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -25,6 +33,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const CRON_SECRET = Deno.env.get("CRON_SECRET");
 
 const FROM_EMAIL = "CredPulse <reminders@credpulse.app>";
 const APP_URL = "https://credpulse.app";
@@ -147,6 +156,13 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (CRON_SECRET && req.headers.get("x-cron-secret") !== CRON_SECRET) {
+    return new Response(JSON.stringify({ error: "Unauthorized." }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
 
   if (!RESEND_API_KEY) {

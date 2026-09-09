@@ -8,3 +8,4 @@ dist2/
 dist3/
 dist4/
 vite.config.ts.timestamp-*.mjs
+vitest.config.ts.timestamp-*.mjs

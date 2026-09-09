@@ -30,9 +30,13 @@ git push -u origin main
 1. Go to [vercel.com](https://vercel.com) and sign up with your GitHub account (free).
 2. Click **Add New → Project**, select your `credpulse-app` repo, click **Import**.
 3. Vercel auto-detects Vite — leave the build settings as-is (`npm run build`, output directory `dist`).
-4. Before deploying, add your environment variables (click "Environment Variables"):
+4. Before deploying, add your environment variables (click "Environment Variables"). Required:
    - `VITE_SUPABASE_URL` — same value as in your `.env.local`
    - `VITE_SUPABASE_ANON_KEY` — same value as in your `.env.local`
+
+   Optional (the app runs fine without these, just with the corresponding feature quietly disabled — see `.env.example` for details):
+   - `VITE_VAPID_PUBLIC_KEY` — needed for push notifications to work
+   - `VITE_SENTRY_DSN` — needed for production error monitoring to work
 5. Click **Deploy**. In ~1 minute you'll get a live URL like `credpulse-app.vercel.app`.
 
 A `vercel.json` file is already included so that reloading a page like `/terms` or `/dashboard` works correctly (single-page-app routing).

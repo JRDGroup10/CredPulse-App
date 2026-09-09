@@ -3,12 +3,20 @@
 -- send-monthly-digest. This is separate from cron.sql (the daily reminder
 -- job) so the two schedules can be managed independently.
 --
--- Before running: replace the two placeholders below —
+-- Before running: replace the three placeholders below —
 --   YOUR-PROJECT-REF      -> from Project Settings -> General -> Reference ID
 --   YOUR-SERVICE-ROLE-KEY -> from Project Settings -> API -> service_role key (SECRET, never put this in frontend code)
+--   YOUR-CRON-SECRET      -> the same value you ran `supabase secrets set CRON_SECRET=...` with
 --
 -- This only ever lives inside your Supabase project's Postgres — it's fine
--- for it to reference the service role key here.
+-- for it to reference the service role key (and the cron secret) here.
+--
+-- The x-cron-secret header stops a random internet caller from hitting
+-- send-monthly-digest directly and emailing every user on demand (see the
+-- CRON_SECRET comment at the top of
+-- supabase/functions/send-monthly-digest/index.ts). If this job was already
+-- scheduled before CRON_SECRET existed, re-run this whole file — cron.schedule
+-- with the same job name replaces the existing job rather than duplicating it.
 
 create extension if not exists pg_cron with schema extensions;
 create extension if not exists pg_net with schema extensions;
@@ -23,7 +31,8 @@ select
         url := 'https://YOUR-PROJECT-REF.supabase.co/functions/v1/send-monthly-digest',
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
-          'Authorization', 'Bearer YOUR-SERVICE-ROLE-KEY'
+          'Authorization', 'Bearer YOUR-SERVICE-ROLE-KEY',
+          'x-cron-secret', 'YOUR-CRON-SECRET'
         ),
         body := '{}'::jsonb
       );
