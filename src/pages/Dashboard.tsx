@@ -119,15 +119,12 @@ export default function Dashboard() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+          <h1 className="text-heading-sm font-medium text-ink">
             Hi {state.profile.name.split(" ")[0]} — here's where you stand
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{state.profile.role}</p>
+          <p className="text-caption text-ink-muted mt-0.5">{state.profile.role}</p>
         </div>
-        <Link
-          to="/add"
-          className="bg-gradient-to-br from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 text-white text-sm font-medium px-3.5 py-2 rounded-lg shadow-glow transition-all hover:-translate-y-0.5"
-        >
+        <Link to="/add" className="btn-primary text-caption px-3.5 py-2">
           + Add certificate
         </Link>
       </div>
@@ -137,55 +134,56 @@ export default function Dashboard() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-card hover:-translate-y-0.5 transition-transform">
-          <div className="text-2xl font-bold text-slate-900 dark:text-slate-50 tabular-nums">
+        <div className="card p-4 hover:-translate-y-0.5 transition-transform">
+          <div className="text-2xl font-medium text-ink tabular-nums">
             <CountUp value={total} />
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Total tracked</div>
+          <div className="text-caption text-ink-muted mt-0.5">Total tracked</div>
         </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-card hover:-translate-y-0.5 transition-transform">
-          <div className="text-2xl font-bold text-red-600 dark:text-red-400 tabular-nums">
+        <div className="card p-4 hover:-translate-y-0.5 transition-transform">
+          <div className="text-2xl font-medium text-red-600 dark:text-red-400 tabular-nums">
             <CountUp value={expiredCount} />
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Expired</div>
+          <div className="text-caption text-ink-muted mt-0.5">Expired</div>
         </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-card hover:-translate-y-0.5 transition-transform">
-          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+        <div className="card p-4 hover:-translate-y-0.5 transition-transform">
+          <div className="text-2xl font-medium text-amber-600 dark:text-amber-400 tabular-nums">
             <CountUp value={urgentCount} />
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Due within 2 weeks</div>
+          <div className="text-caption text-ink-muted mt-0.5">Due within 2 weeks</div>
         </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-card flex items-center gap-3 hover:-translate-y-0.5 transition-transform">
+        <div className="card p-4 flex items-center gap-3 hover:-translate-y-0.5 transition-transform">
           <div className="relative flex-shrink-0">
             <ProgressRing pct={healthPct} color="#10b981" size={44} stroke={5} />
-            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-medium text-ink">
               {healthPct}%
             </span>
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 leading-tight">In good standing</div>
+          <div className="text-caption text-ink-muted leading-tight">In good standing</div>
         </div>
       </div>
 
       {!isUnlimited && (
-        <div className="mb-5 flex items-center gap-3 bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-lg px-3 py-2.5">
+        <div className="mb-5 flex items-center gap-3 bg-panel border border-hairline/60 dark:border-hairline/10 rounded-ui px-3 py-2.5">
           <div className="relative flex-shrink-0">
             <ProgressRing
               pct={usagePct}
               // ProgressRing draws via inline SVG attributes, which don't
               // resolve the app's CSS-variable color tokens (see
               // index.css) — so this one spot needs an explicit hex per
-              // industry rather than a Tailwind class. Matches brand-600's
-              // amber value for other-industries accounts.
-              color={usagePct >= 100 ? "#ef4444" : state.profile.industry === "other" ? "#d97706" : "#2563eb"}
+              // industry rather than a Tailwind class. Matches the
+              // Dimension-redesign brand-500 values: violet for healthcare,
+              // amber for other-industries accounts (see index.css).
+              color={usagePct >= 100 ? "#ef4444" : state.profile.industry === "other" ? "#f59e0b" : "#6b62f2"}
               size={28}
               stroke={4}
             />
           </div>
-          <div className="flex-1 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex-1 text-caption text-ink-muted">
             {relevantCount} of {limit} {isOrgMember ? "personal " : ""}certificates used on the {plan.name} plan
           </div>
           {relevantCount >= limit && (
-            <Link to="/billing" className="text-xs font-semibold text-brand-600 dark:text-brand-400 whitespace-nowrap">
+            <Link to="/billing" className="text-caption font-medium text-brand-600 dark:text-brand-400 whitespace-nowrap">
               Upgrade
             </Link>
           )}
@@ -209,7 +207,7 @@ export default function Dashboard() {
 
       {upcoming.length > 0 && (
         <div className="mb-6">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+          <div className="text-caption font-medium text-ink-faint uppercase tracking-wide mb-2">
             Needs attention
           </div>
           <div className="flex gap-3 overflow-x-auto pb-1 -mx-0.5 px-0.5">
@@ -240,7 +238,7 @@ export default function Dashboard() {
       )}
 
       {total === 0 ? (
-        <div className="text-center py-16 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400">
+        <div className="text-center py-16 border border-dashed border-hairline dark:border-hairline/20 rounded-panel text-ink-muted">
           <p className="mb-3">No certifications tracked yet.</p>
           <Link to="/add" className="text-brand-600 dark:text-brand-400 font-medium">
             Add your first one
@@ -252,7 +250,7 @@ export default function Dashboard() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400"
+              className="text-caption rounded-ui border border-hairline dark:border-hairline/15 bg-panel text-ink-muted px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
             >
               <option value="all">All statuses</option>
               <option value="expired">Expired</option>
@@ -265,7 +263,7 @@ export default function Dashboard() {
               <select
                 value={scopeFilter}
                 onChange={(e) => setScopeFilter(e.target.value as ScopeFilter)}
-                className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400"
+                className="text-caption rounded-ui border border-hairline dark:border-hairline/15 bg-panel text-ink-muted px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
               >
                 <option value="all">Clinic &amp; personal</option>
                 <option value="clinic">Clinic only</option>
@@ -276,7 +274,7 @@ export default function Dashboard() {
             <select
               value={sortMode}
               onChange={(e) => setSortMode(e.target.value as SortMode)}
-              className="text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400"
+              className="text-caption rounded-ui border border-hairline dark:border-hairline/15 bg-panel text-ink-muted px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
             >
               <option value="expiry-soonest">Sort: expiring soonest</option>
               <option value="expiry-furthest">Sort: expiring furthest</option>
@@ -285,10 +283,10 @@ export default function Dashboard() {
 
             <button
               onClick={() => (bulkMode ? exitBulkMode() : setBulkMode(true))}
-              className={`ml-auto text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
+              className={`ml-auto text-caption font-medium px-2.5 py-1.5 rounded-pill border transition-colors ${
                 bulkMode
-                  ? "border-brand-300 dark:border-brand-700 bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300"
-                  : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
+                  ? "border-brand-500/30 bg-brand-500/10 text-brand-600 dark:text-brand-300"
+                  : "border-hairline dark:border-hairline/15 text-ink-muted hover:border-ink/20 dark:hover:border-hairline/30"
               }`}
             >
               {bulkMode ? "Done selecting" : "Select multiple"}
@@ -296,14 +294,14 @@ export default function Dashboard() {
           </div>
 
           {bulkMode && (
-            <div className="mb-4 flex items-center gap-3 bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-lg px-3 py-2.5">
-              <span className="text-xs text-slate-500 dark:text-slate-400 flex-1">
+            <div className="mb-4 flex items-center gap-3 bg-panel border border-hairline/60 dark:border-hairline/10 rounded-ui px-3 py-2.5">
+              <span className="text-caption text-ink-muted flex-1">
                 {selectedIds.size === 0 ? "Select certificates to remove" : `${selectedIds.size} selected`}
               </span>
               <button
                 onClick={handleBulkDelete}
                 disabled={selectedIds.size === 0 || bulkDeleting}
-                className="text-xs font-semibold text-red-600 dark:text-red-400 disabled:opacity-40 hover:text-red-700 dark:hover:text-red-300"
+                className="text-caption font-medium text-red-600 dark:text-red-400 disabled:opacity-40 hover:text-red-700 dark:hover:text-red-300"
               >
                 {bulkDeleting ? "Removing…" : "Remove selected"}
               </button>
@@ -311,14 +309,14 @@ export default function Dashboard() {
           )}
 
           {sorted.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400">
+            <div className="text-center py-12 border border-dashed border-hairline dark:border-hairline/20 rounded-panel text-ink-muted">
               <p className="mb-2">No certificates match this filter.</p>
               <button
                 onClick={() => {
                   setStatusFilter("all");
                   setScopeFilter("all");
                 }}
-                className="text-brand-600 dark:text-brand-400 font-medium text-sm"
+                className="text-brand-600 dark:text-brand-400 font-medium text-caption"
               >
                 Clear filters
               </button>

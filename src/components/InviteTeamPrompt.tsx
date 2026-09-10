@@ -28,26 +28,20 @@ export default function InviteTeamPrompt() {
   if (dismissed || state.profile.organizationId) return null;
 
   return (
-    <div className="mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-card flex items-center justify-between gap-4 animate-fade-in-up">
+    <div className="mb-6 card p-4 flex items-center justify-between gap-4 animate-fade-in-up">
       <div>
-        <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+        <div className="text-caption font-medium text-ink">
           Track your whole team from one place
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        <p className="text-caption text-ink-muted mt-0.5">
           Invite coworkers to CredPulse and see everyone's certification status in a single dashboard.
         </p>
       </div>
       <div className="flex items-center gap-3 flex-shrink-0">
-        <Link
-          to="/settings"
-          className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-glow transition-all whitespace-nowrap"
-        >
+        <Link to="/settings" className="btn-primary text-[11px] px-3 py-1.5 whitespace-nowrap">
           Invite your team
         </Link>
-        <button
-          onClick={handleDismiss}
-          className="text-xs text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-200"
-        >
+        <button onClick={handleDismiss} className="text-caption text-ink-faint hover:text-ink">
           Dismiss
         </button>
       </div>

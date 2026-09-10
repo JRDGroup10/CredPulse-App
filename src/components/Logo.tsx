@@ -20,8 +20,12 @@ export function LogoMark({ className = "w-8 h-8" }: { className?: string }) {
 }
 
 // themeAware: whether "Cred" should flip to white when the app's dark-mode class is active.
-// Only pages that actually render a dark background (the logged-in app, via Layout.tsx) should
-// use themeAware. The public Landing page has no dark background, so it should stay navy always.
+// Pass themeAware={false} only on a page whose own background is guaranteed to stay light
+// regardless of the dark-mode toggle — the navy wordmark would go invisible on a dark
+// background otherwise. As of the Dimension-system redesign, dark is the default background
+// almost everywhere (see Layout.tsx, Landing.tsx), so themeAware={true} (the default) is
+// almost always the right call now; only pass false for a page you've deliberately kept
+// light-only and haven't yet redesigned.
 export function LogoWordmark({
   className = "text-base",
   light = false,

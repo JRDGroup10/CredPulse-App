@@ -1,14 +1,17 @@
 export default function MedicalIllustration() {
   return (
     <svg viewBox="0 0 480 420" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
-      {/* backdrop */}
-      <circle cx="240" cy="210" r="200" fill="#dbeafe" />
-      <circle cx="240" cy="210" r="150" fill="#eaf4fb" />
+      {/* backdrop — dark graphite tones with a faint violet tint, matching
+          the Dimension redesign's dark canvas instead of the old light-blue
+          circles (which only worked against the page's old white/light
+          background). */}
+      <circle cx="240" cy="210" r="200" fill="#161616" />
+      <circle cx="240" cy="210" r="150" fill="#1c1a2e" />
 
       {/* clipboard */}
-      <rect x="150" y="70" width="180" height="280" rx="16" fill="#ffffff" stroke="#bfdbfe" strokeWidth="2" />
+      <rect x="150" y="70" width="180" height="280" rx="16" fill="#ffffff" stroke="#e5e5e5" strokeWidth="2" />
       <rect x="150" y="70" width="180" height="280" rx="16" fill="none" />
-      <rect x="205" y="58" width="70" height="28" rx="8" fill="#1d4ed8" />
+      <rect x="205" y="58" width="70" height="28" rx="8" fill="#6b62f2" />
       <rect x="218" y="66" width="44" height="12" rx="6" fill="#ffffff" />
 
       {/* checklist rows */}
@@ -47,14 +50,14 @@ export default function MedicalIllustration() {
       <polyline
         points="172,310 200,310 212,290 226,330 240,300 254,318 268,310 306,310"
         fill="none"
-        stroke="#1d4ed8"
+        stroke="#6b62f2"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
 
       {/* medical cross badge */}
-      <circle cx="352" cy="100" r="38" fill="#1d4ed8" />
+      <circle cx="352" cy="100" r="38" fill="#6b62f2" />
       <rect x="344" y="82" width="16" height="36" rx="4" fill="#ffffff" />
       <rect x="334" y="92" width="36" height="16" rx="4" fill="#ffffff" />
 

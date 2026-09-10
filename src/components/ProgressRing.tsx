@@ -5,7 +5,7 @@ export default function ProgressRing({
   color,
   size = 56,
   stroke = 6,
-  trackClassName = "text-slate-100 dark:text-slate-800"
+  trackClassName = "text-ink/10 dark:text-white/10"
 }: {
   pct: number; // 0-100
   color: string;
