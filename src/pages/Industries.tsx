@@ -61,27 +61,32 @@ export default function Industries({
   }, []);
 
   return (
-    <div className="bg-surface">
-      {/* Nav */}
-      <header className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Logo markClassName="w-8 h-8" textClassName="text-base" themeAware={false} />
-          <div className="flex items-center gap-3">
-            <Link
-              to="/choose"
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-300 rounded-full px-3 py-1.5 transition-colors"
-            >
-              🏥 Healthcare instead? Switch industries
-            </Link>
-            <button onClick={onLogin} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-              Log in
-            </button>
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow-amber transition-all hover:-translate-y-0.5"
-            >
-              Get started free
-            </button>
+    // data-industry="other" retints every brand-* token on this page to
+    // amber (see index.css) — the same mechanism the authenticated app uses
+    // for "other"-industry accounts, applied here to this standalone
+    // pre-login page so it gets the identical amber accent without any
+    // hardcoded amber-600/orange-500 classes to keep in sync by hand.
+    <div data-industry="other" className="bg-canvas">
+      {/* Nav — same floating frosted panel as Landing.tsx/Layout.tsx, so the
+          "other industries" side of the site still feels like one product. */}
+      <header className="sticky top-4 z-20 px-3">
+        <div className="max-w-5xl mx-auto rounded-[19px] border border-hairline/70 dark:border-hairline/10 bg-panel/80 backdrop-blur-md shadow-subtle">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <Logo markClassName="w-8 h-8" textClassName="text-base" />
+            <div className="flex items-center gap-3">
+              <Link
+                to="/choose"
+                className="hidden sm:inline-flex items-center gap-1.5 text-caption font-normal text-ink-muted hover:text-ink border border-hairline hover:border-ink/20 dark:border-hairline/15 rounded-pill px-3 py-1.5 transition-colors"
+              >
+                🏥 Healthcare instead? Switch industries
+              </Link>
+              <button onClick={onLogin} className="text-caption font-normal text-ink-muted hover:text-ink transition-colors">
+                Log in
+              </button>
+              <button onClick={onGetStarted} className="btn-primary text-caption px-4 py-2">
+                Get started free
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -89,41 +94,34 @@ export default function Industries({
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-amber-300/30 rounded-full blur-3xl animate-float-slow" />
-          <div className="absolute top-10 -right-24 w-[28rem] h-[28rem] bg-orange-400/20 rounded-full blur-3xl animate-float-slower" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[42rem] h-[42rem] bg-brand-500/15 rounded-full blur-3xl" />
         </div>
-        <div className="relative max-w-5xl mx-auto px-4 pt-16 pb-14 text-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-amber-800 bg-white/70 backdrop-blur border border-amber-200 px-3 py-1.5 rounded-full mb-5 shadow-sm animate-fade-in-up">
+        <div className="relative max-w-5xl mx-auto px-4 pt-20 pb-20 text-center">
+          <span className="inline-flex items-center gap-1.5 text-caption font-normal tracking-wide text-brand-400 bg-panel/60 backdrop-blur border border-hairline dark:border-hairline/10 px-3 py-1.5 rounded-pill mb-5 animate-fade-in-up">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             FOR ANY JOB THAT REQUIRES A CERTIFICATION TO STAY ELIGIBLE TO WORK
           </span>
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.05] animate-fade-in-up" style={{ animationDelay: "80ms" }}>
-            Certification tracking<br className="hidden sm:block" /> for{" "}
-            <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 bg-clip-text text-transparent">
-              any regulated workplace.
-            </span>
+          <h1 className="text-4xl sm:text-6xl font-medium text-ink tracking-tight leading-[1.05] animate-fade-in-up" style={{ animationDelay: "80ms" }}>
+            Certification tracking<br className="hidden sm:block" /> for any regulated workplace.
           </h1>
-          <p className="mt-6 text-lg text-slate-500 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "160ms" }}>
+          <p className="mt-6 text-lg text-ink-muted max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "160ms" }}>
             CredPulse started in healthcare, but the problem it solves — a required certification quietly
             expiring because nobody was tracking it — isn't unique to healthcare. Construction crews,
             school boards, and police services all run on the same hard-expiry credentials. It's the
             same product, the same tracking and reminders, just for your team.
           </p>
           <div className="mt-8 flex items-center justify-center gap-3 animate-fade-in-up" style={{ animationDelay: "240ms" }}>
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow-amber transition-all hover:-translate-y-0.5"
-            >
+            <button onClick={onGetStarted} className="btn-primary text-body px-6 py-3">
               Get started — it's free
             </button>
             <button
               onClick={() => navigate("/signup/clinic")}
-              className="text-sm font-medium text-slate-600 px-6 py-3 hover:text-slate-900 transition-colors"
+              className="text-body font-normal text-ink-muted px-6 py-3 hover:text-ink transition-colors"
             >
               Set up your team instead →
             </button>
           </div>
-          <p className="mt-4 text-xs text-slate-400 animate-fade-in-up" style={{ animationDelay: "280ms" }}>
+          <p className="mt-4 text-caption text-ink-faint animate-fade-in-up" style={{ animationDelay: "280ms" }}>
             No credit card required for the free plan. Don't see your industry below? It still works —
             add any certification and CredPulse will track it.
           </p>
@@ -131,10 +129,10 @@ export default function Industries({
       </section>
 
       {/* Industries */}
-      <section className="bg-white border-y border-slate-100">
+      <section className="bg-panel/40 border-y border-hairline/70 dark:border-hairline/10">
         <div className="max-w-5xl mx-auto px-4 py-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 text-center mb-3">Built to track credentials like these</h2>
-          <p className="text-slate-500 text-center max-w-xl mx-auto mb-10">
+          <h2 className="text-heading-sm sm:text-heading font-medium text-ink text-center mb-3">Built to track credentials like these</h2>
+          <p className="text-ink-muted text-center max-w-xl mx-auto mb-10">
             A starting point, not a limit — anyone on any team can add their own certifications on top of these.
           </p>
           <div className="grid md:grid-cols-3 gap-6">
@@ -142,22 +140,22 @@ export default function Industries({
               <Link
                 key={ind.title}
                 to={`/industries/${ind.slug}`}
-                className="block border border-slate-200 rounded-2xl p-6 bg-white hover:shadow-glow-amber hover:border-amber-300 hover:-translate-y-1 transition-all duration-300"
+                className="card p-6 block hover:border-brand-500/30 hover:-translate-y-1 transition-all duration-300"
               >
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center text-2xl mb-4">
+                <div className="w-11 h-11 rounded-ui bg-brand-500/10 flex items-center justify-center text-2xl mb-4">
                   {ind.icon}
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{ind.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed mb-4">{ind.body}</p>
-                <ul className="space-y-1.5 text-xs text-slate-500 mb-4">
+                <h3 className="text-subheading font-medium text-ink mb-2">{ind.title}</h3>
+                <p className="text-caption text-ink-muted leading-relaxed mb-4">{ind.body}</p>
+                <ul className="space-y-1.5 text-caption text-ink-muted mb-4">
                   {ind.examples.map((ex) => (
                     <li key={ex} className="flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-amber-500 flex-shrink-0" />
+                      <span className="w-1 h-1 rounded-full bg-brand-500 flex-shrink-0" />
                       {ex}
                     </li>
                   ))}
                 </ul>
-                <span className="text-xs font-semibold text-amber-700">See details for {ind.title.split(" ")[0]} →</span>
+                <span className="text-caption font-medium text-brand-400">See details for {ind.title.split(" ")[0]} →</span>
               </Link>
             ))}
           </div>
@@ -167,34 +165,34 @@ export default function Industries({
       {/* Same backend reassurance */}
       <section className="max-w-5xl mx-auto px-4 py-16 grid md:grid-cols-2 gap-10 items-center">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Same product, no compromises</h2>
-          <p className="mt-4 text-slate-600 leading-relaxed">
+          <h2 className="text-heading-sm font-medium text-ink">Same product, no compromises</h2>
+          <p className="mt-4 text-ink-muted leading-relaxed">
             Upload a photo or PDF of a certificate and CredPulse identifies what it is, tracks when it
             expires, and reminds everyone with enough lead time to actually renew it. Team plans give a
             manager one dashboard for who's covered and who's overdue. None of that changes based on
             what industry you're in.
           </p>
-          <ul className="mt-5 space-y-2 text-sm text-slate-600 list-disc list-inside">
+          <ul className="mt-5 space-y-2 text-caption text-ink-muted list-disc list-inside">
             <li>Upload once — AI reads the certificate details automatically</li>
             <li>Reminders on a schedule you control, before it becomes a problem</li>
             <li>One manager dashboard for a whole crew, school, or department</li>
             <li>Everyone keeps their own personal certifications private by default</li>
           </ul>
         </div>
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-card p-4">
-          <div className="text-xs font-medium text-slate-400 mb-3">Example: a construction crew's certifications</div>
+        <div className="card p-4">
+          <div className="text-caption font-normal text-ink-faint mb-3">Example: a construction crew's certifications</div>
           <div className="space-y-2.5">
             {[
-              { name: "Working at Heights Training", status: "Renew now · 9d left", tone: "bg-amber-50 text-amber-700" },
-              { name: "Forklift Operator Certification", status: "Valid · 210d left", tone: "bg-emerald-50 text-emerald-700" },
-              { name: "Confined Space Entry Training", status: "Expired · 4d overdue", tone: "bg-red-50 text-red-700" }
+              { name: "Working at Heights Training", status: "Renew now · 9d left", tone: "bg-amber-500/15 text-amber-500" },
+              { name: "Forklift Operator Certification", status: "Valid · 210d left", tone: "bg-emerald-500/15 text-emerald-500" },
+              { name: "Confined Space Entry Training", status: "Expired · 4d overdue", tone: "bg-red-500/15 text-red-500" }
             ].map((row) => (
               <div
                 key={row.name}
-                className="flex items-center justify-between border border-slate-100 rounded-xl px-3 py-2.5"
+                className="flex items-center justify-between border border-hairline/60 dark:border-hairline/10 rounded-ui px-3 py-2.5"
               >
-                <span className="text-sm text-slate-700">{row.name}</span>
-                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${row.tone}`}>{row.status}</span>
+                <span className="text-caption text-ink">{row.name}</span>
+                <span className={`badge-pill ${row.tone}`}>{row.status}</span>
               </div>
             ))}
           </div>
@@ -202,43 +200,37 @@ export default function Industries({
       </section>
 
       {/* CTA */}
-      <section className="bg-white border-t border-slate-100">
+      <section className="bg-panel/40 border-t border-hairline/70 dark:border-hairline/10">
         <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">Ready to stop tracking this on a sticky note?</h2>
-          <p className="text-slate-500 mb-8">Free to start. No credit card required for individuals.</p>
+          <h2 className="text-heading-sm sm:text-heading font-medium text-ink mb-3">Ready to stop tracking this on a sticky note?</h2>
+          <p className="text-ink-muted mb-8">Free to start. No credit card required for individuals.</p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow-amber transition-all hover:-translate-y-0.5"
-            >
+            <button onClick={onGetStarted} className="btn-primary text-body px-6 py-3">
               Track my own certifications
             </button>
-            <button
-              onClick={() => navigate("/signup/clinic")}
-              className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-sm transition-all hover:-translate-y-0.5"
-            >
+            <button onClick={() => navigate("/signup/clinic")} className="btn-secondary text-body px-6 py-3">
               Set up my team
             </button>
           </div>
-          <p className="mt-6 text-sm text-slate-400">
+          <p className="mt-6 text-caption text-ink-muted">
             Working in healthcare instead?{" "}
-            <Link to="/home" className="font-medium text-amber-700">See the healthcare-focused page →</Link>
+            <Link to="/home" className="font-medium text-brand-400">See the healthcare-focused page →</Link>
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-100">
+      <footer className="border-t border-hairline/70 dark:border-hairline/10">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-            <Logo markClassName="w-6 h-6" textClassName="text-sm" themeAware={false} />
-            <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
-              <Link to="/guides" className="hover:text-slate-900">Guides</Link>
-              <Link to="/terms" className="hover:text-slate-900">Terms</Link>
-              <Link to="/privacy" className="hover:text-slate-900">Privacy</Link>
+            <Logo markClassName="w-6 h-6" textClassName="text-sm" />
+            <div className="flex items-center gap-4 text-caption font-normal text-ink-muted">
+              <Link to="/guides" className="hover:text-ink">Guides</Link>
+              <Link to="/terms" className="hover:text-ink">Terms</Link>
+              <Link to="/privacy" className="hover:text-ink">Privacy</Link>
             </div>
           </div>
-          <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
+          <p className="text-caption text-ink-faint max-w-xl leading-relaxed">
             CredPulse is a reminder and tracking tool, not a substitute for your own record-keeping.
             You remain solely responsible for renewing your certifications and licenses on time —
             we're not liable for missed, delayed, or undelivered reminders.

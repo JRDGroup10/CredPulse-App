@@ -24,62 +24,62 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Settings</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Your profile and reminder preferences.</p>
+        <h1 className="text-heading-sm font-medium text-ink">Settings</h1>
+        <p className="text-body text-ink-muted mt-0.5">Your profile and reminder preferences.</p>
       </div>
 
       <TeamSettings />
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
-        <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-3">Profile</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+      <div className="card p-5">
+        <h2 className="font-medium text-ink mb-3">Profile</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body">
           <div>
-            <div className="text-xs text-slate-400 dark:text-slate-500">Name</div>
-            <div className="text-slate-700 dark:text-slate-200">{state.profile.name}</div>
+            <div className="text-caption text-ink-faint">Name</div>
+            <div className="text-ink-muted">{state.profile.name}</div>
           </div>
           <div>
-            <div className="text-xs text-slate-400 dark:text-slate-500">Role</div>
-            <div className="text-slate-700 dark:text-slate-200">{state.profile.role}</div>
+            <div className="text-caption text-ink-faint">Role</div>
+            <div className="text-ink-muted">{state.profile.role}</div>
           </div>
           <div className="col-span-2">
-            <div className="text-xs text-slate-400 dark:text-slate-500">Email for reminders</div>
-            <div className="text-slate-700 dark:text-slate-200">{state.profile.email}</div>
+            <div className="text-caption text-ink-faint">Email for reminders</div>
+            <div className="text-ink-muted">{state.profile.email}</div>
           </div>
           <div className="col-span-2">
-            <div className="text-xs text-slate-400 dark:text-slate-500 mb-1.5">Region</div>
+            <div className="text-caption text-ink-faint mb-1.5">Region</div>
             <div className="grid grid-cols-2 gap-2 max-w-xs">
               {(["CA", "US"] as Region[]).map((r) => (
                 <button
                   key={r}
                   onClick={() => setRegion(r)}
-                  className={`text-sm font-medium py-1.5 rounded-lg border transition-all ${
+                  className={`text-body font-medium py-1.5 rounded-ui border transition-all ${
                     state.profile.region === r
-                      ? "bg-brand-600 border-brand-600 text-white shadow-glow"
-                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-600"
+                      ? "bg-brand-500/10 border-brand-500/40 text-brand-400"
+                      : "bg-panel border-hairline dark:border-hairline/15 text-ink-muted hover:border-brand-500/30"
                   }`}
                 >
                   {r === "CA" ? "🇨🇦 Canada" : "🇺🇸 United States"}
                 </button>
               ))}
             </div>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">
+            <p className="text-caption text-ink-faint mt-1.5">
               Controls which renewal sites and terminology we show for new certificates.
             </p>
-            {saved && <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5 animate-fade-in">Saved.</div>}
+            {saved && <div className="text-caption text-emerald-500 mt-1.5 animate-fade-in">Saved.</div>}
           </div>
-          <div className="col-span-2 flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="col-span-2 flex items-center justify-between pt-2 border-t border-hairline/70 dark:border-hairline/10">
             <div>
-              <div className="text-xs text-slate-400 dark:text-slate-500">
+              <div className="text-caption text-ink-faint">
                 {state.profile.organizationId ? "Personal plan" : "Plan"}
               </div>
-              <div className="text-slate-700 dark:text-slate-200">{plan.name}</div>
+              <div className="text-ink-muted">{plan.name}</div>
               {state.profile.organizationId && (
-                <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                <div className="text-caption text-ink-faint mt-0.5">
                   Covers certs marked "Personal" — separate from your clinic's plan above.
                 </div>
               )}
             </div>
-            <Link to="/billing" className="text-sm font-medium text-brand-600 dark:text-brand-400 whitespace-nowrap">
+            <Link to="/billing" className="text-body font-medium text-brand-400 whitespace-nowrap">
               {state.profile.organizationId ? "Manage individual plan" : "Manage plan"}
             </Link>
           </div>
@@ -90,17 +90,14 @@ export default function Settings() {
 
       <ReferralCard />
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card flex items-center justify-between gap-3">
+      <div className="card p-5 flex items-center justify-between gap-3">
         <div>
-          <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Reminders & notifications</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <h2 className="font-medium text-ink mb-1">Reminders & notifications</h2>
+          <p className="text-caption text-ink-muted">
             Reminder schedule, push notifications on this device, and calendar export.
           </p>
         </div>
-        <Link
-          to="/notifications"
-          className="flex-shrink-0 text-sm font-medium text-brand-600 dark:text-brand-400 whitespace-nowrap"
-        >
+        <Link to="/notifications" className="flex-shrink-0 text-body font-medium text-brand-400 whitespace-nowrap">
           Manage →
         </Link>
       </div>

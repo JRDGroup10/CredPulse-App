@@ -175,40 +175,40 @@ export default function TeamSettings() {
   // grid is a lot of vertical space to force on everyone up front.
   if (!organizationId) {
     return (
-      <details className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-card">
+      <details className="group card">
         <summary className="p-5 cursor-pointer select-none list-none flex items-start justify-between gap-3">
           <div>
-            <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Team / Clinic</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <h2 className="font-medium text-ink mb-1">Team / Clinic</h2>
+            <p className="text-caption text-ink-muted">
               Track certification compliance across your whole staff from one dashboard.
             </p>
           </div>
           <svg
             viewBox="0 0 20 20"
             fill="currentColor"
-            className="w-5 h-5 text-slate-400 dark:text-slate-500 flex-shrink-0 mt-0.5 transition-transform group-open:rotate-180"
+            className="w-5 h-5 text-ink-faint flex-shrink-0 mt-0.5 transition-transform group-open:rotate-180"
           >
             <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
           </svg>
         </summary>
 
-        <div className="px-5 pb-5 border-t border-slate-100 dark:border-slate-800 pt-4">
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+        <div className="px-5 pb-5 border-t border-hairline/70 dark:border-hairline/10 pt-4">
+          <p className="text-caption text-ink-muted mb-4">
             Coworkers you invite join automatically — no separate signup needed. Certificates they mark
             "For my clinic" are unlimited and show up here; anything personal stays on their own plan and
             private to them.
           </p>
 
-          <label htmlFor="team-name" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Team/clinic name</label>
+          <label htmlFor="team-name" className="block text-caption font-medium text-ink-muted mb-1">Team/clinic name</label>
           <input
             id="team-name"
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
             placeholder="e.g. Maple Street Clinic"
-            className="w-full max-w-sm text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 mb-4"
+            className="w-full max-w-sm text-body rounded-ui border border-hairline dark:border-hairline/15 bg-panel px-3 py-2 text-ink placeholder:text-ink-muted mb-4 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
           />
 
-          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Choose a plan</label>
+          <label className="block text-caption font-medium text-ink-muted mb-2">Choose a plan</label>
           <TierPicker
             billingCycle={createCycle}
             onBillingCycleChange={setCreateCycle}
@@ -219,11 +219,11 @@ export default function TeamSettings() {
           <button
             onClick={handleCreate}
             disabled={creating || !teamName.trim() || !createPlan}
-            className="mt-4 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all whitespace-nowrap"
+            className="btn-primary mt-4 text-body px-4 py-2 disabled:opacity-50 whitespace-nowrap"
           >
             {creating ? "Creating…" : "Start free trial"}
           </button>
-          {createError && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{createError}</p>}
+          {createError && <p className="text-caption text-red-500 mt-2">{createError}</p>}
         </div>
       </details>
     );
@@ -232,12 +232,12 @@ export default function TeamSettings() {
   // 2. Member, not admin -> read-only.
   if (!isAdmin) {
     return (
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
-        <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Team / Clinic</h2>
-        <p className="text-sm text-slate-700 dark:text-slate-200">
-          You're part of <span className="font-medium">{org?.name ?? "your team"}</span>.
+      <div className="card p-5">
+        <h2 className="font-medium text-ink mb-1">Team / Clinic</h2>
+        <p className="text-body text-ink-muted">
+          You're part of <span className="font-medium text-ink">{org?.name ?? "your team"}</span>.
         </p>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        <p className="text-caption text-ink-faint mt-1">
           Your certifications are visible to your team's admin for compliance tracking — not to other
           teammates.
         </p>
@@ -251,21 +251,17 @@ export default function TeamSettings() {
   // file and nothing would ever charge when the "trial" ends.
   if (org && orgBillingIncomplete(org)) {
     return (
-      <div className="bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-900 rounded-xl p-5 shadow-card">
-        <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Finish setting up {org.name}</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+      <div className="card border-amber-500/30 p-5">
+        <h2 className="font-medium text-ink mb-1">Finish setting up {org.name}</h2>
+        <p className="text-body text-ink-muted mb-4">
           You created {org.name} on the {ORG_PLANS[org.plan].name} plan, but billing was never
           completed — you'll need to finish that in Stripe before you can invite coworkers or use the
           team dashboard.
         </p>
-        <button
-          onClick={handleResumeCheckout}
-          disabled={resumingCheckout}
-          className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all whitespace-nowrap"
-        >
+        <button onClick={handleResumeCheckout} disabled={resumingCheckout} className="btn-primary text-body px-4 py-2 disabled:opacity-50 whitespace-nowrap">
           {resumingCheckout ? "Redirecting…" : "Finish billing setup"}
         </button>
-        {resumeError && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{resumeError}</p>}
+        {resumeError && <p className="text-caption text-red-500 mt-2">{resumeError}</p>}
       </div>
     );
   }
@@ -276,12 +272,12 @@ export default function TeamSettings() {
   const upgradeSuggestion = nextOrgPlanAbove(seatLimit);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
+    <div className="card p-5">
       <div className="flex items-start justify-between gap-3 mb-1">
-        <h2 className="font-medium text-slate-900 dark:text-slate-50">{org?.name ?? "Team"}</h2>
+        <h2 className="font-medium text-ink">{org?.name ?? "Team"}</h2>
         {org && (
           <div className="text-right">
-            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
+            <span className="text-caption font-medium text-ink-faint whitespace-nowrap">
               {ORG_PLANS[org.plan].name} plan · {seatsUsed}/{seatLimit} seats
             </span>
             <button
@@ -290,27 +286,27 @@ export default function TeamSettings() {
                 setChangeCycle(org.billingCycle);
                 setShowChangePlan((v) => !v);
               }}
-              className="block text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 whitespace-nowrap"
+              className="block text-caption font-medium text-brand-400 hover:text-brand-300 whitespace-nowrap"
             >
               {showChangePlan ? "Cancel" : "Change plan"}
             </button>
           </div>
         )}
       </div>
-      <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+      <p className="text-caption text-ink-muted mb-4">
         Invite coworkers by email. If they don't have a CredPulse account yet, they'll join your team
         automatically the moment they sign up.
       </p>
 
       {changePlanSuccess && !showChangePlan && (
-        <div className="mb-3 rounded-lg border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
+        <div className="mb-3 rounded-ui border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-caption text-emerald-500">
           Plan change sent to Stripe — this usually updates here within a few seconds. Refresh if it
           doesn't right away.
         </div>
       )}
 
       {showChangePlan && org && (
-        <div className="mb-4 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+        <div className="mb-4 rounded-ui border border-hairline dark:border-hairline/15 p-4">
           <TierPicker
             billingCycle={changeCycle}
             onBillingCycleChange={setChangeCycle}
@@ -320,16 +316,16 @@ export default function TeamSettings() {
           <button
             onClick={handleChangePlan}
             disabled={changingPlan || !changePlan || (changePlan === org.plan && changeCycle === org.billingCycle)}
-            className="mt-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all whitespace-nowrap"
+            className="btn-primary mt-3 text-body px-4 py-2 disabled:opacity-50 whitespace-nowrap"
           >
             {changingPlan ? "Updating…" : "Confirm plan change"}
           </button>
-          {changePlanError && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{changePlanError}</p>}
+          {changePlanError && <p className="text-caption text-red-500 mt-2">{changePlanError}</p>}
         </div>
       )}
 
       {seatLimitReached && (
-        <div className="mb-3 rounded-lg border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
+        <div className="mb-3 rounded-ui border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-caption text-amber-500">
           You've used all {seatLimit} seats on the {org ? ORG_PLANS[org.plan].name : ""} plan.
           {upgradeSuggestion
             ? ` Upgrade to ${ORG_PLANS[upgradeSuggestion].name} to invite more teammates.`
@@ -344,38 +340,38 @@ export default function TeamSettings() {
           placeholder="coworker@email.com"
           type="email"
           disabled={seatLimitReached}
-          className="flex-1 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 disabled:opacity-50"
+          className="flex-1 text-body rounded-ui border border-hairline dark:border-hairline/15 bg-panel px-3 py-2 text-ink placeholder:text-ink-muted disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
         />
         <button
           onClick={handleInvite}
           disabled={inviting || !inviteEmail.trim() || seatLimitReached}
-          className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all whitespace-nowrap"
+          className="btn-primary text-body px-4 py-2 disabled:opacity-50 whitespace-nowrap"
         >
           {inviting ? "Sending…" : "Invite"}
         </button>
       </div>
-      {inviteError && <p className="text-xs text-red-600 dark:text-red-400 mb-2">{inviteError}</p>}
-      {inviteSent && <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-2">Invite created.</p>}
+      {inviteError && <p className="text-caption text-red-500 mb-2">{inviteError}</p>}
+      {inviteSent && <p className="text-caption text-emerald-500 mb-2">Invite created.</p>}
 
       {loadingTeam ? (
-        <p className="text-sm text-slate-400 dark:text-slate-500 mt-3">Loading team…</p>
+        <p className="text-body text-ink-faint mt-3">Loading team…</p>
       ) : (
         <div className="mt-4 space-y-4">
           <div>
-            <div className="text-xs font-medium text-slate-400 dark:text-slate-500 mb-2">
+            <div className="text-caption font-medium text-ink-faint mb-2">
               Members ({members.length})
             </div>
             {members.length === 0 ? (
-              <p className="text-sm text-slate-400 dark:text-slate-500">No members yet.</p>
+              <p className="text-body text-ink-faint">No members yet.</p>
             ) : (
               <ul className="space-y-1.5">
                 {members.map((m) => (
-                  <li key={m.id} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-700 dark:text-slate-200">
+                  <li key={m.id} className="flex items-center justify-between text-body">
+                    <span className="text-ink-muted">
                       {m.name || m.email}
-                      {m.role && <span className="text-slate-400 dark:text-slate-500"> — {m.role}</span>}
+                      {m.role && <span className="text-ink-faint"> — {m.role}</span>}
                     </span>
-                    <span className="text-xs text-slate-400 dark:text-slate-500 capitalize">{m.orgRole}</span>
+                    <span className="text-caption text-ink-faint capitalize">{m.orgRole}</span>
                   </li>
                 ))}
               </ul>
@@ -384,16 +380,16 @@ export default function TeamSettings() {
 
           {invites.filter((i) => i.status === "pending").length > 0 && (
             <div>
-              <div className="text-xs font-medium text-slate-400 dark:text-slate-500 mb-2">Pending invites</div>
+              <div className="text-caption font-medium text-ink-faint mb-2">Pending invites</div>
               <ul className="space-y-1.5">
                 {invites
                   .filter((i) => i.status === "pending")
                   .map((inv) => (
-                    <li key={inv.id} className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-300">{inv.email}</span>
+                    <li key={inv.id} className="flex items-center justify-between text-body">
+                      <span className="text-ink-muted">{inv.email}</span>
                       <button
                         onClick={() => handleRevoke(inv.id)}
-                        className="text-xs font-medium text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400 transition-colors"
+                        className="text-caption font-medium text-ink-faint hover:text-red-500 transition-colors"
                       >
                         Revoke
                       </button>

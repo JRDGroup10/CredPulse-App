@@ -40,11 +40,11 @@ export default function ReferralCard() {
   const atCap = summary.bonusCertSlots >= summary.maxBonusCertSlots;
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
+    <div className="card p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <h2 className="font-medium text-slate-900 dark:text-slate-50">Invite a friend</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h2 className="font-medium text-ink">Invite a friend</h2>
+          <p className="text-caption text-ink-muted mt-0.5">
             Share your link — when someone signs up through it, you get a bonus certificate slot.
           </p>
         </div>
@@ -56,7 +56,7 @@ export default function ReferralCard() {
           readOnly
           value={link}
           onFocus={(e) => e.currentTarget.select()}
-          className="flex-1 min-w-0 text-xs font-mono bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg px-3 py-2 truncate"
+          className="flex-1 min-w-0 text-caption font-mono bg-panel border border-hairline dark:border-hairline/15 text-ink-muted rounded-ui px-3 py-2 truncate"
         />
         <button
           onClick={() => {
@@ -64,19 +64,19 @@ export default function ReferralCard() {
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }}
-          className="flex-shrink-0 text-xs font-medium bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-3 py-2 rounded-lg hover:opacity-90 transition-opacity"
+          className="btn-primary flex-shrink-0 text-caption px-3 py-2"
         >
           {copied ? "Copied" : "Copy link"}
         </button>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-xs pt-3 border-t border-slate-100 dark:border-slate-800">
-        <div className="text-slate-500 dark:text-slate-400">
-          <span className="font-semibold text-slate-700 dark:text-slate-200">{summary.referralCount}</span>{" "}
+      <div className="mt-4 flex items-center justify-between text-caption pt-3 border-t border-hairline/70 dark:border-hairline/10">
+        <div className="text-ink-muted">
+          <span className="font-medium text-ink">{summary.referralCount}</span>{" "}
           {summary.referralCount === 1 ? "friend" : "friends"} referred
         </div>
-        <div className="text-slate-500 dark:text-slate-400">
-          <span className="font-semibold text-slate-700 dark:text-slate-200">
+        <div className="text-ink-muted">
+          <span className="font-medium text-ink">
             +{summary.bonusCertSlots}
           </span>{" "}
           bonus slot{summary.bonusCertSlots === 1 ? "" : "s"} earned

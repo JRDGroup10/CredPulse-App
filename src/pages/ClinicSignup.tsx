@@ -54,13 +54,13 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
 
   if (!supabaseConfigured) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-slate-950 px-4">
-        <div className="max-w-sm w-full bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-900 rounded-xl p-5 text-sm animate-fade-in-up">
-          <div className="font-semibold text-amber-700 dark:text-amber-400 mb-2">Supabase isn't configured yet</div>
-          <p className="text-slate-600 dark:text-slate-300">
-            Copy <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">.env.example</code> to{" "}
-            <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">.env.local</code>, fill in your Supabase project URL and anon
-            key, then restart <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">npm run dev</code>.
+      <div className="min-h-screen flex items-center justify-center bg-canvas px-4">
+        <div className="max-w-sm w-full card border-amber-500/30 p-5 text-body animate-fade-in-up">
+          <div className="font-medium text-amber-500 mb-2">Supabase isn't configured yet</div>
+          <p className="text-ink-muted">
+            Copy <code className="bg-ink/5 px-1 rounded-ui">.env.example</code> to{" "}
+            <code className="bg-ink/5 px-1 rounded-ui">.env.local</code>, fill in your Supabase project URL and anon
+            key, then restart <code className="bg-ink/5 px-1 rounded-ui">npm run dev</code>.
           </p>
         </div>
       </div>
@@ -103,18 +103,23 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
     }
   }
 
+  // Same shared input treatment as Auth.tsx (see CRE-18's comment there).
+  const inputClass =
+    "w-full border border-hairline dark:border-hairline/15 bg-panel text-ink placeholder:text-ink-muted rounded-ui px-3 py-2 text-body focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition";
+  const labelClass = "block text-caption font-medium text-ink-muted mb-1";
+
   if (step === "checkInbox") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-slate-950 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-canvas px-4">
         <div className="max-w-sm w-full text-center animate-fade-in-up">
           <div className="text-3xl mb-3">📬</div>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-2">Check your inbox</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <h1 className="text-subheading font-medium text-ink mb-2">Check your inbox</h1>
+          <p className="text-body text-ink-muted">
             We sent a confirmation link to <strong>{email}</strong>. Click it, then come back and log in —
             we'll pick up right where you left off and set up <strong>{clinicName}</strong> on the{" "}
             {plan} plan automatically.
           </p>
-          <button onClick={onLogin} className="mt-5 text-sm font-medium text-brand-600 dark:text-brand-400">
+          <button onClick={onLogin} className="mt-5 text-body font-medium text-brand-400">
             Back to log in
           </button>
         </div>
@@ -123,12 +128,12 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-slate-950 px-4 py-10">
+    <div className="min-h-screen flex items-center justify-center bg-canvas px-4 py-10">
       <div className={`w-full animate-fade-in-up ${step === "plan" ? "max-w-3xl" : "max-w-sm"}`}>
         {onBack && (
           <button
             onClick={onBack}
-            className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors"
+            className="mb-4 inline-flex items-center gap-1 text-body font-medium text-ink-muted hover:text-ink transition-colors"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
               <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.56l4.22 4.22a.75.75 0 11-1.06 1.06l-5.5-5.5a.75.75 0 010-1.06l5.5-5.5a.75.75 0 111.06 1.06L5.56 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
@@ -138,11 +143,11 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
         )}
 
         <div className="text-center mb-8">
-          <LogoMark className="w-14 h-14 mx-auto mb-3 drop-shadow-md" />
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+          <LogoMark className="w-14 h-14 mx-auto mb-3" />
+          <h1 className="text-subheading font-medium text-ink">
             {step === "info" ? "Set up your team" : "Choose your plan"}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-body text-ink-muted mt-1">
             {step === "info"
               ? "One dashboard for your whole team's certification compliance."
               : "Every plan includes a free trial, and everyone you add gets unlimited certs and renewal tips."}
@@ -150,44 +155,41 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
         </div>
 
         {step === "info" && (
-          <form
-            onSubmit={handleInfoSubmit}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-card"
-          >
+          <form onSubmit={handleInfoSubmit} className="card p-5 space-y-4">
             <div>
-              <label htmlFor="clinic-name" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Organization/team name</label>
+              <label htmlFor="clinic-name" className={labelClass}>Organization/team name</label>
               <input
                 id="clinic-name"
                 value={clinicName}
                 onChange={(e) => setClinicName(e.target.value)}
                 required
-                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                className={inputClass}
                 placeholder="Maple Street Clinic, Northside Elementary, ABC Construction…"
               />
             </div>
             <div>
-              <label htmlFor="clinic-your-name" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your name</label>
+              <label htmlFor="clinic-your-name" className={labelClass}>Your name</label>
               <input
                 id="clinic-your-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                className={inputClass}
                 placeholder="Jane Smith"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Where is your team based?</label>
+              <label className={labelClass}>Where is your team based?</label>
               <div className="grid grid-cols-2 gap-2">
                 {(["CA", "US"] as Region[]).map((r) => (
                   <button
                     key={r}
                     type="button"
                     onClick={() => handleRegionChange(r)}
-                    className={`text-sm font-medium py-2 rounded-lg border transition-all ${
+                    className={`text-body font-medium py-2 rounded-ui border transition-all ${
                       region === r
-                        ? "bg-brand-600 border-brand-600 text-white shadow-glow"
-                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-600"
+                        ? "bg-brand-500/10 border-brand-500/40 text-brand-400"
+                        : "bg-panel border-hairline dark:border-hairline/15 text-ink-muted hover:border-brand-500/30"
                     }`}
                   >
                     {r === "CA" ? "🇨🇦 Canada" : "🇺🇸 United States"}
@@ -196,13 +198,8 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
               </div>
             </div>
             <div>
-              <label htmlFor="clinic-role" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your role</label>
-              <select
-                id="clinic-role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
-              >
+              <label htmlFor="clinic-role" className={labelClass}>Your role</label>
+              <select id="clinic-role" value={role} onChange={(e) => setRole(e.target.value)} className={inputClass}>
                 {roleGroups.map((g) => (
                   <optgroup label={g.label} key={g.label}>
                     {g.roles.map((r) => (
@@ -211,24 +208,24 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
                   </optgroup>
                 ))}
               </select>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+              <p className="text-caption text-ink-faint mt-1">
                 You can track your own certifications too, alongside the rest of your team.
               </p>
             </div>
             <div>
-              <label htmlFor="clinic-email" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Email</label>
+              <label htmlFor="clinic-email" className={labelClass}>Email</label>
               <input
                 id="clinic-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                className={inputClass}
                 placeholder="you@yourteam.com"
               />
             </div>
             <div>
-              <label htmlFor="clinic-password" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Password</label>
+              <label htmlFor="clinic-password" className={labelClass}>Password</label>
               <input
                 id="clinic-password"
                 type="password"
@@ -236,21 +233,18 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                className={inputClass}
                 placeholder="At least 6 characters"
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white text-sm font-medium py-2.5 rounded-lg shadow-glow transition-all hover:-translate-y-0.5"
-            >
+            <button type="submit" className="btn-primary w-full text-body py-2.5">
               Continue to plan selection
             </button>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+            <p className="text-caption text-ink-muted text-center">
               Signing up as an individual instead?{" "}
-              <Link to={marketingHomePath()} className="font-medium text-brand-600 dark:text-brand-400">
+              <Link to={marketingHomePath()} className="font-medium text-brand-400">
                 Go back
               </Link>
             </p>
@@ -258,9 +252,9 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
         )}
 
         {step === "plan" && (
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
+          <div className="card p-5">
             {error && (
-              <div className="text-xs bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2 mb-4">
+              <div className="text-caption bg-red-500/10 text-red-500 border border-red-500/20 rounded-ui px-3 py-2 mb-4">
                 {error}
               </div>
             )}
@@ -273,18 +267,14 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
             />
 
             <div className="flex items-center gap-3 mt-5">
-              <button
-                type="button"
-                onClick={() => setStep("info")}
-                className="text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-              >
+              <button type="button" onClick={() => setStep("info")} className="text-body font-medium text-ink-muted hover:text-ink">
                 Back
               </button>
               <button
                 type="button"
                 onClick={handleFinish}
                 disabled={busy || !plan}
-                className="flex-1 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium py-2.5 rounded-lg shadow-glow transition-all hover:-translate-y-0.5 disabled:hover:translate-y-0"
+                className="btn-primary flex-1 text-body py-2.5 disabled:opacity-50"
               >
                 {busy ? "Setting up…" : "Start free trial"}
               </button>
@@ -292,11 +282,11 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
           </div>
         )}
 
-        <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center mt-4">
+        <p className="text-caption text-ink-faint text-center mt-4">
           By creating an account you agree to our{" "}
-          <Link to="/terms" className="underline hover:text-slate-600 dark:hover:text-slate-300">Terms</Link>{" "}
+          <Link to="/terms" className="underline hover:text-ink-muted">Terms</Link>{" "}
           and{" "}
-          <Link to="/privacy" className="underline hover:text-slate-600 dark:hover:text-slate-300">Privacy Policy</Link>.
+          <Link to="/privacy" className="underline hover:text-ink-muted">Privacy Policy</Link>.
         </p>
       </div>
     </div>

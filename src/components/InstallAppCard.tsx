@@ -10,11 +10,11 @@ export default function InstallAppCard() {
   if (installState === "installed") return null;
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
+    <div className="card p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <h2 className="font-medium text-slate-900 dark:text-slate-50">Install CredPulse</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h2 className="font-medium text-ink">Install CredPulse</h2>
+          <p className="text-caption text-ink-muted mt-0.5">
             Add it to your home screen for one-tap access and expiry push notifications.
           </p>
         </div>
@@ -22,16 +22,13 @@ export default function InstallAppCard() {
       </div>
 
       {installState === "promptable" && (
-        <button
-          onClick={() => promptInstall()}
-          className="text-xs font-medium bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-3 py-2 rounded-lg hover:opacity-90 transition-opacity"
-        >
+        <button onClick={() => promptInstall()} className="btn-primary text-caption px-3 py-2">
           Install app
         </button>
       )}
 
       {installState === "ios-manual" && (
-        <ol className="text-xs text-slate-500 dark:text-slate-400 list-decimal list-inside space-y-1">
+        <ol className="text-caption text-ink-muted list-decimal list-inside space-y-1">
           <li>
             Tap the Share icon <span aria-hidden="true">⬆️</span> in Safari's toolbar
           </li>
@@ -41,7 +38,7 @@ export default function InstallAppCard() {
       )}
 
       {installState === "unavailable" && (
-        <p className="text-xs text-slate-400 dark:text-slate-500">
+        <p className="text-caption text-ink-faint">
           Your browser doesn't offer an install prompt right now — try again from your phone's browser, or check
           back later.
         </p>

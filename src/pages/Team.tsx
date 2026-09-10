@@ -53,8 +53,8 @@ const NOT_TRACKED_KEY = "__not_tracked__";
 
 const NOT_TRACKED_STYLE = {
   label: "Needs onboarding",
-  bg: "bg-slate-100 dark:bg-slate-800",
-  text: "text-slate-500 dark:text-slate-400"
+  bg: "bg-ink/5",
+  text: "text-ink-faint"
 };
 
 /**
@@ -255,58 +255,46 @@ export default function Team() {
     <div>
       <div className="mb-6 flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">{org?.name ?? "Team"} compliance</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          <h1 className="text-heading-sm font-medium text-ink">{org?.name ?? "Team"} compliance</h1>
+          <p className="text-body text-ink-muted mt-0.5">
             Grouped by certificate — expand one to see who holds it, soonest to expire first.
           </p>
         </div>
         <div className="flex-shrink-0 flex items-center gap-2">
-          <Link
-            to="/team/api-keys"
-            className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap"
-          >
+          <Link to="/team/api-keys" className="btn-secondary text-caption px-3 py-1.5 whitespace-nowrap">
             API keys
           </Link>
-          <Link
-            to="/team/audit-log"
-            className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap"
-          >
+          <Link to="/team/audit-log" className="btn-secondary text-caption px-3 py-1.5 whitespace-nowrap">
             Audit log
           </Link>
-          <Link
-            to="/team/report"
-            className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap"
-          >
+          <Link to="/team/report" className="btn-secondary text-caption px-3 py-1.5 whitespace-nowrap">
             Export report
           </Link>
         </div>
       </div>
 
       {org && memberCount <= 1 && (
-        <div className="mb-6 rounded-xl border border-brand-100 dark:border-brand-900 bg-brand-50 dark:bg-brand-500/10 p-4 animate-fade-in-up">
-          <div className="text-sm font-semibold text-brand-800 dark:text-brand-300">Welcome to {org.name} 👋</div>
-          <p className="text-xs text-brand-700/80 dark:text-brand-300/80 mt-0.5">
+        <div className="mb-6 rounded-ui border border-brand-500/20 bg-brand-500/10 p-4 animate-fade-in-up">
+          <div className="text-body font-medium text-brand-400">Welcome to {org.name} 👋</div>
+          <p className="text-caption text-brand-400/80 mt-0.5">
             You're set up on the {ORG_PLANS[org.plan].name} plan (up to {seatLimit} team members). Next step:
             invite your coworkers — certs they mark "For my clinic" are unlimited and show up here
             automatically.
           </p>
-          <Link
-            to="/settings"
-            className="inline-block mt-2 text-xs font-semibold text-brand-700 dark:text-brand-300 hover:text-brand-900 dark:hover:text-brand-100"
-          >
+          <Link to="/settings" className="inline-block mt-2 text-caption font-medium text-brand-400 hover:text-brand-300">
             Invite your team →
           </Link>
         </div>
       )}
 
       {trialDaysLeft !== null && (
-        <div className="mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 px-4 text-xs text-slate-600 dark:text-slate-300 flex items-center justify-between gap-3 shadow-card">
+        <div className="mb-6 card p-3 px-4 text-caption text-ink-muted flex items-center justify-between gap-3">
           <span>
             {trialDaysLeft === 0
               ? "Your free trial ends today."
               : `${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left in your free trial.`}
           </span>
-          <span className="text-slate-400 dark:text-slate-500">
+          <span className="text-ink-faint">
             {ORG_PLANS[org!.plan].name} plan · ${org!.billingCycle === "yearly" ? ORG_PLANS[org!.plan].priceYearly : ORG_PLANS[org!.plan].priceMonthly}/
             {org!.billingCycle === "yearly" ? "yr" : "mo"} after trial
           </span>
@@ -314,12 +302,12 @@ export default function Team() {
       )}
 
       {seatLimitReached && (
-        <div className="mb-6 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-300">
+        <div className="mb-6 rounded-ui border border-amber-500/20 bg-amber-500/10 p-4 text-body text-amber-500">
           You've used all {seatLimit} seats on the {org ? ORG_PLANS[org.plan].name : ""} plan.
           {upgradeSuggestion ? (
             <>
               {" "}
-              <Link to="/settings" className="font-semibold underline">
+              <Link to="/settings" className="font-medium underline">
                 Upgrade to {ORG_PLANS[upgradeSuggestion].name}
               </Link>{" "}
               to invite more teammates.
@@ -331,58 +319,55 @@ export default function Team() {
       )}
 
       {membersWithCerts === null ? (
-        <p className="text-sm text-slate-400 dark:text-slate-500">Loading team…</p>
+        <p className="text-body text-ink-faint">Loading team…</p>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-card">
-              <div className="text-2xl font-bold text-slate-900 dark:text-slate-50 tabular-nums">
+            <div className="card p-4">
+              <div className="text-heading-sm font-medium text-ink tabular-nums">
                 <CountUp value={memberCount} />
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Team members</div>
+              <div className="text-caption text-ink-muted mt-0.5">Team members</div>
             </div>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-card">
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400 tabular-nums">
+            <div className="card p-4">
+              <div className="text-heading-sm font-medium text-red-500 tabular-nums">
                 <CountUp value={expiredCount} />
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Expired</div>
+              <div className="text-caption text-ink-muted mt-0.5">Expired</div>
             </div>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-card">
-              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+            <div className="card p-4">
+              <div className="text-heading-sm font-medium text-amber-500 tabular-nums">
                 <CountUp value={urgentCount} />
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Due within 2 weeks</div>
+              <div className="text-caption text-ink-muted mt-0.5">Due within 2 weeks</div>
             </div>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-card">
-              <div className="text-2xl font-bold text-slate-500 dark:text-slate-400 tabular-nums">
+            <div className="card p-4">
+              <div className="text-heading-sm font-medium text-ink-faint tabular-nums">
                 <CountUp value={notTrackedCount} />
               </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Not tracked yet</div>
+              <div className="text-caption text-ink-muted mt-0.5">Not tracked yet</div>
             </div>
           </div>
 
           {onboardingGaps.length > 0 && (
-            <div className="mb-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-card p-4">
+            <div className="mb-6 card p-4">
               <div className="mb-3">
-                <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">Onboarding &amp; role coverage</div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <div className="text-body font-medium text-ink">Onboarding &amp; role coverage</div>
+                <p className="text-caption text-ink-muted mt-0.5">
                   Based on each person's role, here's what's still missing — new hires and role changes both
                   show up here until it's resolved.
                 </p>
               </div>
-              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+              <ul className="divide-y divide-hairline/70 dark:divide-hairline/10">
                 {onboardingGaps.map((g) => (
                   <li key={g.memberId} className="py-2.5 flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-shrink-0">
-                      <div className="text-sm font-medium text-slate-700 dark:text-slate-200">{g.memberName}</div>
-                      <div className="text-xs text-slate-400 dark:text-slate-500">{g.memberRole || "—"}</div>
+                      <div className="text-body font-medium text-ink-muted">{g.memberName}</div>
+                      <div className="text-caption text-ink-faint">{g.memberRole || "—"}</div>
                     </div>
                     <div className="flex flex-wrap justify-end gap-1.5">
                       {g.missing.map((item) => (
-                        <span
-                          key={item.name}
-                          className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 whitespace-nowrap"
-                        >
+                        <span key={item.name} className="badge-pill bg-amber-500/10 text-amber-500 whitespace-nowrap">
                           {item.name}
                         </span>
                       ))}
@@ -394,11 +379,11 @@ export default function Team() {
           )}
 
           {benchmark && ownCompliancePct !== null && (
-            <div className="mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-card">
+            <div className="mb-6 card p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">How you compare</div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  <div className="text-body font-medium text-ink">How you compare</div>
+                  <p className="text-caption text-ink-muted mt-0.5">
                     {ownCompliancePct >= Math.round(benchmark.avgCompliancePct)
                       ? "You're ahead of similar clinics — nice work staying on top of renewals."
                       : "A few renewals behind similar clinics — the list below shows exactly what's due."}
@@ -406,19 +391,19 @@ export default function Team() {
                 </div>
                 <div className="flex items-center gap-4 flex-shrink-0 text-center">
                   <div>
-                    <div className="text-lg font-bold text-slate-900 dark:text-slate-50 tabular-nums">{ownCompliancePct}%</div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap">Your clinic</div>
+                    <div className="text-subheading font-medium text-ink tabular-nums">{ownCompliancePct}%</div>
+                    <div className="text-caption text-ink-faint whitespace-nowrap">Your clinic</div>
                   </div>
-                  <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
+                  <div className="w-px h-8 bg-hairline/70 dark:bg-hairline/10" />
                   <div>
-                    <div className="text-lg font-bold text-slate-400 dark:text-slate-500 tabular-nums">
+                    <div className="text-subheading font-medium text-ink-faint tabular-nums">
                       {Math.round(benchmark.avgCompliancePct)}%
                     </div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap">Typical clinic</div>
+                    <div className="text-caption text-ink-faint whitespace-nowrap">Typical clinic</div>
                   </div>
                 </div>
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-3">
+              <p className="text-caption text-ink-faint mt-3">
                 % of clinic-tracked certificates currently up to date, averaged anonymously across{" "}
                 {benchmark.clinicCount} clinics in your industry on CredPulse. No other clinic's individual
                 data is ever shown.
@@ -427,35 +412,35 @@ export default function Team() {
           )}
 
           {memberCount === 0 ? (
-            <div className="text-center py-16 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400">
+            <div className="text-center py-16 border border-dashed border-hairline dark:border-hairline/15 rounded-panel text-ink-muted">
               <p className="mb-3">No teammates yet.</p>
-              <Link to="/settings" className="text-brand-600 dark:text-brand-400 font-medium">
+              <Link to="/settings" className="text-brand-400 font-medium">
                 Invite your first coworker
               </Link>
             </div>
           ) : (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-card divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
+            <div className="card divide-y divide-hairline/70 dark:divide-hairline/10 overflow-hidden">
               {groups.map((g) => {
                 const style = g.worst === "none" ? NOT_TRACKED_STYLE : STATUS_STYLES[g.worst];
                 const defaultOpen = g.worst === "expired" || g.worst === "urgent" || g.worst === "none";
                 const isNotTracked = g.key === NOT_TRACKED_KEY;
                 return (
                   <details key={g.key} open={defaultOpen}>
-                    <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer select-none hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer select-none hover:bg-ink/5 transition-colors">
                       <div className="flex items-baseline gap-2 min-w-0">
-                        <span className="font-medium text-slate-800 dark:text-slate-100 truncate">{g.certName}</span>
-                        <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                        <span className="font-medium text-ink truncate">{g.certName}</span>
+                        <span className="text-caption text-ink-faint whitespace-nowrap">
                           {g.holders.length} {g.holders.length === 1 ? "person" : "people"}
                         </span>
                       </div>
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${style.bg} ${style.text}`}>
+                      <span className={`badge-pill whitespace-nowrap ${style.bg} ${style.text}`}>
                         {style.label}
                       </span>
                     </summary>
-                    <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/30 overflow-x-auto">
-                      <table className="w-full text-sm min-w-[480px]">
+                    <div className="border-t border-hairline/70 dark:border-hairline/10 bg-canvas/40 overflow-x-auto">
+                      <table className="w-full text-body min-w-[480px]">
                         <thead>
-                          <tr className="text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                          <tr className="text-left text-caption font-medium text-ink-faint uppercase tracking-wide">
                             <th className="px-4 pl-9 py-2">Name</th>
                             <th className="px-4 py-2">Role</th>
                             {!isNotTracked && <th className="px-4 py-2">Expires</th>}
@@ -463,23 +448,23 @@ export default function Team() {
                             {!isNotTracked && <th className="px-4 py-2 text-right">Verification</th>}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody className="divide-y divide-hairline/70 dark:divide-hairline/10">
                           {g.holders.map((h) => {
                             const hStyle = h.status === "none" ? NOT_TRACKED_STYLE : STATUS_STYLES[h.status];
                             const days = h.expiryDate ? daysUntil(h.expiryDate) : null;
                             const verificationLink = isNotTracked ? null : getVerificationLink(g.certName);
                             return (
-                              <tr key={h.memberId} className="hover:bg-white dark:hover:bg-slate-900 transition-colors">
-                                <td className="px-4 pl-9 py-2.5 font-medium text-slate-700 dark:text-slate-200">{h.memberName}</td>
-                                <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400">{h.memberRole || "—"}</td>
+                              <tr key={h.memberId} className="hover:bg-panel transition-colors">
+                                <td className="px-4 pl-9 py-2.5 font-medium text-ink">{h.memberName}</td>
+                                <td className="px-4 py-2.5 text-ink-muted">{h.memberRole || "—"}</td>
                                 {!isNotTracked && (
-                                  <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                                  <td className="px-4 py-2.5 text-ink-muted whitespace-nowrap">
                                     {h.status === "expired" ? `${Math.abs(days!)}d overdue` : `${days}d left`}
                                   </td>
                                 )}
                                 {!isNotTracked && (
                                   <td className="px-4 py-2.5">
-                                    <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${hStyle.bg} ${hStyle.text}`}>
+                                    <span className={`badge-pill whitespace-nowrap ${hStyle.bg} ${hStyle.text}`}>
                                       {hStyle.label}
                                     </span>
                                   </td>
@@ -489,14 +474,14 @@ export default function Team() {
                                     {h.verifiedAt ? (
                                       <div className="flex items-center justify-end gap-2">
                                         <span
-                                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 whitespace-nowrap"
+                                          className="inline-flex items-center gap-1 text-caption font-medium text-emerald-500 whitespace-nowrap"
                                           title={`Verified by ${memberNameById.get(h.verifiedBy ?? "") ?? "a team admin"} on ${new Date(h.verifiedAt).toLocaleDateString()}`}
                                         >
                                           ✓ Verified
                                         </span>
                                         <button
                                           onClick={() => handleClearVerification(h, g.certName)}
-                                          className="text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 whitespace-nowrap"
+                                          className="text-caption text-ink-faint hover:text-ink-muted whitespace-nowrap"
                                         >
                                           Undo
                                         </button>
@@ -508,14 +493,14 @@ export default function Team() {
                                             href={verificationLink.url}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap"
+                                            className="text-caption font-medium text-ink-faint hover:text-ink whitespace-nowrap"
                                           >
                                             {verificationLink.isOfficial ? "Check registry ↗" : "Search ↗"}
                                           </a>
                                         )}
                                         <button
                                           onClick={() => handleVerify(h, g.certName)}
-                                          className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 whitespace-nowrap"
+                                          className="text-caption font-medium text-brand-400 hover:text-brand-300 whitespace-nowrap"
                                         >
                                           Mark verified
                                         </button>

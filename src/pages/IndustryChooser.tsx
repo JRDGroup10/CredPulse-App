@@ -48,10 +48,10 @@ export default function IndustryChooser() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-canvas">
       <div className="pt-8 pb-2 flex flex-col items-center gap-3 px-4">
         <LogoMark className="w-10 h-10" />
-        <p className="text-center text-slate-300 text-sm max-w-sm">
+        <p className="text-center text-ink-muted text-body max-w-sm">
           One product for tracking hard-expiry certifications. Which side is closer to what you do?
         </p>
       </div>
@@ -65,35 +65,38 @@ export default function IndustryChooser() {
             onMouseLeave={() => setHovered(null)}
             onFocus={() => setHovered(side.key)}
             onBlur={() => setHovered(null)}
+            // Hover reveal is a subtle brand-tinted wash, not a solid/gradient
+            // fill takeover — Dimension keeps its accent to glow/wash-only,
+            // even in a full-panel moment like this one. The "other" side is
+            // wrapped in data-industry="other" so its wash uses the amber
+            // brand tokens (see index.css) without any hardcoded amber
+            // classes here.
             className={`group relative flex-1 flex flex-col items-center justify-center text-center px-6 py-16 transition-colors duration-300 ${
-              i === 1 ? "border-t sm:border-t-0 sm:border-l border-white/10" : ""
+              i === 1 ? "border-t sm:border-t-0 sm:border-l border-hairline/10" : ""
             } ${
-              side.key === "healthcare"
-                ? hovered === "healthcare"
-                  ? "bg-gradient-to-br from-brand-600 to-brand-500"
-                  : "bg-slate-900"
-                : hovered === "other"
-                ? "bg-gradient-to-br from-amber-600 to-orange-500"
-                : "bg-slate-950"
+              (side.key === "healthcare" ? hovered === "healthcare" : hovered === "other")
+                ? "bg-brand-500/10"
+                : "bg-panel/40"
             }`}
+            {...(side.key === "other" ? { "data-industry": "other" } : {})}
           >
             <div className="text-5xl mb-4 transition-transform duration-300 group-hover:scale-110 group-focus:scale-110">
               {side.icon}
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">{side.title}</h2>
-            <p className="text-sm text-white/70 max-w-xs mb-5">{side.subtitle}</p>
-            <ul className="space-y-1.5 text-xs text-white/60">
+            <h2 className="text-heading-sm sm:text-heading font-medium text-ink mb-2">{side.title}</h2>
+            <p className="text-body text-ink-muted max-w-xs mb-5">{side.subtitle}</p>
+            <ul className="space-y-1.5 text-caption text-ink-faint">
               {side.bullets.map((b) => (
                 <li key={b}>{b}</li>
               ))}
             </ul>
-            <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-white border border-white/30 group-hover:border-white/60 group-focus:border-white/60 rounded-full px-4 py-1.5 transition-colors">
+            <span className="mt-6 inline-flex items-center gap-1.5 text-caption font-medium text-ink border border-hairline dark:border-hairline/15 group-hover:border-brand-500/40 group-focus:border-brand-500/40 rounded-pill px-4 py-1.5 transition-colors">
               Continue <span aria-hidden>→</span>
             </span>
           </button>
         ))}
       </div>
-      <p className="text-center text-[11px] text-slate-500 py-4 px-4">
+      <p className="text-center text-caption text-ink-faint py-4 px-4">
         Not sure, or your industry isn't listed? Either side works — you can add any certification and
         switch anytime.
       </p>
