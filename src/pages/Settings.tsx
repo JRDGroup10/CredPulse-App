@@ -54,7 +54,7 @@ export default function Settings() {
                   onClick={() => setRegion(r)}
                   className={`text-body font-medium py-1.5 rounded-ui border transition-all ${
                     state.profile.region === r
-                      ? "bg-brand-500/10 border-brand-500/40 text-brand-400"
+                      ? "bg-brand-500/10 border-brand-500/40 text-brand-700 dark:text-brand-400"
                       : "bg-panel border-hairline dark:border-hairline/15 text-ink-muted hover:border-brand-500/30"
                   }`}
                 >
@@ -65,7 +65,7 @@ export default function Settings() {
             <p className="text-caption text-ink-faint mt-1.5">
               Controls which renewal sites and terminology we show for new certificates.
             </p>
-            {saved && <div className="text-caption text-emerald-500 mt-1.5 animate-fade-in">Saved.</div>}
+            {saved && <div className="text-caption text-emerald-700 dark:text-emerald-400 mt-1.5 animate-fade-in">Saved.</div>}
           </div>
           <div className="col-span-2 flex items-center justify-between pt-2 border-t border-hairline/70 dark:border-hairline/10">
             <div>
@@ -79,7 +79,7 @@ export default function Settings() {
                 </div>
               )}
             </div>
-            <Link to="/billing" className="text-body font-medium text-brand-400 whitespace-nowrap">
+            <Link to="/billing" className="text-body font-medium text-brand-700 dark:text-brand-400 whitespace-nowrap">
               {state.profile.organizationId ? "Manage individual plan" : "Manage plan"}
             </Link>
           </div>
@@ -97,7 +97,7 @@ export default function Settings() {
             Reminder schedule, push notifications on this device, and calendar export.
           </p>
         </div>
-        <Link to="/notifications" className="flex-shrink-0 text-body font-medium text-brand-400 whitespace-nowrap">
+        <Link to="/notifications" className="flex-shrink-0 text-body font-medium text-brand-700 dark:text-brand-400 whitespace-nowrap">
           Manage →
         </Link>
       </div>

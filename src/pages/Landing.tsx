@@ -119,7 +119,7 @@ export default function Landing({
         </div>
 
         <div className="relative max-w-5xl mx-auto px-4 pt-20 pb-20 text-center">
-          <span className="inline-flex items-center gap-1.5 text-caption font-normal tracking-wide text-brand-400 bg-panel/60 backdrop-blur border border-hairline dark:border-hairline/10 px-3 py-1.5 rounded-pill mb-5 animate-fade-in-up">
+          <span className="inline-flex items-center gap-1.5 text-caption font-normal tracking-wide text-brand-700 dark:text-brand-400 bg-panel/60 backdrop-blur border border-hairline dark:border-hairline/10 px-3 py-1.5 rounded-pill mb-5 animate-fade-in-up">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             FOR EVERYONE IN HEALTHCARE WITH A CERTIFICATION, LICENSE, OR COURSE TO TRACK
           </span>
@@ -158,9 +158,9 @@ export default function Landing({
             <div className="text-caption font-normal text-ink-faint mb-3">Your certifications</div>
             <div className="space-y-2.5">
               {[
-                { name: "Basic Life Support (BLS)", status: "Renew now · 5d left", tone: "bg-amber-500/15 text-amber-500" },
-                { name: "Advanced Cardiac Life Support (ACLS)", status: "Valid · 120d left", tone: "bg-emerald-500/15 text-emerald-500" },
-                { name: "Vulnerable Sector Check", status: "Expired · 10d overdue", tone: "bg-red-500/15 text-red-500" }
+                { name: "Basic Life Support (BLS)", status: "Renew now · 5d left", tone: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
+                { name: "Advanced Cardiac Life Support (ACLS)", status: "Valid · 120d left", tone: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
+                { name: "Vulnerable Sector Check", status: "Expired · 10d overdue", tone: "bg-red-500/15 text-red-600 dark:text-red-400" }
               ].map((row, i) => (
                 <div
                   key={row.name}
@@ -231,7 +231,7 @@ export default function Landing({
             <div className="w-11 h-11 rounded-ui bg-brand-500/10 flex items-center justify-center text-2xl mb-4">
               🏥
             </div>
-            <div className="text-caption font-normal tracking-wide text-brand-400 uppercase mb-1">
+            <div className="text-caption font-normal tracking-wide text-brand-700 dark:text-brand-400 uppercase mb-1">
               For clinics &amp; healthcare teams
             </div>
             <h3 className="text-subheading font-medium text-ink mb-3">One dashboard for your whole staff's compliance</h3>
@@ -250,7 +250,7 @@ export default function Landing({
             <div className="w-11 h-11 rounded-ui bg-brand-500/10 flex items-center justify-center text-2xl mb-4">
               🧑‍⚕️
             </div>
-            <div className="text-caption font-normal tracking-wide text-brand-400 uppercase mb-1">
+            <div className="text-caption font-normal tracking-wide text-brand-700 dark:text-brand-400 uppercase mb-1">
               For individual healthcare workers
             </div>
             <h3 className="text-subheading font-medium text-ink mb-3">Your own certifications, tracked automatically</h3>

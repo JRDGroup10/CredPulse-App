@@ -21,28 +21,22 @@ export default function JoinTeam({
   const orgName = new URLSearchParams(search).get("org") || "your team";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface px-4">
+    <div className="min-h-screen flex items-center justify-center bg-canvas px-4">
       <div className="max-w-sm w-full text-center animate-fade-in-up">
-        <LogoMark className="w-14 h-14 mx-auto mb-4 drop-shadow-md" />
-        <h1 className="text-xl font-semibold text-slate-900 mb-2">
-          You've been invited to join <span className="text-gradient">{orgName}</span>
+        <LogoMark className="w-14 h-14 mx-auto mb-4" />
+        <h1 className="text-subheading font-medium text-ink mb-2">
+          You've been invited to join {orgName}
         </h1>
-        <p className="text-sm text-slate-500 mb-8">
+        <p className="text-body text-ink-muted mb-8">
           {orgName} uses CredPulse to track certification compliance across the team. Create an
           account (or log in, if you already have one) using the email address your invite was sent
           to, and you'll be added automatically.
         </p>
         <div className="space-y-3">
-          <button
-            onClick={() => onGetStarted(orgName)}
-            className="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white font-medium py-2.5 rounded-lg text-sm shadow-glow transition-all hover:-translate-y-0.5"
-          >
+          <button onClick={() => onGetStarted(orgName)} className="btn-primary w-full text-body py-2.5">
             Create your account
           </button>
-          <button
-            onClick={onLogin}
-            className="w-full text-sm font-medium text-slate-600 hover:text-slate-900 py-2 transition-colors"
-          >
+          <button onClick={onLogin} className="w-full text-body font-medium text-ink-muted hover:text-ink py-2 transition-colors">
             I already have an account — log in
           </button>
         </div>

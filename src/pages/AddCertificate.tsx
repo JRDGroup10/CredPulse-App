@@ -112,22 +112,22 @@ export default function AddCertificate() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50 mb-1">Add a certificate</h1>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+      <h1 className="text-heading-sm font-medium text-ink mb-1">Add a certificate</h1>
+      <p className="text-body text-ink-muted mb-4">
         Upload a photo or PDF — we'll pull out the details for you to confirm.
       </p>
 
       {isOrgMember && (
-        <div className="mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-card">
-          <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">This certificate is:</div>
+        <div className="mb-6 card p-4">
+          <div className="text-caption font-medium text-ink-faint mb-2">This certificate is:</div>
           <div className="grid grid-cols-2 gap-2 max-w-sm">
             <button
               type="button"
               onClick={() => setScope("clinic")}
-              className={`text-sm font-medium py-2 rounded-lg border transition-all ${
+              className={`text-body font-medium py-2 rounded-ui border transition-all ${
                 scope === "clinic"
-                  ? "bg-brand-600 border-brand-600 text-white shadow-glow"
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-600"
+                  ? "bg-brand-500/10 border-brand-500/40 text-brand-700 dark:text-brand-400"
+                  : "bg-panel border-hairline dark:border-hairline/15 text-ink-muted hover:border-brand-500/30"
               }`}
             >
               🏥 For my clinic
@@ -135,16 +135,16 @@ export default function AddCertificate() {
             <button
               type="button"
               onClick={() => setScope("personal")}
-              className={`text-sm font-medium py-2 rounded-lg border transition-all ${
+              className={`text-body font-medium py-2 rounded-ui border transition-all ${
                 scope === "personal"
-                  ? "bg-brand-600 border-brand-600 text-white shadow-glow"
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-600"
+                  ? "bg-brand-500/10 border-brand-500/40 text-brand-700 dark:text-brand-400"
+                  : "bg-panel border-hairline dark:border-hairline/15 text-ink-muted hover:border-brand-500/30"
               }`}
             >
               Personal
             </button>
           </div>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
+          <p className="text-caption text-ink-faint mt-2">
             {scope === "clinic"
               ? "Unlimited, and visible to your clinic's admin for compliance tracking."
               : "Counts against your own individual plan and stays private — your clinic admin never sees personal certificates."}
@@ -153,20 +153,17 @@ export default function AddCertificate() {
       )}
 
       {limitReached ? (
-        <div className="text-center py-16 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl animate-fade-in-up">
+        <div className="text-center py-16 border border-dashed border-hairline dark:border-hairline/15 rounded-panel animate-fade-in-up">
           <div className="text-3xl mb-3">🔒</div>
-          <h2 className="font-semibold text-slate-900 dark:text-slate-50 mb-1">
+          <h2 className="font-medium text-ink mb-1">
             You've hit your {PLANS[state.profile.plan].name} plan limit
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-5">
+          <p className="text-body text-ink-muted max-w-sm mx-auto mb-5">
             {isOrgMember
               ? `Your individual plan tracks up to ${certLimit(state)} personal certification${certLimit(state) === 1 ? "" : "s"} outside your clinic work. Upgrade to track more, or switch this one to "For my clinic" if it's work-related.`
               : `The ${PLANS[state.profile.plan].name} plan tracks up to ${certLimit(state)} certification${certLimit(state) === 1 ? "" : "s"}. Upgrade to track more, plus unlock renewal tips and direct booking links.`}
           </p>
-          <Link
-            to="/billing"
-            className="inline-block bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all hover:-translate-y-0.5"
-          >
+          <Link to="/billing" className="btn-primary text-body px-4 py-2 inline-flex">
             View plans
           </Link>
         </div>
@@ -181,11 +178,11 @@ export default function AddCertificate() {
                 const f = e.dataTransfer.files?.[0];
                 if (f) handleFile(f);
               }}
-              className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl py-16 text-center cursor-pointer hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/40 dark:hover:bg-brand-500/5 transition-all animate-fade-in-up"
+              className="border-2 border-dashed border-hairline dark:border-hairline/15 rounded-panel py-16 text-center cursor-pointer hover:border-brand-500/40 hover:bg-brand-500/5 transition-all animate-fade-in-up"
             >
               <div className="text-4xl mb-3">📄</div>
-              <p className="font-medium text-slate-700 dark:text-slate-200">Click to upload, or drag a file here</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">JPG, PNG, or PDF — up to 10MB</p>
+              <p className="font-medium text-ink">Click to upload, or drag a file here</p>
+              <p className="text-caption text-ink-faint mt-1">JPG, PNG, or PDF — up to 10MB</p>
               <input
                 ref={fileInput}
                 type="file"
@@ -200,32 +197,32 @@ export default function AddCertificate() {
           )}
 
           {step === "extracting" && (
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl py-16 text-center bg-white dark:bg-slate-900 shadow-card animate-fade-in-up">
-              <div className="mx-auto w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="font-medium text-slate-700 dark:text-slate-200">Reading {fileName}…</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Extracting credential name, issuer, and expiry date</p>
+            <div className="card py-16 text-center animate-fade-in-up">
+              <div className="mx-auto w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="font-medium text-ink">Reading {fileName}…</p>
+              <p className="text-caption text-ink-faint mt-1">Extracting credential name, issuer, and expiry date</p>
             </div>
           )}
 
           {step === "confirm" && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card animate-fade-in-up">
+            <div className="card p-5 animate-fade-in-up">
               {confidence !== null && confidence < 0.7 && (
-                <div className="mb-4 text-xs bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">
+                <div className="mb-4 text-caption bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-ui px-3 py-2">
                   We weren't fully sure about this one — double-check the fields below before saving.
                 </div>
               )}
 
               {duplicate && (
-                <div className="mb-4 text-xs bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900 rounded-lg px-3 py-2.5 flex items-start justify-between gap-3">
+                <div className="mb-4 text-caption bg-brand-500/10 text-brand-700 dark:text-brand-400 border border-brand-500/20 rounded-ui px-3 py-2.5 flex items-start justify-between gap-3">
                   <span>
-                    You already have <span className="font-semibold">{duplicate.name}</span> on file (expires{" "}
+                    You already have <span className="font-medium">{duplicate.name}</span> on file (expires{" "}
                     {new Date(duplicate.expiryDate).toLocaleDateString(undefined, { timeZone: "UTC" })}). If this is the same certification, consider
                     deleting the old record after saving instead of keeping both.
                   </span>
                   <button
                     type="button"
                     onClick={() => setDismissedDuplicate(true)}
-                    className="font-semibold whitespace-nowrap flex-shrink-0"
+                    className="font-medium whitespace-nowrap flex-shrink-0"
                   >
                     Dismiss
                   </button>
@@ -235,12 +232,12 @@ export default function AddCertificate() {
                 <Field label="Certificate name" value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })} />
                 <Field label="Issuing body" value={draft.issuer} onChange={(v) => setDraft({ ...draft, issuer: v })} />
                 <div>
-                  <label htmlFor="cert-credential-type" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Type</label>
+                  <label htmlFor="cert-credential-type" className="block text-caption font-medium text-ink-muted mb-1">Type</label>
                   <select
                     id="cert-credential-type"
                     value={draft.credentialType}
                     onChange={(e) => setDraft({ ...draft, credentialType: e.target.value as Certificate["credentialType"] })}
-                    className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                    className="w-full border border-hairline dark:border-hairline/15 bg-panel text-ink rounded-ui px-3 py-2 text-body focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition"
                   >
                     <option value="certification">Certification</option>
                     <option value="license">License</option>
@@ -259,33 +256,33 @@ export default function AddCertificate() {
                   </>
                 ) : (
                   (draft.tip || draft.renewalUrl) && (
-                    <div className="rounded-lg border border-brand-100 dark:border-brand-900 bg-brand-50 dark:bg-brand-500/10 px-3 py-2.5 text-xs text-brand-700 dark:text-brand-300 flex items-start justify-between gap-3">
+                    <div className="rounded-ui border border-brand-500/20 bg-brand-500/10 px-3 py-2.5 text-caption text-brand-700 dark:text-brand-400 flex items-start justify-between gap-3">
                       <span>
                         We found a renewal tip and direct booking link for this one — upgrade to Plus or Pro to unlock them.
                       </span>
-                      <Link to="/billing" className="font-semibold whitespace-nowrap">
+                      <Link to="/billing" className="font-medium whitespace-nowrap">
                         Upgrade
                       </Link>
                     </div>
                   )
                 )}
 
-                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
-                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer">
+                <div className="rounded-ui border border-hairline dark:border-hairline/15 p-3">
+                  <label className="flex items-center gap-2 text-body text-ink cursor-pointer">
                     <input
                       type="checkbox"
                       checked={tracksCeu}
                       onChange={(e) => setTracksCeu(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-brand-600 focus:ring-brand-400"
+                      className="w-4 h-4 rounded border-hairline dark:border-hairline/20 text-brand-600 focus:ring-brand-500/40"
                     />
                     This renews by earning continuing-education credits (CEUs)
                   </label>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 ml-6">
+                  <p className="text-caption text-ink-faint mt-1 ml-6">
                     For certs like CPC, CRCST, or PANCE that renew by accumulating credits over the cycle, not a single course.
                   </p>
                   {tracksCeu && (
                     <div className="mt-2 ml-6 max-w-[10rem]">
-                      <label htmlFor="cert-ceu-required" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                      <label htmlFor="cert-ceu-required" className="block text-caption font-medium text-ink-muted mb-1">
                         Credits required
                       </label>
                       <input
@@ -296,7 +293,7 @@ export default function AddCertificate() {
                         value={ceuRequired}
                         onChange={(e) => setCeuRequired(e.target.value)}
                         placeholder="e.g. 36"
-                        className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+                        className="w-full border border-hairline dark:border-hairline/15 bg-panel text-ink placeholder:text-ink-muted rounded-ui px-3 py-2 text-body focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition"
                       />
                     </div>
                   )}
@@ -304,17 +301,13 @@ export default function AddCertificate() {
               </div>
 
               {error && (
-                <div className="mt-4 text-xs bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2">
+                <div className="mt-4 text-caption bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 rounded-ui px-3 py-2">
                   {error}
                 </div>
               )}
 
               <div className="flex gap-2 mt-6">
-                <button
-                  onClick={handleSave}
-                  disabled={!draft.name || !draft.expiryDate || saving}
-                  className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-40 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all hover:-translate-y-0.5 disabled:hover:translate-y-0"
-                >
+                <button onClick={handleSave} disabled={!draft.name || !draft.expiryDate || saving} className="btn-primary text-body px-4 py-2 disabled:opacity-40">
                   {saving ? "Saving…" : "Save certificate"}
                 </button>
                 <button
@@ -329,7 +322,7 @@ export default function AddCertificate() {
                     setCeuRequired("");
                   }}
                   disabled={saving}
-                  className="text-sm text-slate-500 dark:text-slate-400 px-4 py-2 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                  className="text-body text-ink-muted px-4 py-2 hover:text-ink transition-colors"
                 >
                   Start over
                 </button>
@@ -359,13 +352,13 @@ function Field({
   const id = `cert-field-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div>
-      <label htmlFor={id} className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{label}</label>
+      <label htmlFor={id} className="block text-caption font-medium text-ink-muted mb-1">{label}</label>
       <input
         id={id}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+        className="w-full border border-hairline dark:border-hairline/15 bg-panel text-ink rounded-ui px-3 py-2 text-body focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition"
       />
     </div>
   );

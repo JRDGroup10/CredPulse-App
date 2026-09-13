@@ -91,21 +91,24 @@ export default function ComplianceReport() {
   return (
     <div>
       <div className="no-print flex items-center justify-between gap-3 mb-4">
-        <Link to="/team" className="text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
+        <Link to="/team" className="text-body text-ink-muted hover:text-ink">
           ← Back to Team
         </Link>
-        <button
-          onClick={() => window.print()}
-          disabled={membersWithCerts === null}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
-        >
+        <button onClick={() => window.print()} disabled={membersWithCerts === null} className="btn-primary text-body px-4 py-2 disabled:opacity-50">
           Print / Save as PDF
         </button>
       </div>
 
       {membersWithCerts === null ? (
-        <p className="text-sm text-slate-400 dark:text-slate-500">Loading report…</p>
+        <p className="no-print text-body text-ink-faint">Loading report…</p>
       ) : (
+        // Deliberately fixed light colors (bg-white/text-slate-900/border-slate-*),
+        // NOT the theme-variable canvas/ink/hairline tokens — this box is the
+        // actual printed document, meant to render identically regardless of
+        // the app's own dark-mode toggle (see REPORT_STATUS_STYLES's comment
+        // above for the same reasoning, and CRE-16's regression writeup for
+        // what goes wrong when theme-variable tokens are used somewhere that
+        // must render correctly independent of <html>'s .dark class).
         <div className="bg-white text-slate-900 border border-slate-200 rounded-xl shadow-card p-6 sm:p-8 print:border-0 print:shadow-none print:p-0">
           <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4 mb-6">
             <div>

@@ -89,15 +89,15 @@ export default function Notifications() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Notifications</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+        <h1 className="text-heading-sm font-medium text-ink">Notifications</h1>
+        <p className="text-body text-ink-muted mt-0.5">
           How and when you get reminded before a certificate expires.
         </p>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
-        <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Reminder schedule</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+      <div className="card p-5">
+        <h2 className="font-medium text-ink mb-1">Reminder schedule</h2>
+        <p className="text-caption text-ink-muted mb-3">
           Get notified this many days before each certificate expires.
         </p>
         {canCustomize ? (
@@ -109,10 +109,10 @@ export default function Notifications() {
                   <button
                     key={day}
                     onClick={() => toggleReminder(day)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                    className={`px-3 py-1.5 rounded-pill text-body font-medium border transition-all ${
                       active
-                        ? "bg-brand-600 border-brand-600 text-white shadow-glow"
-                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-600"
+                        ? "bg-brand-500/10 border-brand-500/40 text-brand-700 dark:text-brand-400"
+                        : "bg-panel border-hairline dark:border-hairline/15 text-ink-muted hover:border-brand-500/30"
                     }`}
                   >
                     {day}d
@@ -120,88 +120,81 @@ export default function Notifications() {
                 );
               })}
             </div>
-            {saved && <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-3 animate-fade-in">Saved.</div>}
+            {saved && <div className="text-caption text-emerald-700 dark:text-emerald-400 mt-3 animate-fade-in">Saved.</div>}
           </>
         ) : (
-          <div className="rounded-lg border border-brand-100 dark:border-brand-900 bg-brand-50 dark:bg-brand-500/10 px-3 py-3 text-sm text-brand-700 dark:text-brand-300 flex items-center justify-between gap-3">
+          <div className="rounded-ui border border-brand-500/20 bg-brand-500/10 px-3 py-3 text-body text-brand-600 dark:text-brand-300 flex items-center justify-between gap-3">
             <span>Free plan includes one monthly reminder. Upgrade to set a custom schedule.</span>
-            <Link to="/billing" className="font-semibold whitespace-nowrap">
+            <Link to="/billing" className="font-medium whitespace-nowrap">
               Upgrade
             </Link>
           </div>
         )}
-        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-4">
+        <p className="text-caption text-ink-faint mt-4">
           This same schedule drives your email reminders, push notifications below, and the alarms
           built into any calendar file you download.
         </p>
       </div>
 
       {pushStatus !== "unsupported" && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
-          <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Push notifications (this device)</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+        <div className="card p-5">
+          <h2 className="font-medium text-ink mb-1">Push notifications (this device)</h2>
+          <p className="text-caption text-ink-muted mb-3">
             Since you've installed CredPulse as an app, you can also get renewal reminders as a
             notification right on this device, on the same schedule as your email reminders.
           </p>
 
           {pushStatus === "checking" ? (
-            <p className="text-sm text-slate-400 dark:text-slate-500">Checking…</p>
+            <p className="text-body text-ink-faint">Checking…</p>
           ) : pushStatus === "denied" ? (
-            <p className="text-sm text-amber-600 dark:text-amber-400">
+            <p className="text-body text-amber-700 dark:text-amber-400">
               Notifications are blocked for this app in your browser or system settings. Allow them
               there, then reload this page to turn this on.
             </p>
           ) : pushStatus === "subscribed" ? (
             <>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Enabled on this device</span>
+                <span className="text-body font-medium text-emerald-700 dark:text-emerald-400">Enabled on this device</span>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleTestPush}
                     disabled={testBusy}
-                    className="text-sm font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 disabled:opacity-50 transition-colors"
+                    className="text-body font-medium text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 disabled:opacity-50 transition-colors"
                   >
                     {testBusy ? "Sending…" : "Send test notification"}
                   </button>
                   <button
                     onClick={handleDisablePush}
                     disabled={pushBusy}
-                    className="text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 disabled:opacity-50 transition-colors"
+                    className="text-body font-medium text-ink-muted hover:text-ink disabled:opacity-50 transition-colors"
                   >
                     Turn off
                   </button>
                 </div>
               </div>
-              {testResult && <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">{testResult}</p>}
+              {testResult && <p className="text-caption text-ink-muted mt-2">{testResult}</p>}
             </>
           ) : (
-            <button
-              onClick={handleEnablePush}
-              disabled={pushBusy}
-              className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all hover:-translate-y-0.5 disabled:hover:translate-y-0"
-            >
+            <button onClick={handleEnablePush} disabled={pushBusy} className="btn-primary text-body px-4 py-2 disabled:opacity-50">
               {pushBusy ? "Enabling…" : "Enable push notifications"}
             </button>
           )}
 
-          {pushError && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{pushError}</p>}
+          {pushError && <p className="text-caption text-red-600 dark:text-red-400 mt-2">{pushError}</p>}
         </div>
       )}
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-card">
-        <h2 className="font-medium text-slate-900 dark:text-slate-50 mb-1">Calendar</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+      <div className="card p-5">
+        <h2 className="font-medium text-ink mb-1">Calendar</h2>
+        <p className="text-caption text-ink-muted mb-3">
           Prefer your own calendar app? Download every certificate's renewal date as one file —
           each one lands as an all-day event with reminders on the schedule above. You can also add
           certificates one at a time from the "Add to calendar" link on each certificate card.
         </p>
         {state.certificates.length === 0 ? (
-          <p className="text-sm text-slate-400 dark:text-slate-500">Add a certificate first to export it here.</p>
+          <p className="text-body text-ink-faint">Add a certificate first to export it here.</p>
         ) : (
-          <button
-            onClick={handleDownloadAll}
-            className="rounded-md border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-          >
+          <button onClick={handleDownloadAll} className="btn-secondary text-body px-4 py-2">
             Download all as calendar ({state.certificates.length})
           </button>
         )}

@@ -223,7 +223,7 @@ export default function TeamSettings() {
           >
             {creating ? "Creating…" : "Start free trial"}
           </button>
-          {createError && <p className="text-caption text-red-500 mt-2">{createError}</p>}
+          {createError && <p className="text-caption text-red-600 dark:text-red-400 mt-2">{createError}</p>}
         </div>
       </details>
     );
@@ -261,7 +261,7 @@ export default function TeamSettings() {
         <button onClick={handleResumeCheckout} disabled={resumingCheckout} className="btn-primary text-body px-4 py-2 disabled:opacity-50 whitespace-nowrap">
           {resumingCheckout ? "Redirecting…" : "Finish billing setup"}
         </button>
-        {resumeError && <p className="text-caption text-red-500 mt-2">{resumeError}</p>}
+        {resumeError && <p className="text-caption text-red-600 dark:text-red-400 mt-2">{resumeError}</p>}
       </div>
     );
   }
@@ -286,7 +286,7 @@ export default function TeamSettings() {
                 setChangeCycle(org.billingCycle);
                 setShowChangePlan((v) => !v);
               }}
-              className="block text-caption font-medium text-brand-400 hover:text-brand-300 whitespace-nowrap"
+              className="block text-caption font-medium text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 whitespace-nowrap"
             >
               {showChangePlan ? "Cancel" : "Change plan"}
             </button>
@@ -299,7 +299,7 @@ export default function TeamSettings() {
       </p>
 
       {changePlanSuccess && !showChangePlan && (
-        <div className="mb-3 rounded-ui border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-caption text-emerald-500">
+        <div className="mb-3 rounded-ui border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-caption text-emerald-700 dark:text-emerald-400">
           Plan change sent to Stripe — this usually updates here within a few seconds. Refresh if it
           doesn't right away.
         </div>
@@ -320,12 +320,12 @@ export default function TeamSettings() {
           >
             {changingPlan ? "Updating…" : "Confirm plan change"}
           </button>
-          {changePlanError && <p className="text-caption text-red-500 mt-2">{changePlanError}</p>}
+          {changePlanError && <p className="text-caption text-red-600 dark:text-red-400 mt-2">{changePlanError}</p>}
         </div>
       )}
 
       {seatLimitReached && (
-        <div className="mb-3 rounded-ui border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-caption text-amber-500">
+        <div className="mb-3 rounded-ui border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-caption text-amber-700 dark:text-amber-400">
           You've used all {seatLimit} seats on the {org ? ORG_PLANS[org.plan].name : ""} plan.
           {upgradeSuggestion
             ? ` Upgrade to ${ORG_PLANS[upgradeSuggestion].name} to invite more teammates.`
@@ -350,8 +350,8 @@ export default function TeamSettings() {
           {inviting ? "Sending…" : "Invite"}
         </button>
       </div>
-      {inviteError && <p className="text-caption text-red-500 mb-2">{inviteError}</p>}
-      {inviteSent && <p className="text-caption text-emerald-500 mb-2">Invite created.</p>}
+      {inviteError && <p className="text-caption text-red-600 dark:text-red-400 mb-2">{inviteError}</p>}
+      {inviteSent && <p className="text-caption text-emerald-700 dark:text-emerald-400 mb-2">Invite created.</p>}
 
       {loadingTeam ? (
         <p className="text-body text-ink-faint mt-3">Loading team…</p>
@@ -389,7 +389,7 @@ export default function TeamSettings() {
                       <span className="text-ink-muted">{inv.email}</span>
                       <button
                         onClick={() => handleRevoke(inv.id)}
-                        className="text-caption font-medium text-ink-faint hover:text-red-500 transition-colors"
+                        className="text-caption font-medium text-ink-faint hover:text-red-600 dark:hover:text-red-400 transition-colors"
                       >
                         Revoke
                       </button>

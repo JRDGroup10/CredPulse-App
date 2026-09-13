@@ -73,17 +73,17 @@ export default function CeuTracker({ certificateId, ceuRequired }: { certificate
   }
 
   return (
-    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+    <div className="mt-3 pt-3 border-t border-hairline/70 dark:border-hairline/10">
       <button type="button" onClick={() => setExpanded((v) => !v)} className="w-full text-left group/ceu">
-        <div className="flex items-center justify-between text-xs mb-1.5">
-          <span className="font-medium text-slate-600 dark:text-slate-300">
+        <div className="flex items-center justify-between text-caption mb-1.5">
+          <span className="font-medium text-ink-muted">
             CE credits: {earned} / {ceuRequired}
           </span>
-          <span className="text-slate-400 group-hover/ceu:text-slate-600 dark:group-hover/ceu:text-slate-300">
+          <span className="text-ink-faint group-hover/ceu:text-ink-muted">
             {expanded ? "Hide" : "Log credit →"}
           </span>
         </div>
-        <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+        <div className="h-1.5 rounded-full bg-ink/5 overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${metGoal ? "bg-emerald-500" : "bg-amber-500"}`}
             style={{ width: `${pct}%` }}
@@ -106,17 +106,17 @@ export default function CeuTracker({ certificateId, ceuRequired }: { certificate
 
           <form onSubmit={handleAdd} className="flex flex-wrap items-end gap-2">
             <div className="flex-1 min-w-[8rem]">
-              <label htmlFor={`ceu-activity-${certificateId}`} className="block text-[10px] text-slate-400 dark:text-slate-500 mb-1">Activity</label>
+              <label htmlFor={`ceu-activity-${certificateId}`} className="block text-[10px] text-ink-faint mb-1">Activity</label>
               <input
                 id={`ceu-activity-${certificateId}`}
                 value={activityName}
                 onChange={(e) => setActivityName(e.target.value)}
                 placeholder="e.g. Online module"
-                className="w-full text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
+                className="w-full text-caption border border-hairline dark:border-hairline/15 bg-panel text-ink placeholder:text-ink-muted rounded-ui px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500/40"
               />
             </div>
             <div className="w-16">
-              <label htmlFor={`ceu-credits-${certificateId}`} className="block text-[10px] text-slate-400 dark:text-slate-500 mb-1">Credits</label>
+              <label htmlFor={`ceu-credits-${certificateId}`} className="block text-[10px] text-ink-faint mb-1">Credits</label>
               <input
                 id={`ceu-credits-${certificateId}`}
                 type="number"
@@ -124,35 +124,31 @@ export default function CeuTracker({ certificateId, ceuRequired }: { certificate
                 min="0"
                 value={credits}
                 onChange={(e) => setCredits(e.target.value)}
-                className="w-full text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
+                className="w-full text-caption border border-hairline dark:border-hairline/15 bg-panel text-ink rounded-ui px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500/40"
               />
             </div>
             <div className="w-32">
-              <label htmlFor={`ceu-date-${certificateId}`} className="block text-[10px] text-slate-400 dark:text-slate-500 mb-1">Date completed</label>
+              <label htmlFor={`ceu-date-${certificateId}`} className="block text-[10px] text-ink-faint mb-1">Date completed</label>
               <input
                 id={`ceu-date-${certificateId}`}
                 type="date"
                 value={completedDate}
                 onChange={(e) => setCompletedDate(e.target.value)}
-                className="w-full text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
+                className="w-full text-caption border border-hairline dark:border-hairline/15 bg-panel text-ink rounded-ui px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500/40"
               />
             </div>
-            <button
-              type="submit"
-              disabled={saving}
-              className="text-xs font-medium bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-md px-3 py-1.5 disabled:opacity-50 hover:opacity-90 transition-opacity"
-            >
+            <button type="submit" disabled={saving} className="btn-primary text-caption px-3 py-1.5 disabled:opacity-50">
               {saving ? "Adding…" : "Add"}
             </button>
           </form>
-          {error && <p className="text-[11px] text-red-500">{error}</p>}
+          {error && <p className="text-[11px] text-red-600 dark:text-red-400">{error}</p>}
 
           {logs && logs.length > 0 && (
             <ul className="space-y-1 max-h-32 overflow-y-auto">
               {logs.map((log) => (
                 <li
                   key={log.id}
-                  className="flex items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400"
+                  className="flex items-center justify-between gap-2 text-[11px] text-ink-faint"
                 >
                   <span className="truncate">
                     {log.activityName || "Credit"} · {log.credits} · {log.completedDate}
@@ -160,7 +156,7 @@ export default function CeuTracker({ certificateId, ceuRequired }: { certificate
                   <button
                     type="button"
                     onClick={() => handleDelete(log.id)}
-                    className="text-red-400 hover:text-red-600 dark:hover:text-red-300 flex-shrink-0"
+                    className="text-red-500 hover:text-red-600 dark:hover:text-red-300 flex-shrink-0"
                   >
                     Remove
                   </button>

@@ -97,7 +97,7 @@ export default function Industries({
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[42rem] h-[42rem] bg-brand-500/15 rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-5xl mx-auto px-4 pt-20 pb-20 text-center">
-          <span className="inline-flex items-center gap-1.5 text-caption font-normal tracking-wide text-brand-400 bg-panel/60 backdrop-blur border border-hairline dark:border-hairline/10 px-3 py-1.5 rounded-pill mb-5 animate-fade-in-up">
+          <span className="inline-flex items-center gap-1.5 text-caption font-normal tracking-wide text-brand-700 dark:text-brand-400 bg-panel/60 backdrop-blur border border-hairline dark:border-hairline/10 px-3 py-1.5 rounded-pill mb-5 animate-fade-in-up">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             FOR ANY JOB THAT REQUIRES A CERTIFICATION TO STAY ELIGIBLE TO WORK
           </span>
@@ -155,7 +155,7 @@ export default function Industries({
                     </li>
                   ))}
                 </ul>
-                <span className="text-caption font-medium text-brand-400">See details for {ind.title.split(" ")[0]} →</span>
+                <span className="text-caption font-medium text-brand-700 dark:text-brand-400">See details for {ind.title.split(" ")[0]} →</span>
               </Link>
             ))}
           </div>
@@ -183,9 +183,9 @@ export default function Industries({
           <div className="text-caption font-normal text-ink-faint mb-3">Example: a construction crew's certifications</div>
           <div className="space-y-2.5">
             {[
-              { name: "Working at Heights Training", status: "Renew now · 9d left", tone: "bg-amber-500/15 text-amber-500" },
-              { name: "Forklift Operator Certification", status: "Valid · 210d left", tone: "bg-emerald-500/15 text-emerald-500" },
-              { name: "Confined Space Entry Training", status: "Expired · 4d overdue", tone: "bg-red-500/15 text-red-500" }
+              { name: "Working at Heights Training", status: "Renew now · 9d left", tone: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
+              { name: "Forklift Operator Certification", status: "Valid · 210d left", tone: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
+              { name: "Confined Space Entry Training", status: "Expired · 4d overdue", tone: "bg-red-500/15 text-red-600 dark:text-red-400" }
             ].map((row) => (
               <div
                 key={row.name}
@@ -214,7 +214,7 @@ export default function Industries({
           </div>
           <p className="mt-6 text-caption text-ink-muted">
             Working in healthcare instead?{" "}
-            <Link to="/home" className="font-medium text-brand-400">See the healthcare-focused page →</Link>
+            <Link to="/home" className="font-medium text-brand-700 dark:text-brand-400">See the healthcare-focused page →</Link>
           </p>
         </div>
       </section>

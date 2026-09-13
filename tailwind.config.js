@@ -63,10 +63,6 @@ export default {
           800: "rgb(var(--color-accent-800) / <alpha-value>)",
           900: "rgb(var(--color-accent-900) / <alpha-value>)"
         },
-        surface: {
-          DEFAULT: "#eaf4fb",
-          soft: "#f3f9fd"
-        },
         // Dimension-system neutral scale (CRE-12) — theme-aware via
         // html.dark in index.css, industry-independent (see the comment
         // above --color-canvas in index.css). Use these for new/updated
@@ -97,9 +93,6 @@ export default {
       boxShadow: {
         card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12)",
         glow: "0 0 0 1px rgba(var(--color-glow-rgb) / 0.08), 0 20px 40px -12px rgba(var(--color-glow-rgb) / 0.35)",
-        // Amber/orange equivalent of "glow", used on the /industries page so
-        // its accent color doesn't come out blue-tinted in the shadows.
-        "glow-amber": "0 0 0 1px rgba(217, 119, 6, 0.08), 0 20px 40px -12px rgba(217, 119, 6, 0.35)",
         // Dimension's only "elevation" device — a faint inset highlight
         // instead of a drop shadow, meant for dark surfaces (graphite/void
         // canvas). Prefer border-hairline for definition on light surfaces.

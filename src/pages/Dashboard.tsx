@@ -183,7 +183,7 @@ export default function Dashboard() {
             {relevantCount} of {limit} {isOrgMember ? "personal " : ""}certificates used on the {plan.name} plan
           </div>
           {relevantCount >= limit && (
-            <Link to="/billing" className="text-caption font-medium text-brand-600 dark:text-brand-400 whitespace-nowrap">
+            <Link to="/billing" className="text-caption font-medium text-brand-700 dark:text-brand-400 whitespace-nowrap">
               Upgrade
             </Link>
           )}
@@ -216,10 +216,10 @@ export default function Dashboard() {
               const days = daysUntil(c.expiryDate);
               const tone =
                 status === "expired"
-                  ? "border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300"
+                  ? "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400"
                   : status === "urgent"
-                  ? "border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                  : "border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300";
+                  ? "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                  : "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400";
               return (
                 <div
                   key={c.id}
@@ -240,7 +240,7 @@ export default function Dashboard() {
       {total === 0 ? (
         <div className="text-center py-16 border border-dashed border-hairline dark:border-hairline/20 rounded-panel text-ink-muted">
           <p className="mb-3">No certifications tracked yet.</p>
-          <Link to="/add" className="text-brand-600 dark:text-brand-400 font-medium">
+          <Link to="/add" className="text-brand-700 dark:text-brand-400 font-medium">
             Add your first one
           </Link>
         </div>
@@ -316,7 +316,7 @@ export default function Dashboard() {
                   setStatusFilter("all");
                   setScopeFilter("all");
                 }}
-                className="text-brand-600 dark:text-brand-400 font-medium text-caption"
+                className="text-brand-700 dark:text-brand-400 font-medium text-caption"
               >
                 Clear filters
               </button>

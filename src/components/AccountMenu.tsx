@@ -52,43 +52,43 @@ export default function AccountMenu({
       >
         {initials(profile)}
       </summary>
-      <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-card p-3 z-30 animate-fade-in-up">
-        <div className="px-1 pb-2 mb-2 border-b border-slate-100 dark:border-slate-800">
-          <div className="font-semibold text-sm text-slate-900 dark:text-slate-50 truncate">
+      <div className="absolute right-0 mt-2 w-56 card p-3 z-30 animate-fade-in-up">
+        <div className="px-1 pb-2 mb-2 border-b border-hairline/70 dark:border-hairline/10">
+          <div className="font-medium text-body text-ink truncate">
             {profile.name || profile.email}
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+          <div className="text-caption text-ink-faint truncate">
             {profile.role || "Healthcare worker"}
           </div>
-          <div className="mt-1.5 inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-300">
+          <div className="mt-1.5 badge-pill bg-brand-500/10 text-brand-700 dark:text-brand-400">
             {planName} plan
           </div>
         </div>
         <Link
           to="/billing"
           onClick={close}
-          className="block px-1 py-1.5 text-sm rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
+          className="block px-1 py-1.5 text-body rounded-ui text-ink-muted hover:bg-ink/5 hover:text-ink transition-colors"
         >
           Manage billing
         </Link>
         <Link
           to="/settings"
           onClick={close}
-          className="block px-1 py-1.5 text-sm rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
+          className="block px-1 py-1.5 text-body rounded-ui text-ink-muted hover:bg-ink/5 hover:text-ink transition-colors"
         >
           Settings
         </Link>
         <Link
           to="/notifications"
           onClick={close}
-          className="block px-1 py-1.5 text-sm rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
+          className="block px-1 py-1.5 text-body rounded-ui text-ink-muted hover:bg-ink/5 hover:text-ink transition-colors"
         >
           Notifications
         </Link>
         <Link
           to={marketingHomePath()}
           onClick={close}
-          className="block px-1 py-1.5 text-sm rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
+          className="block px-1 py-1.5 text-body rounded-ui text-ink-muted hover:bg-ink/5 hover:text-ink transition-colors"
         >
           Visit homepage
         </Link>
@@ -97,7 +97,7 @@ export default function AccountMenu({
             close();
             signOut(userId);
           }}
-          className="w-full text-left px-1 py-1.5 text-sm rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
+          className="w-full text-left px-1 py-1.5 text-body rounded-ui text-ink-muted hover:bg-ink/5 hover:text-ink transition-colors"
         >
           Sign out
         </button>

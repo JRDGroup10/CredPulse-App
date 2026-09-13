@@ -5,7 +5,7 @@ const SUPPORT_EMAIL = "support@credpulse.app"; // TODO: replace with your real s
 export default function Privacy() {
   return (
     <LegalPage title="Privacy Policy" updated="August 10, 2026">
-      <p className="text-xs italic text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2">
+      <p className="text-caption italic text-ink-faint border border-dashed border-hairline dark:border-hairline/15 rounded-ui px-3 py-2">
         This is a template, not legal advice — have it reviewed before real users sign up. If any
         uploaded certificate could count as health information under your jurisdiction's privacy law
         (e.g. PHIPA, PIPEDA, HIPAA), you may have extra obligations beyond what's listed here.
@@ -81,7 +81,7 @@ export default function Privacy() {
       <Section title="9. Contact">
         <p>
           Questions about your data? Reach us at{" "}
-          <a href={`mailto:${SUPPORT_EMAIL}`} className="text-brand-600 dark:text-brand-400 font-medium">
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="text-brand-700 dark:text-brand-400 font-medium">
             {SUPPORT_EMAIL}
           </a>.
         </p>

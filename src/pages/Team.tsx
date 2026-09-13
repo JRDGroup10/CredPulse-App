@@ -275,13 +275,13 @@ export default function Team() {
 
       {org && memberCount <= 1 && (
         <div className="mb-6 rounded-ui border border-brand-500/20 bg-brand-500/10 p-4 animate-fade-in-up">
-          <div className="text-body font-medium text-brand-400">Welcome to {org.name} 👋</div>
-          <p className="text-caption text-brand-400/80 mt-0.5">
+          <div className="text-body font-medium text-brand-700 dark:text-brand-400">Welcome to {org.name} 👋</div>
+          <p className="text-caption text-brand-700/80 dark:text-brand-400/80 mt-0.5">
             You're set up on the {ORG_PLANS[org.plan].name} plan (up to {seatLimit} team members). Next step:
             invite your coworkers — certs they mark "For my clinic" are unlimited and show up here
             automatically.
           </p>
-          <Link to="/settings" className="inline-block mt-2 text-caption font-medium text-brand-400 hover:text-brand-300">
+          <Link to="/settings" className="inline-block mt-2 text-caption font-medium text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300">
             Invite your team →
           </Link>
         </div>
@@ -302,7 +302,7 @@ export default function Team() {
       )}
 
       {seatLimitReached && (
-        <div className="mb-6 rounded-ui border border-amber-500/20 bg-amber-500/10 p-4 text-body text-amber-500">
+        <div className="mb-6 rounded-ui border border-amber-500/20 bg-amber-500/10 p-4 text-body text-amber-700 dark:text-amber-400">
           You've used all {seatLimit} seats on the {org ? ORG_PLANS[org.plan].name : ""} plan.
           {upgradeSuggestion ? (
             <>
@@ -330,13 +330,13 @@ export default function Team() {
               <div className="text-caption text-ink-muted mt-0.5">Team members</div>
             </div>
             <div className="card p-4">
-              <div className="text-heading-sm font-medium text-red-500 tabular-nums">
+              <div className="text-heading-sm font-medium text-red-600 dark:text-red-400 tabular-nums">
                 <CountUp value={expiredCount} />
               </div>
               <div className="text-caption text-ink-muted mt-0.5">Expired</div>
             </div>
             <div className="card p-4">
-              <div className="text-heading-sm font-medium text-amber-500 tabular-nums">
+              <div className="text-heading-sm font-medium text-amber-700 dark:text-amber-400 tabular-nums">
                 <CountUp value={urgentCount} />
               </div>
               <div className="text-caption text-ink-muted mt-0.5">Due within 2 weeks</div>
@@ -367,7 +367,7 @@ export default function Team() {
                     </div>
                     <div className="flex flex-wrap justify-end gap-1.5">
                       {g.missing.map((item) => (
-                        <span key={item.name} className="badge-pill bg-amber-500/10 text-amber-500 whitespace-nowrap">
+                        <span key={item.name} className="badge-pill bg-amber-500/10 text-amber-700 dark:text-amber-400 whitespace-nowrap">
                           {item.name}
                         </span>
                       ))}
@@ -414,7 +414,7 @@ export default function Team() {
           {memberCount === 0 ? (
             <div className="text-center py-16 border border-dashed border-hairline dark:border-hairline/15 rounded-panel text-ink-muted">
               <p className="mb-3">No teammates yet.</p>
-              <Link to="/settings" className="text-brand-400 font-medium">
+              <Link to="/settings" className="text-brand-700 dark:text-brand-400 font-medium">
                 Invite your first coworker
               </Link>
             </div>
@@ -474,7 +474,7 @@ export default function Team() {
                                     {h.verifiedAt ? (
                                       <div className="flex items-center justify-end gap-2">
                                         <span
-                                          className="inline-flex items-center gap-1 text-caption font-medium text-emerald-500 whitespace-nowrap"
+                                          className="inline-flex items-center gap-1 text-caption font-medium text-emerald-700 dark:text-emerald-400 whitespace-nowrap"
                                           title={`Verified by ${memberNameById.get(h.verifiedBy ?? "") ?? "a team admin"} on ${new Date(h.verifiedAt).toLocaleDateString()}`}
                                         >
                                           ✓ Verified
@@ -500,7 +500,7 @@ export default function Team() {
                                         )}
                                         <button
                                           onClick={() => handleVerify(h, g.certName)}
-                                          className="text-caption font-medium text-brand-400 hover:text-brand-300 whitespace-nowrap"
+                                          className="text-caption font-medium text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 whitespace-nowrap"
                                         >
                                           Mark verified
                                         </button>

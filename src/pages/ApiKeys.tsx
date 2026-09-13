@@ -77,26 +77,23 @@ export default function ApiKeys() {
     <div>
       <div className="mb-6 flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">API keys</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          <h1 className="text-heading-sm font-medium text-ink">API keys</h1>
+          <p className="text-body text-ink-muted mt-0.5">
             Let {org?.name ?? "your team"}'s own systems read and write certification data programmatically.
           </p>
         </div>
-        <Link
-          to="/team"
-          className="flex-shrink-0 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap"
-        >
+        <Link to="/team" className="btn-secondary flex-shrink-0 text-caption px-3 py-1.5 whitespace-nowrap">
           ← Back to Team
         </Link>
       </div>
 
       {justCreated && (
-        <div className="mb-6 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-500/10 p-4">
-          <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+        <div className="mb-6 rounded-ui border border-amber-500/20 bg-amber-500/10 p-4">
+          <p className="text-body font-medium text-amber-700 dark:text-amber-400">
             Copy this key now — you won't be able to see it again.
           </p>
           <div className="mt-2 flex items-center gap-2">
-            <code className="flex-1 min-w-0 truncate rounded-md bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800 px-3 py-2 text-sm text-slate-800 dark:text-slate-100">
+            <code className="flex-1 min-w-0 truncate rounded-ui bg-panel border border-amber-500/20 px-3 py-2 text-body text-ink">
               {justCreated}
             </code>
             <button
@@ -104,24 +101,21 @@ export default function ApiKeys() {
                 navigator.clipboard.writeText(justCreated);
                 setCopied(true);
               }}
-              className="flex-shrink-0 rounded-md bg-amber-600 hover:bg-amber-700 px-3 py-2 text-xs font-semibold text-white"
+              className="flex-shrink-0 rounded-ui bg-amber-500 hover:opacity-90 px-3 py-2 text-caption font-medium text-white"
             >
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
-          <button
-            onClick={() => setJustCreated(null)}
-            className="mt-2 text-xs text-amber-700 dark:text-amber-400 hover:underline"
-          >
+          <button onClick={() => setJustCreated(null)} className="mt-2 text-caption text-amber-600 dark:text-amber-400 hover:underline">
             Done, dismiss this
           </button>
         </div>
       )}
 
-      <div className="mb-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-card p-4">
+      <div className="mb-6 card p-4">
         <div className="flex items-end gap-2 flex-wrap">
           <div className="flex-1 min-w-[180px]">
-            <label htmlFor="key-label" className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+            <label htmlFor="key-label" className="block text-caption font-medium text-ink-muted mb-1">
               Label (e.g. "Rippling sync")
             </label>
             <input
@@ -130,31 +124,27 @@ export default function ApiKeys() {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="What's this key for?"
-              className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-800 dark:text-slate-100"
+              className="w-full rounded-ui border border-hairline dark:border-hairline/15 bg-panel px-3 py-2 text-body text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-brand-500/40"
             />
           </div>
-          <button
-            onClick={handleGenerate}
-            disabled={creating || !label.trim()}
-            className="rounded-md bg-brand-600 hover:bg-brand-700 disabled:opacity-50 px-4 py-2 text-sm font-semibold text-white whitespace-nowrap"
-          >
+          <button onClick={handleGenerate} disabled={creating || !label.trim()} className="btn-primary text-caption px-4 py-2 disabled:opacity-50 whitespace-nowrap">
             {creating ? "Generating…" : "Generate key"}
           </button>
         </div>
-        {error && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
+        {error && <p className="mt-2 text-caption text-red-600 dark:text-red-400">{error}</p>}
       </div>
 
       {keys === null ? (
-        <p className="text-sm text-slate-400 dark:text-slate-500">Loading…</p>
+        <p className="text-body text-ink-faint">Loading…</p>
       ) : keys.length === 0 ? (
-        <div className="mb-6 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center">
-          <p className="text-sm text-slate-500 dark:text-slate-400">No API keys yet — generate one above to get started.</p>
+        <div className="mb-6 rounded-panel border border-dashed border-hairline dark:border-hairline/15 p-8 text-center">
+          <p className="text-body text-ink-muted">No API keys yet — generate one above to get started.</p>
         </div>
       ) : (
-        <div className="mb-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-card overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="mb-8 card overflow-hidden">
+          <table className="w-full text-body">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/60 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+              <tr className="bg-canvas/40 text-left text-caption font-medium text-ink-faint uppercase tracking-wide">
                 <th className="px-4 py-2">Label</th>
                 <th className="px-4 py-2">Key</th>
                 <th className="px-4 py-2">Created</th>
@@ -162,25 +152,22 @@ export default function ApiKeys() {
                 <th className="px-4 py-2" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-hairline/70 dark:divide-hairline/10">
               {keys.map((k) => (
                 <tr key={k.id} className={k.revokedAt ? "opacity-50" : ""}>
-                  <td className="px-4 py-2.5 font-medium text-slate-700 dark:text-slate-200">{k.label}</td>
-                  <td className="px-4 py-2.5 font-mono text-xs text-slate-500 dark:text-slate-400">
-                    {k.keyPrefix}…{k.revokedAt && <span className="ml-1.5 text-red-500">revoked</span>}
+                  <td className="px-4 py-2.5 font-medium text-ink">{k.label}</td>
+                  <td className="px-4 py-2.5 font-mono text-caption text-ink-muted">
+                    {k.keyPrefix}…{k.revokedAt && <span className="ml-1.5 text-red-600 dark:text-red-400">revoked</span>}
                   </td>
-                  <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                  <td className="px-4 py-2.5 text-ink-muted whitespace-nowrap">
                     {new Date(k.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                  <td className="px-4 py-2.5 text-ink-muted whitespace-nowrap">
                     {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString() : "Never"}
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     {!k.revokedAt && (
-                      <button
-                        onClick={() => handleRevoke(k.id, k.label)}
-                        className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline"
-                      >
+                      <button onClick={() => handleRevoke(k.id, k.label)} className="text-caption font-medium text-red-600 dark:text-red-400 hover:underline">
                         Revoke
                       </button>
                     )}
@@ -192,13 +179,16 @@ export default function ApiKeys() {
         </div>
       )}
 
-      <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl p-4 mb-6">
-        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Using your key</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+      <div className="card p-4 mb-6">
+        <h2 className="text-body font-medium text-ink mb-2">Using your key</h2>
+        <p className="text-caption text-ink-muted mb-3">
           Send it as a Bearer token. Every request is scoped to {org?.name ?? "your"} organization only. Run one
           command at a time — pasting several together can confuse some terminals.
         </p>
-        <pre className="text-xs bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto">
+        {/* Terminal/code block stays a fixed dark chrome in both themes —
+            conventional for code snippets and independent of the app's own
+            light/dark toggle. */}
+        <pre className="text-caption bg-[#0a0a0a] text-[#ededed] rounded-ui p-3 overflow-x-auto">
 {`# List clinic-scoped certificates (optionally ?status= or ?email=)
 curl "${apiBase}/certificates" \\
   -H "Authorization: Bearer cp_live_..."
@@ -215,15 +205,15 @@ curl -X POST "${apiBase}/certificates" \\
         </pre>
       </div>
 
-      <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">HRIS / roster sync</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+      <div className="card p-4">
+        <h2 className="text-body font-medium text-ink mb-2">HRIS / roster sync</h2>
+        <p className="text-caption text-ink-muted mb-3">
           Point your HR system's outbound webhook — or a Zapier/Make automation watching Rippling, Gusto, BambooHR,
           etc. for new-hire or role-change events — at this route. It invites a new hire automatically if they
           aren't already a member or already invited, or updates their name/job title if they are. It never
           touches admin access, plan, or billing.
         </p>
-        <pre className="text-xs bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto">
+        <pre className="text-caption bg-[#0a0a0a] text-[#ededed] rounded-ui p-3 overflow-x-auto">
 {`curl -X POST "${apiBase}/employees" \\
   -H "Authorization: Bearer cp_live_..." \\
   -H "Content-Type: application/json" \\

@@ -94,7 +94,7 @@ export default function CertCard({
                   href={cert.renewalUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-caption font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-transform hover:translate-x-0.5"
+                  className="inline-flex items-center gap-1 text-caption font-medium text-brand-700 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 transition-transform hover:translate-x-0.5"
                 >
                   Renew here →
                 </a>
@@ -152,7 +152,7 @@ export default function CertCard({
         )}
         <button
           onClick={() => onRemove(cert.id)}
-          className="mt-1 text-caption text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+          className="mt-1 text-caption text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
         >
           Remove
         </button>

@@ -5,7 +5,7 @@ const SUPPORT_EMAIL = "support@credpulse.app"; // TODO: replace with your real s
 export default function Terms() {
   return (
     <LegalPage title="Terms of Service" updated="August 10, 2026">
-      <p className="text-xs italic text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2">
+      <p className="text-caption italic text-ink-faint border border-dashed border-hairline dark:border-hairline/15 rounded-ui px-3 py-2">
         This is a template, not legal advice. Have a lawyer licensed in your province/state review
         this before you open CredPulse to the public — especially the liability and health-data
         sections, since requirements differ by jurisdiction (e.g. PHIPA in Ontario, HIPAA-adjacent
@@ -93,7 +93,7 @@ export default function Terms() {
       <Section title="10. Contact">
         <p>
           Questions about these terms? Reach us at{" "}
-          <a href={`mailto:${SUPPORT_EMAIL}`} className="text-brand-600 dark:text-brand-400 font-medium">
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="text-brand-700 dark:text-brand-400 font-medium">
             {SUPPORT_EMAIL}
           </a>.
         </p>

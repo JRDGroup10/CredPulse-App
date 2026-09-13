@@ -56,7 +56,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
     return (
       <div className="min-h-screen flex items-center justify-center bg-canvas px-4">
         <div className="max-w-sm w-full card border-amber-500/30 p-5 text-body animate-fade-in-up">
-          <div className="font-medium text-amber-500 mb-2">Supabase isn't configured yet</div>
+          <div className="font-medium text-amber-700 dark:text-amber-400 mb-2">Supabase isn't configured yet</div>
           <p className="text-ink-muted">
             Copy <code className="bg-ink/5 px-1 rounded-ui">.env.example</code> to{" "}
             <code className="bg-ink/5 px-1 rounded-ui">.env.local</code>, fill in your Supabase project URL and anon
@@ -119,7 +119,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
             we'll pick up right where you left off and set up <strong>{clinicName}</strong> on the{" "}
             {plan} plan automatically.
           </p>
-          <button onClick={onLogin} className="mt-5 text-body font-medium text-brand-400">
+          <button onClick={onLogin} className="mt-5 text-body font-medium text-brand-700 dark:text-brand-400">
             Back to log in
           </button>
         </div>
@@ -188,7 +188,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
                     onClick={() => handleRegionChange(r)}
                     className={`text-body font-medium py-2 rounded-ui border transition-all ${
                       region === r
-                        ? "bg-brand-500/10 border-brand-500/40 text-brand-400"
+                        ? "bg-brand-500/10 border-brand-500/40 text-brand-700 dark:text-brand-400"
                         : "bg-panel border-hairline dark:border-hairline/15 text-ink-muted hover:border-brand-500/30"
                     }`}
                   >
@@ -244,7 +244,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
 
             <p className="text-caption text-ink-muted text-center">
               Signing up as an individual instead?{" "}
-              <Link to={marketingHomePath()} className="font-medium text-brand-400">
+              <Link to={marketingHomePath()} className="font-medium text-brand-700 dark:text-brand-400">
                 Go back
               </Link>
             </p>
@@ -254,7 +254,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
         {step === "plan" && (
           <div className="card p-5">
             {error && (
-              <div className="text-caption bg-red-500/10 text-red-500 border border-red-500/20 rounded-ui px-3 py-2 mb-4">
+              <div className="text-caption bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 rounded-ui px-3 py-2 mb-4">
                 {error}
               </div>
             )}

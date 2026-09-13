@@ -30,17 +30,14 @@ export default class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (!this.state.hasError) return this.props.children;
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-slate-950 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-canvas px-4">
         <div className="max-w-sm text-center">
           <div className="text-3xl mb-3">⚠️</div>
-          <h1 className="font-semibold text-slate-900 dark:text-slate-50 mb-1">Something went wrong</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+          <h1 className="font-medium text-ink mb-1">Something went wrong</h1>
+          <p className="text-body text-ink-muted mb-5">
             This has been reported. Reloading the page usually fixes it — your certificates are safe either way.
           </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow transition-all hover:-translate-y-0.5"
-          >
+          <button onClick={() => window.location.reload()} className="btn-primary text-body px-4 py-2">
             Reload
           </button>
         </div>

@@ -58,9 +58,9 @@ const VERTICALS: Record<VerticalSlug, VerticalConfig> = {
     ],
     dashboardLabel: "Example: a construction crew's certifications",
     dashboardExample: [
-      { name: "Working at Heights Training", status: "Renew now · 9d left", tone: "bg-amber-50 text-amber-700" },
-      { name: "Forklift Operator Certification", status: "Valid · 210d left", tone: "bg-emerald-50 text-emerald-700" },
-      { name: "Confined Space Entry Training", status: "Expired · 4d overdue", tone: "bg-red-50 text-red-700" }
+      { name: "Working at Heights Training", status: "Renew now · 9d left", tone: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
+      { name: "Forklift Operator Certification", status: "Valid · 210d left", tone: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
+      { name: "Confined Space Entry Training", status: "Expired · 4d overdue", tone: "bg-red-500/15 text-red-600 dark:text-red-400" }
     ],
     faqs: [
       {
@@ -100,9 +100,9 @@ const VERTICALS: Record<VerticalSlug, VerticalConfig> = {
     ],
     dashboardLabel: "Example: a school's staff certifications",
     dashboardExample: [
-      { name: "Vulnerable Sector Check", status: "Renew now · 12d left", tone: "bg-amber-50 text-amber-700" },
-      { name: "First Aid / CPR", status: "Valid · 145d left", tone: "bg-emerald-50 text-emerald-700" },
-      { name: "Food Handler Certification", status: "Expired · 2d overdue", tone: "bg-red-50 text-red-700" }
+      { name: "Vulnerable Sector Check", status: "Renew now · 12d left", tone: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
+      { name: "First Aid / CPR", status: "Valid · 145d left", tone: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
+      { name: "Food Handler Certification", status: "Expired · 2d overdue", tone: "bg-red-500/15 text-red-600 dark:text-red-400" }
     ],
     faqs: [
       {
@@ -142,9 +142,9 @@ const VERTICALS: Record<VerticalSlug, VerticalConfig> = {
     ],
     dashboardLabel: "Example: a unit's requalification status",
     dashboardExample: [
-      { name: "Use of Force Recertification", status: "Renew now · 6d left", tone: "bg-amber-50 text-amber-700" },
-      { name: "Firearms Qualification", status: "Valid · 88d left", tone: "bg-emerald-50 text-emerald-700" },
-      { name: "Crisis Intervention Training", status: "Expired · 1d overdue", tone: "bg-red-50 text-red-700" }
+      { name: "Use of Force Recertification", status: "Renew now · 6d left", tone: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
+      { name: "Firearms Qualification", status: "Valid · 88d left", tone: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
+      { name: "Crisis Intervention Training", status: "Expired · 1d overdue", tone: "bg-red-500/15 text-red-600 dark:text-red-400" }
     ],
     faqs: [
       {
@@ -204,131 +204,130 @@ export default function IndustryVertical({
   };
 
   return (
-    <div className="bg-surface">
+    // Same amber retinting mechanism as Industries.tsx — every one of these
+    // per-vertical pages is construction/education/policing, never
+    // healthcare, so data-industry="other" is unconditional here (unlike
+    // Guide.tsx, which switches per-guide).
+    <div data-industry="other" className="bg-canvas">
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
-      {/* Nav */}
-      <header className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/industries">
-            <Logo markClassName="w-8 h-8" textClassName="text-base" themeAware={false} />
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/choose"
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-300 rounded-full px-3 py-1.5 transition-colors"
-            >
-              🏥 Healthcare instead? Switch industries
+      {/* Nav — same floating frosted panel as Industries.tsx/Landing.tsx */}
+      <header className="sticky top-4 z-20 px-3">
+        <div className="max-w-5xl mx-auto rounded-[19px] border border-hairline/70 dark:border-hairline/10 bg-panel/80 backdrop-blur-md shadow-subtle">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <Link to="/industries">
+              <Logo markClassName="w-8 h-8" textClassName="text-base" />
             </Link>
-            <button onClick={onLogin} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-              Log in
-            </button>
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-glow-amber transition-all hover:-translate-y-0.5"
-            >
-              Get started free
-            </button>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/choose"
+                className="hidden sm:inline-flex items-center gap-1.5 text-caption font-normal text-ink-muted hover:text-ink border border-hairline hover:border-ink/20 dark:border-hairline/15 rounded-pill px-3 py-1.5 transition-colors"
+              >
+                🏥 Healthcare instead? Switch industries
+              </Link>
+              <button onClick={onLogin} className="text-caption font-normal text-ink-muted hover:text-ink transition-colors">
+                Log in
+              </button>
+              <button onClick={onGetStarted} className="btn-primary text-caption px-4 py-2">
+                Get started free
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Breadcrumb */}
       <div className="max-w-5xl mx-auto px-4 pt-4">
-        <nav className="text-xs text-slate-400 flex items-center gap-1.5">
-          <Link to="/industries" className="hover:text-slate-600">Industries</Link>
+        <nav className="text-caption text-ink-faint flex items-center gap-1.5">
+          <Link to="/industries" className="hover:text-ink-muted">Industries</Link>
           <span>/</span>
-          <span className="text-slate-500">{config.icon} {config.audience[0].toUpperCase()}{config.audience.slice(1)}</span>
+          <span className="text-ink-muted">{config.icon} {config.audience[0].toUpperCase()}{config.audience.slice(1)}</span>
         </nav>
       </div>
 
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-amber-300/30 rounded-full blur-3xl animate-float-slow" />
-          <div className="absolute top-10 -right-24 w-[28rem] h-[28rem] bg-orange-400/20 rounded-full blur-3xl animate-float-slower" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[42rem] h-[42rem] bg-brand-500/15 rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-5xl mx-auto px-4 pt-10 pb-14 text-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-amber-800 bg-white/70 backdrop-blur border border-amber-200 px-3 py-1.5 rounded-full mb-5 shadow-sm">
+          <span className="inline-flex items-center gap-1.5 text-caption font-normal tracking-wide text-brand-700 dark:text-brand-400 bg-panel/60 backdrop-blur border border-hairline dark:border-hairline/10 px-3 py-1.5 rounded-pill mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             {config.eyebrow}
           </span>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl font-medium text-ink tracking-tight leading-[1.1]">
             {config.headline}
           </h1>
-          <p className="mt-6 text-lg text-slate-500 max-w-2xl mx-auto">{config.subhead}</p>
+          <p className="mt-6 text-lg text-ink-muted max-w-2xl mx-auto">{config.subhead}</p>
           <div className="mt-8 flex items-center justify-center gap-3">
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow-amber transition-all hover:-translate-y-0.5"
-            >
+            <button onClick={onGetStarted} className="btn-primary text-body px-6 py-3">
               Get started — it's free
             </button>
             <button
               onClick={() => navigate("/signup/clinic")}
-              className="text-sm font-medium text-slate-600 px-6 py-3 hover:text-slate-900 transition-colors"
+              className="text-body font-normal text-ink-muted px-6 py-3 hover:text-ink transition-colors"
             >
               Set up your team instead →
             </button>
           </div>
-          <p className="mt-4 text-xs text-slate-400">No credit card required for the free plan.</p>
+          <p className="mt-4 text-caption text-ink-faint">No credit card required for the free plan.</p>
         </div>
       </section>
 
       {/* Pain point */}
-      <section className="bg-white border-y border-slate-100">
+      <section className="bg-panel/40 border-y border-hairline/70 dark:border-hairline/10">
         <div className="max-w-3xl mx-auto px-4 py-14">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">{config.painPointTitle}</h2>
-          <p className="text-slate-600 leading-relaxed">{config.painPointBody}</p>
+          <h2 className="text-heading-sm font-medium text-ink mb-3">{config.painPointTitle}</h2>
+          <p className="text-ink-muted leading-relaxed">{config.painPointBody}</p>
         </div>
       </section>
 
       {/* Certs tracked */}
       <section className="max-w-5xl mx-auto px-4 py-16">
-        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 text-center mb-3">
+        <h2 className="text-heading-sm sm:text-heading font-medium text-ink text-center mb-3">
           Certifications CredPulse tracks for {config.audience}
         </h2>
-        <p className="text-slate-500 text-center max-w-xl mx-auto mb-10">
+        <p className="text-ink-muted text-center max-w-xl mx-auto mb-10">
           A starting point, not a limit — add any certification and CredPulse tracks it the same way.
         </p>
         <div className="grid sm:grid-cols-2 gap-4">
           {config.certs.map((cert) => (
-            <div key={cert.name} className="border border-slate-200 rounded-xl p-4 bg-white">
-              <div className="font-semibold text-slate-900 text-sm">{cert.name}</div>
-              <div className="text-xs text-slate-500 mt-1">{cert.detail}</div>
+            <div key={cert.name} className="card p-4">
+              <div className="font-medium text-ink text-body">{cert.name}</div>
+              <div className="text-caption text-ink-muted mt-1">{cert.detail}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Dashboard example */}
-      <section className="bg-white border-y border-slate-100">
+      <section className="bg-panel/40 border-y border-hairline/70 dark:border-hairline/10">
         <div className="max-w-5xl mx-auto px-4 py-16 grid md:grid-cols-2 gap-10 items-center">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Same product, no compromises</h2>
-            <p className="mt-4 text-slate-600 leading-relaxed">
+            <h2 className="text-heading-sm font-medium text-ink">Same product, no compromises</h2>
+            <p className="mt-4 text-ink-muted leading-relaxed">
               Upload a photo or PDF and CredPulse identifies what it is, tracks when it expires, and
               reminds everyone with enough lead time to actually renew it. Team plans give a manager
               one dashboard for who's covered and who's overdue.
             </p>
-            <ul className="mt-5 space-y-2 text-sm text-slate-600 list-disc list-inside">
+            <ul className="mt-5 space-y-2 text-caption text-ink-muted list-disc list-inside">
               <li>Upload once — AI reads the certificate details automatically</li>
               <li>Reminders on a schedule you control, before it becomes a problem</li>
               <li>One manager dashboard grouped by certificate, not buried in individual files</li>
               <li>A one-click compliance report ready for an audit or review</li>
             </ul>
           </div>
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-card p-4">
-            <div className="text-xs font-medium text-slate-400 mb-3">{config.dashboardLabel}</div>
+          <div className="card p-4">
+            <div className="text-caption font-normal text-ink-faint mb-3">{config.dashboardLabel}</div>
             <div className="space-y-2.5">
               {config.dashboardExample.map((row) => (
                 <div
                   key={row.name}
-                  className="flex items-center justify-between border border-slate-100 rounded-xl px-3 py-2.5"
+                  className="flex items-center justify-between border border-hairline/60 dark:border-hairline/10 rounded-ui px-3 py-2.5"
                 >
-                  <span className="text-sm text-slate-700">{row.name}</span>
-                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${row.tone}`}>{row.status}</span>
+                  <span className="text-caption text-ink">{row.name}</span>
+                  <span className={`badge-pill ${row.tone}`}>{row.status}</span>
                 </div>
               ))}
             </div>
@@ -338,33 +337,27 @@ export default function IndustryVertical({
 
       {/* FAQ */}
       <section className="max-w-3xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-slate-900 text-center mb-8">Common questions</h2>
+        <h2 className="text-heading-sm font-medium text-ink text-center mb-8">Common questions</h2>
         <div className="space-y-5">
           {config.faqs.map((faq) => (
-            <div key={faq.q} className="border border-slate-200 rounded-xl p-5 bg-white">
-              <h3 className="font-semibold text-slate-900 text-sm mb-2">{faq.q}</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p>
+            <div key={faq.q} className="card p-5">
+              <h3 className="font-medium text-ink text-body mb-2">{faq.q}</h3>
+              <p className="text-caption text-ink-muted leading-relaxed">{faq.a}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="bg-white border-t border-slate-100">
+      <section className="bg-panel/40 border-t border-hairline/70 dark:border-hairline/10">
         <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">Ready to stop tracking this on a sticky note?</h2>
-          <p className="text-slate-500 mb-8">Free to start. No credit card required for individuals.</p>
+          <h2 className="text-heading-sm sm:text-heading font-medium text-ink mb-3">Ready to stop tracking this on a sticky note?</h2>
+          <p className="text-ink-muted mb-8">Free to start. No credit card required for individuals.</p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <button
-              onClick={onGetStarted}
-              className="bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-glow-amber transition-all hover:-translate-y-0.5"
-            >
+            <button onClick={onGetStarted} className="btn-primary text-body px-6 py-3">
               Track my own certifications
             </button>
-            <button
-              onClick={() => navigate("/signup/clinic")}
-              className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-6 py-3 rounded-lg text-sm shadow-sm transition-all hover:-translate-y-0.5"
-            >
+            <button onClick={() => navigate("/signup/clinic")} className="btn-secondary text-body px-6 py-3">
               Set up my team
             </button>
           </div>
@@ -374,22 +367,22 @@ export default function IndustryVertical({
       {/* Cross-links to other verticals — internal linking within the topic
           cluster, and a real navigation aid for anyone who landed on the
           wrong page. */}
-      <section className="border-t border-slate-100">
+      <section className="border-t border-hairline/70 dark:border-hairline/10">
         <div className="max-w-5xl mx-auto px-4 py-10">
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Other industries</div>
+          <div className="text-caption font-medium text-ink-faint uppercase tracking-wide mb-3">Other industries</div>
           <div className="flex flex-wrap gap-3">
             {otherVerticals.map((v) => (
               <Link
                 key={v.slug}
                 to={`/industries/${v.slug}`}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-amber-700 border border-slate-200 hover:border-amber-300 rounded-full px-3 py-1.5 transition-colors"
+                className="inline-flex items-center gap-1.5 text-caption font-medium text-ink-muted hover:text-brand-700 dark:hover:text-brand-400 border border-hairline dark:border-hairline/15 hover:border-brand-500/30 rounded-pill px-3 py-1.5 transition-colors"
               >
                 {v.icon} {v.audience[0].toUpperCase()}{v.audience.slice(1)}
               </Link>
             ))}
             <Link
               to="/home"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-amber-700 border border-slate-200 hover:border-amber-300 rounded-full px-3 py-1.5 transition-colors"
+              className="inline-flex items-center gap-1.5 text-caption font-medium text-ink-muted hover:text-brand-700 dark:hover:text-brand-400 border border-hairline dark:border-hairline/15 hover:border-brand-500/30 rounded-pill px-3 py-1.5 transition-colors"
             >
               🏥 Healthcare
             </Link>
@@ -398,17 +391,17 @@ export default function IndustryVertical({
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-100">
+      <footer className="border-t border-hairline/70 dark:border-hairline/10">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-            <Logo markClassName="w-6 h-6" textClassName="text-sm" themeAware={false} />
-            <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
-              <Link to="/guides" className="hover:text-slate-900">Guides</Link>
-              <Link to="/terms" className="hover:text-slate-900">Terms</Link>
-              <Link to="/privacy" className="hover:text-slate-900">Privacy</Link>
+            <Logo markClassName="w-6 h-6" textClassName="text-sm" />
+            <div className="flex items-center gap-4 text-caption font-normal text-ink-muted">
+              <Link to="/guides" className="hover:text-ink">Guides</Link>
+              <Link to="/terms" className="hover:text-ink">Terms</Link>
+              <Link to="/privacy" className="hover:text-ink">Privacy</Link>
             </div>
           </div>
-          <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
+          <p className="text-caption text-ink-faint max-w-xl leading-relaxed">
             CredPulse is a reminder and tracking tool, not a substitute for your own record-keeping.
             You remain solely responsible for renewing your certifications and licenses on time —
             we're not liable for missed, delayed, or undelivered reminders.

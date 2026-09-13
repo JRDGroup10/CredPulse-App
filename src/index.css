@@ -57,16 +57,25 @@ html, body, #root {
      shell; only --color-brand-* above changes per industry). Named after
      role rather than Dimension's literal token names so component code reads
      naturally: bg-canvas / bg-panel / text-ink / text-ink-muted /
-     text-ink-faint / border-hairline (see tailwind.config.js). Light-mode
-     values below are a neutral placeholder pending the dedicated light-mode
-     restyle (CRE-21) — dark values are the primary/default look as of this
-     redesign (see ThemeContext.tsx's dark-by-default change). */
-  --color-canvas: 255 255 255;
+     text-ink-faint / border-hairline (see tailwind.config.js).
+
+     Light-mode values (CRE-21) — warm, tint-free neutrals in the same spirit
+     as Dimension's own dark scale (Bone/Ash/Slate are equal-RGB grays, not
+     blue-tinted like the old Tailwind slate-* classes this redesign is
+     replacing app-wide), plus a warm-white canvas so cards read as a step
+     up rather than flat-white-on-white. Contrast-checked against panel
+     (#ffffff): ink ~19.8:1, ink-muted ~7.7:1, both clear WCAG AA text
+     (4.5:1) comfortably. ink-faint ~3.8:1 is intentionally below AA text
+     contrast — it's used only for decorative/tertiary meta text (timestamps,
+     placeholder-style labels), matching dark mode's own ink-faint (~3.5:1
+     against its panel); CRE-23 audits both themes' actual usages of this
+     token to confirm nothing load-bearing relies on it. */
+  --color-canvas: 250 248 245;
   --color-panel: 255 255 255;
-  --color-ink: 23 23 23;
-  --color-ink-muted: 82 82 82;
-  --color-ink-faint: 140 140 140;
-  --color-hairline: 229 229 229;
+  --color-ink: 23 21 19;
+  --color-ink-muted: 87 82 77;
+  --color-ink-faint: 135 129 123;
+  --color-hairline: 231 227 222;
 }
 
 html.dark {
@@ -178,29 +187,6 @@ html.dark body {
 }
 
 @layer utilities {
-  /* Dimension's system explicitly forbids putting its violet accent into a
-     text gradient (accents are glow/wash-only, never a fill) — so this no
-     longer blends brand into accent.
-
-     Deliberately fixed (not theme-variable) colors, not rgb(var(--color-ink))
-     — this class is currently only used on Landing.tsx and JoinTeam.tsx,
-     both still-light-only pages (no dark: variants) that haven't had their
-     Core Experience redesign pass yet. Since dark is now applied globally
-     to <html> regardless of page (see index.html's pre-paint script), a
-     theme-variable color here would resolve to its DARK value — near-white
-     — while these pages still render a light/white background, making the
-     gradient text nearly invisible. This bit us in testing (ghosted hero
-     headline on the live homepage) before this fix. Once CRE-16/whichever
-     issue redesigns a page that uses this class for real dark support, that
-     page's own redesign should revisit whether text-gradient still fits. */
-  .text-gradient {
-    background-image: linear-gradient(90deg, #171717, #525252, #171717);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
   .skeleton-shimmer {
     background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
     background-size: 200% 100%;

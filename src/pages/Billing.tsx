@@ -64,31 +64,27 @@ export default function Billing() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Billing & plan</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            You're currently on <strong className="text-slate-700 dark:text-slate-200">{current.name}</strong>
+          <h1 className="text-heading-sm font-medium text-ink">Billing & plan</h1>
+          <p className="text-body text-ink-muted mt-0.5">
+            You're currently on <strong className="text-ink">{current.name}</strong>
             {state.profile.plan !== "free" && ` (billed ${state.profile.billingCycle})`}.
           </p>
         </div>
         {state.profile.plan !== "free" && (
-          <button
-            onClick={handleManageBilling}
-            disabled={portalLoading}
-            className="text-sm font-medium text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-          >
+          <button onClick={handleManageBilling} disabled={portalLoading} className="btn-secondary text-body px-3.5 py-2 disabled:opacity-50">
             {portalLoading ? "Opening…" : "Manage billing"}
           </button>
         )}
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 text-sm px-4 py-3">
+        <div className="rounded-ui border border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400 text-body px-4 py-3">
           {error}
         </div>
       )}
 
       {justChanged && (
-        <div className="animate-fade-in-up rounded-xl border border-accent-100 dark:border-accent-900 bg-accent-50 dark:bg-accent-500/10 text-accent-600 dark:text-accent-400 text-sm px-4 py-3">
+        <div className="animate-fade-in-up rounded-ui border border-accent-500/20 bg-accent-500/10 text-accent-700 dark:text-accent-400 text-body px-4 py-3">
           {justChanged === "free"
             ? "You're back on the Free plan."
             : `You're now on ${PLANS[justChanged].name}.`}
@@ -96,19 +92,19 @@ export default function Billing() {
       )}
 
       <div className="flex justify-center">
-        <div className="inline-flex items-center bg-slate-100 dark:bg-slate-900 rounded-full p-1">
+        <div className="inline-flex items-center bg-panel border border-hairline/70 dark:border-hairline/10 rounded-pill p-1">
           <button
             onClick={() => setBillingCycle("monthly")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
-              billingCycle === "monthly" ? "bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-slate-50" : "text-slate-500 dark:text-slate-400"
+            className={`px-4 py-1.5 rounded-pill text-caption font-medium transition-all ${
+              billingCycle === "monthly" ? "bg-canvas text-ink" : "text-ink-faint"
             }`}
           >
             Monthly
           </button>
           <button
             onClick={() => setBillingCycle("yearly")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
-              billingCycle === "yearly" ? "bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-slate-50" : "text-slate-500 dark:text-slate-400"
+            className={`px-4 py-1.5 rounded-pill text-caption font-medium transition-all ${
+              billingCycle === "yearly" ? "bg-canvas text-ink" : "text-ink-faint"
             }`}
           >
             Yearly
@@ -123,7 +119,7 @@ export default function Billing() {
         onAction={handleSelect}
       />
 
-      <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center max-w-md mx-auto">
+      <p className="text-caption text-ink-faint text-center max-w-md mx-auto">
         Upgrades go through real Stripe Checkout once it's configured on the server (falls back to
         an instant demo checkout otherwise). See DEPLOYMENT.md "Payments" to turn on real billing.
       </p>
