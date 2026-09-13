@@ -54,5 +54,28 @@ export default defineConfig({
     })
   ],
   server: { host: true, port: 5173 },
-  preview: { host: true, port: 4173 }
+  preview: { host: true, port: 4173 },
+  build: {
+    rollupOptions: {
+      output: {
+        // Routes are already lazy-loaded (React.lazy in App.tsx), so the
+        // per-route chunks were already small — the problem was that every
+        // vendor dependency (React, react-router, the Supabase client,
+        // Sentry) all landed in the one shared entry chunk loaded on every
+        // single page, at 532KB/157KB gzip (see CRE-8). Splitting vendor
+        // code into its own cacheable chunks means a Vercel deploy that only
+        // touches app code invalidates a much smaller chunk, and repeat
+        // visitors keep the vendor chunk cached across deploys that don't
+        // touch dependencies at all.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("react-router")) return "vendor-router";
+          if (id.includes("@supabase")) return "vendor-supabase";
+          if (id.includes("@sentry")) return "vendor-sentry";
+          if (id.includes("/react/") || id.includes("/react-dom/") || id.includes("scheduler")) return "vendor-react";
+          return "vendor";
+        }
+      }
+    }
+  }
 });

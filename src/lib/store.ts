@@ -804,6 +804,34 @@ export async function acceptOrganizationInvite(
   invite: { id: string; organizationId: string },
   actor?: { name: string; email: string }
 ): Promise<void> {
+  // CRE-11: inviteToOrganization only checks the seat limit at invite-*send*
+  // time, so two invites created in the same race window (a double-click,
+  // or two admins inviting concurrently) can both pass that check before
+  // either row lands, over-provisioning seats past the plan limit. This is
+  // a second, independent check at *accept* time — the actual moment a seat
+  // gets spent — which closes the highest-impact side of the race (an org
+  // actually ending up with more members than its plan allows) even though
+  // it doesn't fully eliminate the underlying TOCTOU (a DB-level constraint
+  // would; deemed not worth the added complexity for a low-severity,
+  // revenue-leakage-only gap — see CRE-11).
+  //
+  // This invite's own row is still 'status = pending' at this point (it
+  // only flips to 'accepted' below), so countOrgSeatsUsed's pending-invite
+  // count already includes it — seatsUsed <= seatLimit means accepting this
+  // one still fits inside what's paid for; seatsUsed > seatLimit means the
+  // org is already over capacity (from this or another pending invite) and
+  // this accept should be blocked rather than silently over-provisioning.
+  const org = await getOrganization(invite.organizationId);
+  if (org) {
+    const seatLimit = ORG_PLANS[org.plan].seatLimit;
+    const seatsUsed = await countOrgSeatsUsed(invite.organizationId);
+    if (seatsUsed > seatLimit) {
+      throw new Error(
+        `${org.name} is already at its ${seatLimit}-seat limit on the ${ORG_PLANS[org.plan].name} plan. Ask an admin to upgrade the plan or free up a seat before accepting this invite.`
+      );
+    }
+  }
+
   // Must happen before the audit-log insert below — the insert policy
   // checks the accepting user's own profiles.organization_id, which this
   // is what sets it.
