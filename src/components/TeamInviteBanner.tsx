@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppState } from "../lib/AppContext";
 import { acceptOrganizationInvite, getPendingInvitesForEmail } from "../lib/store";
 import { OrgInviteWithOrgName } from "../lib/types";
+import { trackEvent } from "../lib/analytics";
 
 /**
  * Full-width banner shown to a signed-in user (not already on a team) who
@@ -34,6 +35,7 @@ export default function TeamInviteBanner() {
     setError(null);
     try {
       await acceptOrganizationInvite(userId, { id: invite.id, organizationId: invite.organizationId }, { name, email });
+      trackEvent("team_invite_accepted");
       await refresh();
     } catch (err) {
       // As of CRE-11, acceptOrganizationInvite can now legitimately throw

@@ -5,6 +5,7 @@ import { addCertificate, canUseTipsAndLinks, certLimit, certLimitReached, extrac
 import { findLikelyDuplicate } from "../lib/certSimilarity";
 import { CertScope, Certificate } from "../lib/types";
 import { PLANS } from "../lib/plans";
+import { trackEvent } from "../lib/analytics";
 
 type Step = "upload" | "extracting" | "confirm";
 
@@ -102,6 +103,7 @@ export default function AddCertificate() {
           ? { id: userId, name: state.profile.name, email: state.profile.email, organizationId: state.profile.organizationId }
           : undefined
       );
+      trackEvent("certificate_added", { scope, credential_type: draft.credentialType });
       await refresh();
       navigate("/");
     } catch (err) {

@@ -14,6 +14,7 @@ import {
 } from "../lib/store";
 import { ORG_PLANS, nextOrgPlanAbove } from "../lib/orgPlans";
 import { BillingCycle, Organization, OrgInvite, OrgMember, OrgPlan } from "../lib/types";
+import { trackEvent } from "../lib/analytics";
 import TierPicker from "./TierPicker";
 
 /**
@@ -119,6 +120,7 @@ export default function TeamSettings() {
     setInviteSent(false);
     try {
       await inviteToOrganization(organizationId, userId, inviteEmail.trim());
+      trackEvent("team_invite_sent");
       setInviteEmail("");
       setInviteSent(true);
       await loadTeam(organizationId);

@@ -3,6 +3,7 @@ import { useAppState } from "../lib/AppContext";
 import { getReferralSummary, certLimit } from "../lib/store";
 import { ReferralSummary } from "../lib/types";
 import { reportError } from "../lib/errorMonitoring";
+import { trackEvent } from "../lib/analytics";
 
 const SITE_URL = "https://credpulse.app";
 
@@ -61,6 +62,7 @@ export default function ReferralCard() {
         <button
           onClick={() => {
             navigator.clipboard.writeText(link);
+            trackEvent("referral_link_copied");
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }}

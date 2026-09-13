@@ -7,6 +7,7 @@ import { supabaseConfigured } from "../lib/supabaseClient";
 import { BillingCycle, OrgPlan, Region } from "../lib/types";
 import { orderedRoleGroups } from "../lib/roles";
 import { getIndustryPref, marketingHomePath, IndustryPref } from "../lib/industryPref";
+import { trackEvent } from "../lib/analytics";
 import { LogoMark } from "../components/Logo";
 import TierPicker from "../components/TierPicker";
 
@@ -79,6 +80,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
     try {
       const { user, session } = await signUp(email, password, name, role, region, industry);
       if (!user) throw new Error("Signup didn't return a user. Please try again.");
+      trackEvent("sign_up", { industry, region, account_type: "clinic", plan });
 
       if (!session) {
         // Email confirmation is required — no auth.uid() yet, so the org
@@ -91,6 +93,7 @@ export default function ClinicSignup({ onBack, onLogin }: { onBack?: () => void;
 
       const organizationId = await createOrganization(user.id, clinicName.trim(), plan, billingCycle, industry);
       await refresh();
+      trackEvent("checkout_started", { plan, billing_cycle: billingCycle });
       const { redirectUrl } = await startOrgCheckout(organizationId, plan, billingCycle);
       // Either way the org already exists with a trial. Real Stripe sends
       // them to checkout first; the demo fallback just goes straight to the

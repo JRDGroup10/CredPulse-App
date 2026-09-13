@@ -7,6 +7,7 @@ import { Region } from "../lib/types";
 import { orderedRoleGroups } from "../lib/roles";
 import { getIndustryPref, setIndustryPref, IndustryPref } from "../lib/industryPref";
 import { peekReferralCode, consumeReferralCode } from "../lib/referralCapture";
+import { trackEvent } from "../lib/analytics";
 import { LogoMark } from "../components/Logo";
 type Mode = "signup" | "login";
 
@@ -76,6 +77,10 @@ export default function Auth({
     try {
       if (mode === "signup") {
         await signUp(email, password, name, role, region, industry, referralCode);
+        // No email/name here — GA4 events are pseudonymous by design, and
+        // industry/region/referral are the useful signals for a growth
+        // funnel anyway (which channel and vertical actually convert).
+        trackEvent("sign_up", { industry, region, via_referral: !!referralCode });
         // Only clear the stored code once signUp() has actually succeeded —
         // if it throws (weak password, email taken, etc.) the code should
         // still be there for the retry.

@@ -4,6 +4,7 @@ import { AppStateProvider, useAuth } from "./lib/AppContext";
 import Layout from "./components/Layout";
 import { getIndustryPref, marketingHomePath } from "./lib/industryPref";
 import { captureReferralFromUrl } from "./lib/referralCapture";
+import { trackPageview } from "./lib/analytics";
 import PendingClinicSetupResumer from "./components/PendingClinicSetupResumer";
 
 // Every page is its own lazy-loaded chunk instead of one monolithic bundle —
@@ -74,6 +75,18 @@ function Routed() {
   useEffect(() => {
     captureReferralFromUrl();
   }, []);
+
+  // Fires on every route change — both the pre-auth marketing routes
+  // (Landing, Industries, guides) and the authenticated app's <Routes>
+  // below, since this effect lives above all of that branching and just
+  // watches `pathname` directly rather than being nested inside any one
+  // branch. GA4's own default page_view is turned off in analytics.ts
+  // (send_page_view: false) specifically so this is the only thing
+  // sending page views, avoiding a double-count on first load.
+  useEffect(() => {
+    trackPageview(pathname);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   // Legal pages are public and don't depend on auth state.
   if (pathname === "/terms") return <Terms />;
