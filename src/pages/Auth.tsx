@@ -8,6 +8,7 @@ import { orderedRoleGroups } from "../lib/roles";
 import { getIndustryPref, setIndustryPref, IndustryPref } from "../lib/industryPref";
 import { peekReferralCode, consumeReferralCode } from "../lib/referralCapture";
 import { trackEvent } from "../lib/analytics";
+import { trackPixelEvent } from "../lib/metaPixel";
 import { LogoMark } from "../components/Logo";
 type Mode = "signup" | "login";
 
@@ -81,6 +82,10 @@ export default function Auth({
         // industry/region/referral are the useful signals for a growth
         // funnel anyway (which channel and vertical actually convert).
         trackEvent("sign_up", { industry, region, via_referral: !!referralCode });
+        // Meta's standard "CompleteRegistration" event — same pseudonymous,
+        // no-PII shape as the GA4 call above, so Meta Ads can optimize for
+        // and report on real signups instead of just clicks/page views.
+        trackPixelEvent("CompleteRegistration", { industry, region });
         // Only clear the stored code once signUp() has actually succeeded —
         // if it throws (weak password, email taken, etc.) the code should
         // still be there for the retry.

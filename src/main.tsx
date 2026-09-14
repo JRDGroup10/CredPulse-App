@@ -7,10 +7,12 @@ import { ThemeProvider } from "./lib/ThemeContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { initErrorMonitoring, reportError } from "./lib/errorMonitoring";
 import { initAnalytics } from "./lib/analytics";
+import { initMetaPixel } from "./lib/metaPixel";
 import "./index.css";
 
 initErrorMonitoring();
 initAnalytics();
+initMetaPixel();
 
 // ErrorBoundary (below) only catches errors thrown during React's own
 // render/lifecycle — it can't see an error thrown inside an event handler
