@@ -1,27 +1,25 @@
-// CredPulse brand mark + wordmark, matching the approved design (navy shield + pulse line,
-// light-blue accent dot, "Cred"/"Pulse" two-tone wordmark). Colors are fixed brand colors and
-// intentionally don't shift with dark mode — the mark's own palette IS the brand.
+// CredPulse brand mark + wordmark — glossy 3D chrome badge (shield outline, white pulse
+// line, green accent sphere) on a rounded dark-navy tile, matching the approved app-icon /
+// social-profile badge asset. This replaced the earlier flat "Dimension system" outline mark
+// so the in-app nav/header mark visually matches the app icon, favicon, and social profile
+// picture. It's a raster image (the glossy/chrome rendering doesn't reduce to a clean flat
+// SVG) — /credpulse-mark.png is a 256px export of the same source used for the PWA icons,
+// favicon, and apple-touch-icon, so keep them in sync if the badge is ever revised.
 
 export function LogoMark({ className = "w-8 h-8" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 100 100" className={className} xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M30,8 L70,8 L88,38 L50,92 L12,38 Z" fill="#0B2A4A" />
-      <path
-        d="M22,46 L38,46 L44,30 L56,62 L62,46 L76,46"
-        fill="none"
-        stroke="#FFFFFF"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="76" cy="46" r="3.5" fill="#4FB6E8" />
-    </svg>
+    <img
+      src="/credpulse-mark.png"
+      alt=""
+      aria-hidden="true"
+      className={`${className} rounded-[22%] object-contain`}
+    />
   );
 }
 
 // themeAware: whether "Cred" should flip to white when the app's dark-mode class is active.
 // Pass themeAware={false} only on a page whose own background is guaranteed to stay light
-// regardless of the dark-mode toggle — the navy wordmark would go invisible on a dark
+// regardless of the dark-mode toggle — the violet wordmark would be low-contrast on a dark
 // background otherwise. As of the Dimension-system redesign, dark is the default background
 // almost everywhere (see Layout.tsx, Landing.tsx), so themeAware={true} (the default) is
 // almost always the right call now; only pass false for a page you've deliberately kept
@@ -35,11 +33,11 @@ export function LogoWordmark({
   light?: boolean;
   themeAware?: boolean;
 }) {
-  const credClass = light ? "text-white" : themeAware ? "text-[#0B2A4A] dark:text-white" : "text-[#0B2A4A]";
+  const credClass = light ? "text-white" : themeAware ? "text-[#6B62F2] dark:text-white" : "text-[#6B62F2]";
   return (
     <span className={`font-extrabold tracking-tight ${className}`}>
       <span className={credClass}>Cred</span>
-      <span className="text-[#4FB6E8]">Pulse</span>
+      <span className="text-[#10B981]">Pulse</span>
     </span>
   );
 }
