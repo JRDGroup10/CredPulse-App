@@ -27,6 +27,16 @@
 //   Events to send: checkout.session.completed, customer.subscription.updated,
 //                    customer.subscription.deleted
 // Copy the "Signing secret" Stripe shows you and set it as STRIPE_WEBHOOK_SECRET.
+//
+// 2026-09-24 fix: every write below used to ignore the {error} Postgrest
+// returns. That's how profiles.stripe_customer_id silently never got
+// written (the column didn't exist on the live table until today's
+// migration) — the webhook reported success to Stripe on every event while
+// quietly failing to persist anything, so a real paid subscription never
+// showed up as a paid plan in the app. Every update below now logs its
+// error instead of discarding it, so a failure like that shows up in
+// function logs / Sentry immediately instead of only surfacing weeks later
+// as a customer billing complaint.
 
 import Stripe from "npm:stripe@17.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -99,7 +109,8 @@ Deno.serve(async (req) => {
             if (sub.trial_end) patch.trial_ends_at = new Date(sub.trial_end * 1000).toISOString();
           }
 
-          await supabase.from("organizations").update(patch).eq("id", organizationId);
+          const { error } = await supabase.from("organizations").update(patch).eq("id", organizationId);
+          if (error) console.error("stripe-webhook: failed to update organization", organizationId, error);
           break;
         }
 
@@ -107,7 +118,7 @@ Deno.serve(async (req) => {
         const plan = session.metadata?.plan;
         const billingCycle = session.metadata?.billing_cycle;
         if (userId && plan && billingCycle) {
-          await supabase
+          const { error } = await supabase
             .from("profiles")
             .update({
               plan,
@@ -115,6 +126,7 @@ Deno.serve(async (req) => {
               stripe_customer_id: typeof session.customer === "string" ? session.customer : session.customer?.id
             })
             .eq("id", userId);
+          if (error) console.error("stripe-webhook: failed to update profile", userId, error);
         }
         break;
       }
@@ -138,7 +150,8 @@ Deno.serve(async (req) => {
           };
           if (orgPlan) patch.plan = orgPlan;
           if (orgBillingCycle) patch.billing_cycle = orgBillingCycle;
-          await supabase.from("organizations").update(patch).eq("id", organizationId);
+          const { error } = await supabase.from("organizations").update(patch).eq("id", organizationId);
+          if (error) console.error("stripe-webhook: failed to update organization", organizationId, error);
           break;
         }
 
@@ -150,10 +163,11 @@ Deno.serve(async (req) => {
           break;
         }
         if (mapped) {
-          await supabase
+          const { error } = await supabase
             .from("profiles")
             .update({ plan: mapped.plan, billing_cycle: mapped.billingCycle })
             .eq("stripe_customer_id", customerId);
+          if (error) console.error("stripe-webhook: failed to update profile for customer", customerId, error);
         }
         break;
       }
@@ -164,11 +178,13 @@ Deno.serve(async (req) => {
         const organizationId = sub.metadata?.organization_id;
 
         if (organizationId) {
-          await supabase.from("organizations").update({ subscription_status: "canceled" }).eq("id", organizationId);
+          const { error } = await supabase.from("organizations").update({ subscription_status: "canceled" }).eq("id", organizationId);
+          if (error) console.error("stripe-webhook: failed to mark organization canceled", organizationId, error);
           break;
         }
 
-        await supabase.from("profiles").update({ plan: "free" }).eq("stripe_customer_id", customerId);
+        const { error } = await supabase.from("profiles").update({ plan: "free" }).eq("stripe_customer_id", customerId);
+        if (error) console.error("stripe-webhook: failed to reset profile to free for customer", customerId, error);
         break;
       }
 
