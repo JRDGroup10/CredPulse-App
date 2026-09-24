@@ -13,6 +13,18 @@
 //
 // Deploy with:
 //   supabase functions deploy create-checkout-session
+//
+// 2026-09-24 fix: profiles.stripe_customer_id did not exist as a column on
+// the live database until this deploy (see migration
+// add_stripe_customer_id_to_profiles). Because the lookup below silently
+// swallowed the resulting query error, this function could never find an
+// existing customer and created a brand-new Stripe customer + subscription
+// on every single call — which is how at least one user ended up with two
+// parallel paid subscriptions billing them every month. Now that the column
+// exists this reuse logic works, but we also (a) log any future lookup
+// errors instead of silently ignoring them, and (b) explicitly refuse to
+// start a second checkout if Stripe already shows a live subscription for
+// this customer, as defense in depth against this ever happening again.
 
 import Stripe from "npm:stripe@17.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -75,14 +87,49 @@ Deno.serve(async (req) => {
 
     // Reuse the user's existing Stripe customer if we already have one, so
     // repeat purchases and the billing portal see one consistent history.
-    const { data: profile } = await supabase.from("profiles").select("stripe_customer_id").eq("id", user.id).maybeSingle();
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("stripe_customer_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      // Don't silently proceed as if this user has no Stripe customer —
+      // that's exactly the bug that caused duplicate subscriptions before.
+      // Surface it loudly and refuse to guess.
+      console.error("create-checkout-session: failed to look up profile for", user.id, profileError);
+      return new Response(JSON.stringify({ error: "Couldn't verify your account. Try again in a moment." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const existingCustomerId = profile?.stripe_customer_id || undefined;
+
+    // Defense in depth: even with the lookup above working correctly, refuse
+    // to open a second checkout if this customer already has a live
+    // subscription in Stripe. Someone re-clicking "Upgrade" after a slow
+    // redirect, or hitting this endpoint twice, should never be able to end
+    // up paying for two subscriptions at once.
+    if (existingCustomerId) {
+      const existingSubs = await stripe.subscriptions.list({ customer: existingCustomerId, status: "all", limit: 20 });
+      const hasLiveSub = existingSubs.data.some((s) => ["active", "trialing", "past_due"].includes(s.status));
+      if (hasLiveSub) {
+        return new Response(
+          JSON.stringify({
+            error: "You already have an active subscription. Manage or change it from the billing portal instead of starting a new checkout."
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     const siteUrl = origin || SUPABASE_URL;
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer: profile?.stripe_customer_id || undefined,
-      customer_email: profile?.stripe_customer_id ? undefined : user.email,
+      customer: existingCustomerId,
+      customer_email: existingCustomerId ? undefined : user.email,
       client_reference_id: user.id,
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
