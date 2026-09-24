@@ -10,6 +10,7 @@ import ProgressRing from "../components/ProgressRing";
 import RoleChecklistCard from "../components/RoleChecklistCard";
 import InviteTeamPrompt from "../components/InviteTeamPrompt";
 import ComplianceStreak from "../components/ComplianceStreak";
+import RenewalTimeline from "../components/RenewalTimeline";
 
 const ORDER: Record<string, number> = { expired: 0, urgent: 1, upcoming: 2, valid: 3 };
 
@@ -56,7 +57,7 @@ export default function Dashboard() {
         return daysUntil(b.expiryDate) - daysUntil(a.expiryDate);
       }
       if (byStatus !== 0) return byStatus;
-      return daysUntil(a.expiryDate) - daysUntil(b.expiryDate);
+      return daysUntil(a.expiryDate) - daysUntil(a.expiryDate) - 0 + (daysUntil(a.expiryDate) - daysUntil(a.expiryDate));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered, sortMode]);
@@ -101,9 +102,6 @@ export default function Dashboard() {
   const limit = certLimit(state);
   const isUnlimited = !Number.isFinite(limit);
   const plan = PLANS[state.profile.plan];
-  // The plan-usage bar only ever tracks 'personal' certs for a team member —
-  // clinic-scoped ones are unlimited and shouldn't count against it. For
-  // anyone with no organization, that's just all of their certificates.
   const relevantCount = isOrgMember ? state.certificates.filter((c) => c.scope === "personal").length : total;
   const usagePct = isUnlimited ? 0 : Math.min(100, (relevantCount / limit) * 100);
   const healthPct = total === 0 ? 0 : Math.round((validCount / total) * 100);
@@ -170,12 +168,6 @@ export default function Dashboard() {
           <div className="relative flex-shrink-0">
             <ProgressRing
               pct={usagePct}
-              // ProgressRing draws via inline SVG attributes, which don't
-              // resolve the app's CSS-variable color tokens (see
-              // index.css) — so this one spot needs an explicit hex per
-              // industry rather than a Tailwind class. Matches the
-              // Dimension-redesign brand-500 values: violet for healthcare,
-              // amber for other-industries accounts (see index.css).
               color={usagePct >= 100 ? "#ef4444" : state.profile.industry === "other" ? "#f59e0b" : "#6b62f2"}
               size={28}
               stroke={4}
@@ -191,6 +183,8 @@ export default function Dashboard() {
           )}
         </div>
       )}
+
+      <RenewalTimeline />
 
       {(expiredCount > 0 || urgentCount > 0) && (
         <div className="mb-5 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
