@@ -4,6 +4,13 @@
 //
 // Requires STRIPE_SECRET_KEY secret. Deploy with:
 //   supabase functions deploy create-portal-session
+//
+// 2026-09-24 fix: the profile lookup below used to ignore its {error},
+// which mattered because profiles.stripe_customer_id didn't exist as a
+// column until today's migration — so this always reported "No billing
+// account yet" even for a paying customer, with no way to tell the
+// difference between "truly on the free plan" and "we failed to look you
+// up." Now logs the lookup error instead of swallowing it.
 
 import Stripe from "npm:stripe@17.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -41,7 +48,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: profile } = await supabase.from("profiles").select("stripe_customer_id").eq("id", user.id).maybeSingle();
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("stripe_customer_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("create-portal-session: failed to look up profile for", user.id, profileError);
+      return new Response(JSON.stringify({ error: "Couldn't look up your billing account. Try again in a moment." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
 
     if (!profile?.stripe_customer_id) {
       return new Response(JSON.stringify({ error: "No billing account yet — subscribe to a plan first." }), {
