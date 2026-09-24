@@ -9,6 +9,7 @@ import CountUp from "../components/CountUp";
 import ProgressRing from "../components/ProgressRing";
 import RoleChecklistCard from "../components/RoleChecklistCard";
 import InviteTeamPrompt from "../components/InviteTeamPrompt";
+import ComplianceStreak from "../components/ComplianceStreak";
 
 const ORDER: Record<string, number> = { expired: 0, urgent: 1, upcoming: 2, valid: 3 };
 
@@ -131,6 +132,7 @@ export default function Dashboard() {
 
       <RoleChecklistCard />
       <InviteTeamPrompt />
+      <ComplianceStreak />
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
