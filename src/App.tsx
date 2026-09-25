@@ -34,6 +34,7 @@ const ClinicSignup = lazy(() => import("./pages/ClinicSignup"));
 const Billing = lazy(() => import("./pages/Billing"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
+const VerifyPublic = lazy(() => import("./pages/VerifyPublic"));
 
 function Spinner() {
   return (
@@ -88,9 +89,17 @@ function Routed() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Legal pages are public and don't depend on auth state.
+    // Legal pages are public and don't depend on auth state.
   if (pathname === "/terms") return <Terms />;
   if (pathname === "/privacy") return <Privacy />;
+
+  // Public credential-verification page (see Settings.tsx's share-link
+  // card and VerifyPublic.tsx) — reachable by anyone with the link, signed
+  // in or not, same as Terms/Privacy above.
+  const verifyMatch = /^\/verify\/([a-zA-Z0-9-]+)$/.exec(pathname);
+  if (verifyMatch) {
+    return <VerifyPublic token={verifyMatch[1]} />;
+  }
 
   // Split-screen industry chooser — always reachable here, regardless of any
   // remembered preference, so "Switch industry" links (see Landing.tsx and
