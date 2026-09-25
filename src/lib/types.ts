@@ -80,6 +80,13 @@ export interface UserProfile {
   // trigger that awards it.
   referralCode: string;
   bonusCertSlots: number;
+    // Shareable public verification link (see supabase/functions/public-verify).
+  // shareToken is a permanent random ID already generated for every user;
+  // shareEnabled is the on/off switch the user controls from Settings —
+  // the public page and Edge Function refuse to return anything unless
+  // this is true, even if someone has the token.
+  shareToken: string;
+  shareEnabled: boolean;
 }
 
 export interface AppState {
