@@ -25,6 +25,8 @@ function makeProfile(overrides: Partial<UserProfile> = {}): UserProfile {
     industry: "healthcare",
     referralCode: "AB12CD3",
     bonusCertSlots: 0,
+    shareToken: "test-share-token",
+    shareEnabled: false,
     ...overrides
   };
 }
