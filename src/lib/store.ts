@@ -45,7 +45,9 @@ function mapProfileRow(row: Record<string, unknown> | null, fallbackEmail: strin
     orgRole: ((row?.org_role as OrgRole) ?? "member") as OrgRole,
     industry: ((row?.industry as IndustryPref) ?? "healthcare") as IndustryPref,
     referralCode: (row?.referral_code as string) ?? "",
-    bonusCertSlots: (row?.bonus_cert_slots as number) ?? 0
+    bonusCertSlots: (row?.bonus_cert_slots as number) ?? 0,
+    shareToken: (row?.share_token as string) ?? "",
+    shareEnabled: (row?.share_enabled as boolean) ?? false
   };
 }
 
@@ -221,6 +223,7 @@ export async function updateProfile(
     region: Region;
     organizationId: string | null;
     orgRole: OrgRole;
+    shareEnabled: boolean;
   }>
 ): Promise<void> {
   const dbPatch: Record<string, unknown> = {};
@@ -232,6 +235,7 @@ export async function updateProfile(
   if (patch.region !== undefined) dbPatch.region = patch.region;
   if (patch.organizationId !== undefined) dbPatch.organization_id = patch.organizationId;
   if (patch.orgRole !== undefined) dbPatch.org_role = patch.orgRole;
+  if (patch.shareEnabled !== undefined) dbPatch.share_enabled = patch.shareEnabled;
 
   const { error } = await supabase.from("profiles").update(dbPatch).eq("id", userId);
   if (error) throw error;
@@ -1219,4 +1223,44 @@ export async function deleteCeuCredit(id: string): Promise<void> {
  * from the fetch so it's independently testable without a Supabase client. */
 export function sumCeuCredits(logs: CeuCreditLog[]): number {
   return logs.reduce((sum, l) => sum + l.credits, 0);
+}
+
+
+// ============================================================
+// Shareable public verification link (see supabase/functions/public-verify
+// and VerifyPublic.tsx). A user's share_token already exists on every
+// profile row from the moment it's created; share_enabled (toggled from
+// Settings) is what actually turns the public page on.
+// ============================================================
+
+export interface PublicVerificationCert {
+  name: string;
+  issuer: string;
+  credentialType: string;
+  status: "expired" | "urgent" | "upcoming" | "valid";
+  expiryMonth: string | null;
+  officiallyVerified: boolean;
+}
+
+export interface PublicVerification {
+  name: string;
+  role: string;
+  certificates: PublicVerificationCert[];
+  generatedAt: string;
+}
+
+/** Public, unauthenticated lookup for the verification page — calls the
+ * public-verify Edge Function, which only returns data if share_enabled is
+ * on for that token's owner. Returns null on any failure (invalid token,
+ * disabled link, function error) so the page can show one consistent
+ * "not found" state rather than surfacing raw error detail publicly. */
+export async function fetchPublicVerification(token: string): Promise<PublicVerification | null> {
+  const { data, error } = await supabase.functions.invoke("public-verify", { body: { token } });
+  if (error || !data || (data as { error?: string }).error) return null;
+  return data as PublicVerification;
+}
+
+/** Builds the full shareable URL for a user's verification page. */
+export function verificationLinkFor(shareToken: string): string {
+  return `${window.location.origin}/verify/${shareToken}`;
 }
