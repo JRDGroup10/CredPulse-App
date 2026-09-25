@@ -7,6 +7,7 @@ import { Region } from "../lib/types";
 import TeamSettings from "../components/TeamSettings";
 import ReferralCard from "../components/ReferralCard";
 import InstallAppCard from "../components/InstallAppCard";
+import ShareVerificationLink from "../components/ShareVerificationLink";
 
 export default function Settings() {
   const { userId, state, refresh } = useAppState();
@@ -86,7 +87,9 @@ export default function Settings() {
         </div>
       </div>
 
-      <InstallAppCard />
+         <InstallAppCard />
+
+      <ShareVerificationLink />
 
       <ReferralCard />
 
