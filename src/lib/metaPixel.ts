@@ -26,6 +26,15 @@ let initialized = false;
  * standard Meta Pixel base code and fires the initial PageView. Safe to
  * call even when VITE_META_PIXEL_ID isn't set. */
 export function initMetaPixel(): void {
+  if (typeof navigator !== "undefined" && navigator.userAgent.includes("CredPulseIOSApp")) {
+    // Running inside the native iOS app wrapper (WebView.swift tags its
+    // user agent with this marker — see that file's comments). Meta
+    // Pixel shares device-level data with Meta for ad measurement, which
+    // Apple classifies as "tracking" and requires an ATT permission
+    // prompt for. Simplest to just not load it in the wrapped app at all
+    // — it stays fully active on the regular website.
+    return;
+  }
   if (!metaPixelConfigured) {
     console.warn(
       "[CredPulse] VITE_META_PIXEL_ID isn't set — Meta (Facebook/Instagram) ad conversions won't be " +
