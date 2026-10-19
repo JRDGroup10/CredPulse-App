@@ -1264,3 +1264,34 @@ export async function fetchPublicVerification(token: string): Promise<PublicVeri
 export function verificationLinkFor(shareToken: string): string {
   return `${window.location.origin}/verify/${shareToken}`;
 }
+
+
+// ============================================================
+// Account deletion (Apple Guideline 5.1.1(v))
+// ============================================================
+// PASTE THIS AT THE VERY BOTTOM of src/lib/store.ts (after the last function).
+
+export async function deleteAccount(
+  opts: { deleteTeam?: boolean } = {}
+): Promise<{ ok: boolean; code?: string; memberCount?: number; error?: string }> {
+  try {
+    const { data, error } = await supabase.functions.invoke("delete-account", {
+      body: { confirm: true, deleteTeam: !!opts.deleteTeam }
+    });
+    if (error) {
+      // Non-2xx responses arrive as an error whose `context` is the raw Response.
+      const ctx = (error as { context?: Response }).context;
+      if (ctx && typeof ctx.json === "function") {
+        const body = await ctx.json().catch(() => null);
+        if (body) {
+          return { ok: false, code: body.code, memberCount: body.memberCount, error: body.error };
+        }
+      }
+      return { ok: false, error: "Couldn't delete your account. Please try again." };
+    }
+    return data?.ok ? { ok: true } : { ok: false, error: data?.error ?? "Couldn't delete your account." };
+  } catch (err) {
+    console.error("[CredPulse] deleteAccount failed", err);
+    return { ok: false, error: "Couldn't delete your account. Please check your connection and try again." };
+  }
+}
