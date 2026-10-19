@@ -7,7 +7,7 @@ import { Region } from "../lib/types";
 import TeamSettings from "../components/TeamSettings";
 import ReferralCard from "../components/ReferralCard";
 import InstallAppCard from "../components/InstallAppCard";
-import ShareVerificationLink from "../components/ShareVerificationLink";
+import DeleteAccountCard from "../components/DeleteAccountCard";
 
 export default function Settings() {
   const { userId, state, refresh } = useAppState();
@@ -87,9 +87,7 @@ export default function Settings() {
         </div>
       </div>
 
-         <InstallAppCard />
-
-      <ShareVerificationLink />
+      <InstallAppCard />
 
       <ReferralCard />
 
@@ -104,6 +102,8 @@ export default function Settings() {
           Manage →
         </Link>
       </div>
+
+      <DeleteAccountCard />
     </div>
   );
 }
